@@ -82,16 +82,24 @@
     tags: db-create
 
   - name: Create database using dbca
-    shell: |
-      set -o pipefail
-      export PATH={{ oracle_home }}/bin:${PATH}
-      {{ pwd_gen_cmd }} | dbca -silent -createDatabase -redoLogFileSize {{ redologsize }} -responseFile {{ swlib_unzip_path }}/dbca_{{ db_name }}.rsp
-    register: dbca_output
-    failed_when: "'Completing Database Creation' not in dbca_output.stdout or '100% complete' not in dbca_output.stdout"
-    when: pmon_proc.stdout == "0" and check_oratab.stdout == "0"
-    become: yes
-    become_user: "{{ oracle_user }}"
-    tags: db-create
+    block:
+          - name: Run dbca
+            shell: |
+              set -o pipefail
+              export PATH={{ oracle_home }}/bin:${PATH}
+              {{ pwd_gen_cmd }} | dbca -silent -createDatabase -redoLogFileSize {{ redologsize }} -responseFile {{ swlib_unzip_path }}/dbca_{{ db_name }}.rsp
+            register: dbca_output
+            failed_when: "'Completing Database Creation' not in dbca_output.stdout or '100% complete' not in dbca_output.stdout"
+            when: pmon_proc.stdout == "0" and check_oratab.stdout == "0"
+            become: yes
+            become_user: "{{ oracle_user }}"
+            tags: db-create
+    rescue:
+      - name: Retrieve dbca logs
+        slurp:
+          src: "{{ oracle_base }}/cfgtoollogs/dbca/{{ db_name }}/{{ db_name }}.log"
+        register: dbcalog
+      - debug: msg="{{ dbcalog['content'] | b64decode}}"
 
   - name: DBCA output
     debug:

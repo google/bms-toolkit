@@ -1,0 +1,23 @@
+## Customizable Global Variables
+
+# ASM and storage related variables:
+
+oracle_user_data_mounts:
+  - { purpose: software, blk_device: /dev/mapper/db-sw1, fstype: xfs, mount_point: /u01, mount_opts: "defaults" }
+  - { purpose: other, blk_device: /dev/mapper/db-diag1, fstype: xfs, mount_point: /u02, mount_opts: "defaults" }
+
+asm_disks:
+- diskgroup: "{{ data_diskgroup }}"
+  disks:
+  - name: DATA1
+    blk_device: /dev/mapper/db-data1
+- diskgroup: "{{ reco_diskgroup }}"
+  disks:
+  - name: RECO1
+    blk_device: /dev/mapper/db-reco1
+
+# The default here is 80% of system RAM, which is too large for most use cases
+sga_target: 10000M
+# Replace with the control node that runs the NTP server
+ntp_preferred: gateway-instance
+

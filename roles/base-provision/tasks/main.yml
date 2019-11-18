@@ -24,28 +24,14 @@
       state: absent
     tags: ntp
 
-  # Temporarily use CentOS repo as lab RHEL servers are not registered with a Red Hat Entitlement Server
-  - name: Configure centos7 repo on rhel
-    yum_repository:
-      name: base
-      description: CentOS-$releasever - Base
-      file: CentOS-Base
-      #baseurl: http://mirror.centos.org/centos/$releasever/os/$basearch/
-      # Bug with iamseth/rhel73 where $releasever = "7server" and not just "7"
-      #mirrorlist: http://mirrorlist.centos.org/?release=$releasever&arch=$basearch&repo=os&infra=$infra
-      mirrorlist: http://mirrorlist.centos.org/?release=7&arch=$basearch&repo=os&infra=$infra
-      gpgkey: file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-7
-      gpgcheck: yes
-      enabled: yes
-    when: install_os_packages|bool and ansible_os_family == 'RedHat' and ansible_distribution == 'RedHat'
-    tags: os_packages,rhel
-
-  - name: Add centos7 rpm key on rhel
-    rpm_key:
-      state: present
-      key: http://mirror.centos.org/centos/RPM-GPG-KEY-CentOS-7
-    when: install_os_packages|bool and ansible_os_family == 'RedHat' and ansible_distribution == 'RedHat'
-    tags: os_packages,rhel
+  - name: Enable optional packages for rhel7
+    ini_file:
+      dest: /etc/yum.repos.d/redhat.repo
+      section: rhel-7-server-optional-rpms
+      option: enabled
+      value: '1'
+    when: install_os_packages|bool and ansible_distribution == 'RedHat' and ansible_distribution_major_version == '7'
+    tags: os_packages
 
   - name: Install packages
     package:

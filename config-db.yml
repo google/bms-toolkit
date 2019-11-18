@@ -1,0 +1,29 @@
+---
+ - hosts: all
+   remote_user: "{{ oracle_user }}"
+   become_user: root
+   become: true
+   pre_tasks:
+     - name: Verify Ansible meets the version requirements
+       assert:
+         that: "ansible_version.full is version_compare('2.8', '>=')"
+         fail_msg: >-
+           You must update Ansible to at least 2.8 to use these playbooks
+         success_msg: >-
+           Ansible version is {{ ansible_version.full }} , continuing
+   tasks:
+     - include_role:
+         name: lsnr-create
+       when: create_listener|bool
+     - include_role:
+         name: "{{ role_item }}"
+       loop:
+         - db-create
+         - db-adjustements
+         - db-backups
+         - validation-scripts
+       loop_control:
+         loop_var: role_item
+       when: create_db|bool
+   tags: lsnr-create,db-create,db-adjustments,db-backups,validation-scripts
+

@@ -1,0 +1,25 @@
+---
+  - name: start_all_dbs | Capture all databases
+    command: "{{ grid_home }}/bin/srvctl config database"
+    environment:
+      ORACLE_HOME: "{{ grid_home }}"
+    register: db_list
+    become: yes
+    become_user: "{{ grid_user }}"
+
+  - name: start_all_dbs | Starting databases found
+    command: "{{ grid_home }}/bin/srvctl start database -d {{ item[0] }}"
+    environment:
+      ORACLE_HOME: "{{ grid_home }}"
+    register: start_home
+    ignore_errors: yes
+    failed_when: start_home.rc not in [0,2]
+    become: yes
+    become_user: "{{ grid_user }}"
+    loop:
+      - "{{ db_list.stdout_lines }}"
+
+  - name: start_all_dbs | Start home results
+    debug:
+      msg: "{{ start_home }}"
+      verbosity: 1

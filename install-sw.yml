@@ -1,0 +1,34 @@
+---
+ - hosts: all
+   remote_user: "{{ grid_user }}"
+   become_user: root
+   become: true
+   pre_tasks:
+     - name: Verify Ansible meets the version requirements
+       assert:
+         that: "ansible_version.full is version_compare('2.8', '>=')"
+         fail_msg: >-
+           You must update Ansible to at least 2.8 to use these playbooks
+         success_msg: >-
+           Ansible version is {{ ansible_version.full }}, continuing
+   roles:
+     - role: gi-setup
+       when: install_gi|bool
+   tags: gi-setup
+
+ - hosts: all
+   remote_user: "{{ oracle_user }}"
+   become_user: root
+   become: true
+   pre_tasks:
+     - name: Verify Ansible meets the version requirements
+       assert:
+         that: "ansible_version.full is version_compare('2.8', '>=')"
+         fail_msg: >-
+           You must update Ansible to at least 2.8 to use these playbooks
+         success_msg: >-
+           Ansible version is {{ ansible_version.full }}, continuing
+   roles:
+     - role: rdbms-setup
+       when: install_rdbms|bool
+   tags: rdbms-setup

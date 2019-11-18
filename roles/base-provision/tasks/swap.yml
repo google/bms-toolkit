@@ -1,0 +1,27 @@
+---
+
+- name: swap | Create swap partition
+  parted:
+    device: "{{ swap_blk_device }}"
+    number: 1
+    state: present
+  register: swapfile_register_create
+
+- name: swap | Initialize swap file
+  command: mkswap {{ swap_blk_device }}1
+  when: swapfile_register_create is changed
+
+- name: swap | Enable swap file
+  command: swapon {{ swap_blk_device }}1
+  when: swapfile_register_create is changed
+
+- name: swap | Manage swap file in /etc/fstab
+  mount:
+    src: "{{ swap_blk_device }}1"
+    name: "none"
+    fstype: "swap"
+    opts: "sw,nofail"
+    dump: "0"
+    passno: "0"
+    state: "present"
+

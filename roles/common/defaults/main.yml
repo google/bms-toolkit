@@ -1,0 +1,43 @@
+---
+  # Variables used by more than one role
+
+  oracle_ver_dir: "{{ oracle_ver [:6] }}"
+  oracle_inventory: "{{ oracle_root }}/oraInventory"
+  oracle_base: "{{ oracle_root }}/oracle"
+  oracle_home: "{{ oracle_root }}/oracle/product/{{ oracle_ver_dir }}/{{ home_name }}"
+  grid_home: "{{ oracle_root }}/{{ oracle_ver_dir }}/grid"
+
+  asm_disk_control: "{% if asm_disk_management == 'asmlib' and ansible_distribution == 'OracleLinux' %}asmlib{% else %}udev{% endif %}"
+
+  oracle_users:
+    - { name: "{{ oracle_user }}", comment: "", uid: 54321, group: "{{ oracle_group }}" }
+    - { name: "{{ grid_user }}", comment: "", uid: 54322, group: "{{ oracle_group }}" }
+
+  oracle_groups:
+    - { group: oinstall, gid: 54321 }
+    - { group: dba, gid: 54322 }
+    - { group: oper, gid: 54323 }
+    - { group: backupdba, gid: 54324 }
+    - { group: dgdba, gid: 54325 }
+    - { group: kmdba, gid: 54326 }
+
+  asm_groups:
+    - { group: asmdba, gid: 54327 }
+    - { group: asmoper, gid: 54328 }
+    - { group: asmadmin, gid: 54329 }
+
+  oracle_dirs:
+    - { name: "{{ swlib_unzip_path }}", owner: "{{ oracle_user }}", group: "{{ oracle_group }}", mode: 775 }
+    - { name: "{{ oracle_base }}", owner: "{{ oracle_user }}", group: "{{ oracle_group }}", mode: 775 }
+    - { name: "{{ oracle_inventory }}", owner: "{{ grid_user }}", group: "{{ oracle_group }}", mode: 775 }
+    - { name: "{{ oracle_home }}", owner: "{{ oracle_user }}", group: "{{ oracle_group }}", mode: 775 }
+    - { name: "/home/oracle/.ansible/tmp", owner: "{{ oracle_user }}", group: "{{ oracle_group }}", mode: 775 }
+    - { name: "{{ grid_home }}", owner: "{{ grid_user }}", group: "{{ oracle_group }}", mode: 775 }
+    - { name: "/home/grid/.ansible/tmp", owner: "{{ oracle_user }}", group: "{{ oracle_group }}", mode: 775 }
+
+  opatch_patches:
+    - { category: "OPatch", release: "11.2.0.4.0", patchnum: "6880880", patchfile: "p6880880_112000_Linux-x86-64.zip" }
+    - { category: "OPatch", release: "12.1.0.2.0", patchnum: "6880880", patchfile: "p6880880_121010_Linux-x86-64.zip" }
+    - { category: "OPatch", release: "12.2.0.1.0", patchnum: "6880880", patchfile: "p6880880_122010_Linux-x86-64.zip" }
+    - { category: "OPatch", release: "18.0.0.0.0", patchnum: "6880880", patchfile: "p6880880_180000_Linux-x86-64.zip" }
+    - { category: "OPatch", release: "19.3.0.0.0", patchnum: "6880880", patchfile: "p6880880_190000_Linux-x86-64.zip" }

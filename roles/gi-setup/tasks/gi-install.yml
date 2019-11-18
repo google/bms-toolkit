@@ -1,0 +1,234 @@
+  - name: gi-install | set facts
+    set_fact:
+      install_unzip_path: "{{ grid_home }}"
+      installer_command:  "{{ grid_home }}/gridSetup.sh"
+      cluvfy_command:     "{{ grid_home }}/runcluvfy.sh stage -pre hacfg -verbose"
+    tags: gi-setup
+
+  - name: gi-install | 12.1 and 11.2 specific installer adjustments
+    set_fact:
+      install_unzip_path: "{{ swlib_unzip_path }}"
+      installer_command: "{{ swlib_unzip_path }}/grid/runInstaller {{ prereq_option }} -waitforcompletion"
+    when: oracle_ver in ['12.1.0.2.0','11.2.0.4.0']
+    tags: gi-setup
+
+  - name: gi-install | 12.1 and 11.2 specific cluvfg adjustments
+    set_fact:
+      cluvfy_command: "{{ swlib_unzip_path }}/grid/runcluvfy.sh stage -pre hacfg -verbose"
+    when: oracle_ver in ['12.1.0.2.0','11.2.0.4.0']
+    tags: gi-setup
+
+  - name: gi-install | Installer confirmation
+    debug:
+      msg:
+        - "Installing from file : {{ osw.files }}"
+        - "Unzipping into dir   : {{ install_unzip_path }}"
+        - "Using cluvfy cmd     : {{ cluvfy_command }}"
+        - "Using installer cmd  : {{ installer_command }}"
+      #verbosity: 1
+    tags: gi-setup
+
+  - name: gi-install | Unzipping
+    unarchive:
+      src: "{{ swlib_path }}/{{ item }}"
+      dest: "{{ install_unzip_path }}"
+      remote_src: yes
+    with_items:
+      - "{{ osw.files }}"
+    become: yes
+    become_user: "{{ grid_user }}"
+    tags: gi-setup,sw-unzip
+
+  - name: gi-install | find cvuqdisk rpm
+    find:
+      paths: "{{ grid_home }}/cv/rpm/"
+      patterns: "*.rpm"
+    register: r
+    tags: gi-setup,cvuqdisk
+
+  - name: gi-install | install cvuqdisk rpm
+    yum:
+      name: "{{ r.files | map(attribute='path') | list }}"
+      state: present
+    register: cvuqdisk_res
+    environment:
+      CVUQDISK_GRP: "oinstall"
+    become: yes
+    become_user: root
+    tags: gi-setup,cvuqdisk
+
+  - name: gi-install | Run cluvfy utility
+    command: "{{ cluvfy_command }}"
+    when: run_cluvfy|bool
+    register: cluvfy_res
+    failed_when: cluvfy_res.rc != 0 and oracle_ver != '11.2.0.4.0'  # Exclude 11gR2 due to elfutils & pdksh bug, MOS Doc ID 1962046.1
+    ignore_errors: yes
+    no_log: True
+    become: yes
+    become_user: "{{ grid_user }}"
+    tags: gi-setup,cluvfy
+
+  - name: gi-install | cluvfy results
+    debug:
+      msg:
+        - "{{ cluvfy_res.stdout_lines }}"
+    when: run_cluvfy|bool and cluvfy_res.rc != 0
+    tags: gi-setup,cluvfy
+
+  - name: gi-install | Create GI response file script
+    template:
+      src: grid_install.rsp.sh.j2
+      dest: "{{ swlib_unzip_path }}/grid_install.rsp.sh"
+    become: yes
+    become_user: "{{ grid_user }}"
+    tags: gi-setup
+
+  - name: gi-install | Run GI response file script
+    command: "sh {{ swlib_unzip_path }}/grid_install.rsp.sh"
+    args:
+    become: yes
+    become_user: "{{ grid_user }}"
+    tags: gi-setup
+
+  - name: gi-install | Script cleanup
+    file:
+      path: "{{ swlib_unzip_path }}/grid_install.rsp.sh"
+      state: absent
+    become: yes
+    become_user: "{{ grid_user }}"
+    tags: gi-setup
+
+  - name: gi-install | Run installer
+    command: "{{ installer_command }} -silent -responseFile {{ swlib_unzip_path }}/grid_install.rsp"
+    register: install_grid_software
+    failed_when: "('Successfully Setup Software' not in install_grid_software.stdout) or
+                  (install_grid_software.rc not in [0,6])"
+    become: yes
+    become_user: "{{ grid_user }}"
+    tags: gi-setup
+
+  - name: gi-install | Installer output
+    debug:
+      msg:
+        - "{{ install_grid_software.cmd }}"
+        - "{{ install_grid_software.stdout_lines }}"
+      #verbosity: 1
+    tags: gi-setup
+
+  - name: gi-install | Update OPatch
+    unarchive:
+      src: "{{ swlib_path }}/{{ item.patchfile }}"
+      dest: "{{ grid_home }}"
+      remote_src: yes
+    with_items:
+      - "{{ opatch_patches }}"
+    when: item.release == osw.version and item.category == "OPatch"
+    become: yes
+    become_user: "{{ grid_user }}"
+    tags: gi-setup,opatch
+
+  - name: gi-install | Create OCM response file (if neccessary)
+    script: expect_rsp.sh {{ oracle_base }} {{ grid_home }} {{ swlib_unzip_path }}
+    with_items:
+      - "{{ gi_patches }}"
+    when: item.release == osw.version and item.category == "HAS_Bugfix"
+    become: yes
+    become_user: "{{ grid_user }}"
+    tags: gi-setup,patch
+
+  - name: gi-install | Create patch-dirs
+    file:
+      path: "{{ swlib_unzip_path }}/{{ item.patchfile | replace('.zip','') }}"
+      state: directory
+      owner: "{{ grid_user }}"
+      group: "{{ oracle_group }}"
+      mode: '0770'
+    with_items:
+      - "{{ gi_patches }}"
+    when: item.release == osw.version and item.category == "HAS_Bugfix"
+    become: yes
+    become_user: "{{ grid_user }}"
+    tags: gi-setup,patch
+
+  - name: gi-install | Unzip other pre-HAS patches
+    unarchive:
+      src: "{{ swlib_path }}/{{ item.patchfile }}"
+      dest: "{{ swlib_unzip_path }}/{{ item.patchfile | replace('.zip','') }}"
+      remote_src: yes
+    with_items:
+      - "{{ gi_patches }}"
+    when: item.release == osw.version and item.category == "HAS_Bugfix"
+    become: yes
+    become_user: "{{ grid_user }}"
+    tags: gi-setup,patch
+
+  - name: gi-install | Install pre-HAS patches
+    shell: |
+      export PATH={{ grid_home }}/OPatch:${PATH}
+      if [ "{{ item.patchutil }}" = "opatch" ]; then
+         if [ -f "{{ swlib_unzip_path }}/ocm.rsp" ]; then
+            opatch napply -oh {{ grid_home }} {{ swlib_unzip_path }}/{{ item.patchfile | replace('.zip','') }}/{{ item.patchnum }} \
+              -ocmrf {{ swlib_unzip_path }}/ocm.rsp
+         else
+            opatch napply -oh {{ grid_home }} {{ swlib_unzip_path }}/{{ item.patchfile | replace('.zip','') }}/{{ item.patchnum }} -silent
+         fi
+      elif [ "{{ item.patchutil }}" = "gridsetup" ]; then
+         {{ grid_home }}/gridSetup.sh -applyOneOffs {{ swlib_unzip_path }}/{{ item.patchfile | replace('.zip','') }}/{{ item.patchnum }}
+      fi
+    with_items:
+      - "{{ gi_patches }}"
+    when: item.release == osw.version and item.category == "HAS_Bugfix"
+    register: patch_output
+    failed_when: "('OPatch succeeded' not in patch_output.stdout) and
+                  ('Successfully applied the patch' not in patch_output.stdout)"
+    become: yes
+    become_user: "{{ grid_user }}"
+    tags: gi-setup,patch
+
+  - name: gi-install | OPatch ouptut
+    debug:
+      msg:
+        - "{{ patch_output }}"
+      verbosity: 1
+    with_items:
+      - "{{ gi_patches }}"
+    when: item.release == osw.version and item.category == "HAS_Bugfix"
+    tags: gi-setup,patch
+
+  - name: gi-install | OCM response file cleanup
+    file:
+      path: "{{ swlib_unzip_path }}/ocm.rsp"
+      state: absent
+    with_items:
+      - "{{ gi_patches }}"
+    when: item.release == osw.version and item.category == "HAS_Bugfix"
+    become: yes
+    become_user: "{{ grid_user }}"
+    tags: gi-setup,patch
+
+  - name: gi-install | run root-script orainstRoot.sh
+    command: "{{ oracle_root }}/oraInventory/orainstRoot.sh"
+    ignore_errors: yes
+    when: "'skipped' not in install_grid_software.stdout"
+    become: yes
+    become_user: root
+    tags: gi-setup,root-scripts
+
+  - name: gi-install | run root-script root.sh
+    command: "{{ grid_home }}/root.sh"
+    when: "'skipped' not in install_grid_software.stdout"
+    become: yes
+    become_user: root
+    tags: gi-setup,root-scripts
+
+  - name: gi-install | Complete plugin configuration
+    command: "{{ installer_command }} -executeConfigTools -silent -responseFile {{ swlib_unzip_path }}/grid_install.rsp"
+    register: install_grid_plugins
+    when: oracle_ver not in ['12.1.0.2.0','11.2.0.4.0']
+    failed_when: "(   ('Successfully Setup Software' not in install_grid_plugins.stdout) or
+                      (install_grid_plugins.rc not in [0,6]) )
+                  and
+                  ('The Installer has detected that there are no config tools to execute for the specified Oracle home' not in install_grid_plugins.stdout)"
+    become: yes
+    become_user: "{{ grid_user }}"
+    tags: gi-setup

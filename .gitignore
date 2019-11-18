@@ -1,0 +1,7 @@
+**.retry
+**/.vagrant
+.DS_Store
+**/.bundle
+hosts.yml
+.terraform
+inventory

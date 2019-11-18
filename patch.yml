@@ -1,0 +1,16 @@
+---
+ - name: OPatch Restart patch
+   hosts: all
+   remote_user: "{{ oracle_user }}"
+   become_user: root
+   pre_tasks:
+     - name: Verify Ansible meets the version requirements
+       assert:
+         that: "ansible_version.full is version_compare('2.8', '>=')"
+         fail_msg: >-
+           You must update Ansible to at least 2.8 to use these playbooks
+         success_msg: >-
+           Ansible version is {{ansible_version.full}}, continuing
+   roles:
+     - patch
+   tags: opatch_restart

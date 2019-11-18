@@ -1,0 +1,88 @@
+---
+  install_os_packages: true
+  disable_firewall: false
+  disable_selinux: true
+  firewall_service: "{% if ansible_distribution_major_version|int==6%}iptables{%elif ansible_distribution_major_version|int==7 %}firewalld{% else %}0{% endif %}"
+
+  oracle_required_rpms:
+    - bc
+    - binutils
+    - compat-libcap1
+    - compat-libstdc++-33
+    - cpp
+    - gcc
+    - gcc-c++
+    - glibc-devel
+    - glibc-headers
+    - gssproxy
+    - kernel-headers
+    - keyutils
+    - ksh
+    - libaio-devel
+    - libbasicobjects
+    - libcollection
+    - libdmx
+    - libevent
+    - libICE
+    - libini_config
+    - libmpc
+    - libnfsidmap
+    - libpath_utils
+    - libref_array
+    - libSM
+    - libstdc++-devel
+    - libtirpc
+    - libverto-libevent
+    - libXi
+    - libXinerama
+    - libXmu
+    - libXrandr
+    - libXrender
+    - libXt
+    - libXtst
+    - libXv
+    - libXxf86dga
+    - libXxf86misc
+    - libXxf86vm
+    - mailx
+    - make
+    - mpfr
+    - nfs-utils
+    - psmisc
+    - quota
+    - quota-nls
+    - rpcbind
+    - smartmontools
+    - sysstat
+    - tcp_wrappers
+    - xorg-x11-utils
+    - xorg-x11-xauth
+
+  sysctl_entries:
+    - { name: "fs.aio-max-nr", value: "1048576" }
+    - { name: "fs.file-max", value: "6815744" }
+    - { name: "kernel.panic_on_oops", value: "1" }
+    #- { name: "kernel.shmall", value: "{{ (ansible_memtotal_mb * 1024 * 1024 / 4096 * 0.6) | int }}" }
+    #- { name: "kernel.shmmax", value: "{{ (ansible_memtotal_mb * 1024 * 1024 * 0.6) | int }}" }
+    #- { name: "kernel.shmmni", value: "4096" }
+    - { name: "kernel.sem", value: "250 32000 100 128" }
+    - { name: "net.ipv4.ip_local_port_range", value: "9000 65500" }
+    - { name: "net.core.rmem_default", value: "262144" }
+    - { name: "net.core.rmem_max", value: "4194304" }
+    - { name: "net.core.wmem_default", value: "262144" }
+    - { name: "net.core.wmem_max", value: "1048586" }
+
+  resource_limits:
+    - { name: "nofile", type: "soft", value: "1024" }
+    - { name: "nofile", type: "hard", value: "65536" }
+    - { name: "nproc", type: "soft", value: "2047" }
+    - { name: "nproc", type: "hard", value: "16384" }
+    - { name: "stack", type: "soft", value: "10240" }
+    - { name: "stack", type: "hard", value: "32768" }
+    - { name: "memlock", type: "soft", value: "unlimited" }
+    - { name: "memlock", type: "hard", value: "unlimited" }
+
+  oracleasm_libs:
+    - kmod-oracleasm
+    - http://download.oracle.com/otn_software/asmlib/oracleasmlib-2.0.12-1.el7.x86_64.rpm
+    - https://yum.oracle.com/repo/OracleLinux/OL7/latest/x86_64/getPackage/oracleasm-support-2.1.11-2.el7.x86_64.rpm

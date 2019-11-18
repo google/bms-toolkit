@@ -1,0 +1,59 @@
+---
+
+  rdbms_software:
+    - name: 19c_base
+      version: 19.3.0.0.0
+      edition:
+        - EE
+        - SE2
+      files:
+        - "V982063-01.zip"
+      sha256sum:
+        - "BA8329C757133DA313ED3B6D7F86C5AC42CD9970A28BF2E6233F3235233AA8D8"
+    - name: 18c_base
+      version: 18.0.0.0.0
+      edition:
+        - EE
+        - SE2
+      files:
+        - "V978967-01.zip"
+      sha256sum:
+        - "C96A4FD768787AF98272008833FE10B172691CF84E42816B138C12D4DE63AB96"
+    - name: 12201_base
+      version: 12.2.0.1.0
+      edition:
+        - EE
+        - SE2
+      files:
+        - "V839960-01.zip"
+      sha256sum:
+        - "96ED97D21F15C1AC0CCE3749DA6C3DAC7059BB60672D76B008103FC754D22DDE"
+    - name: 12102_base
+      version: 12.1.0.2.0
+      edition: EE
+      files:
+        - "V46095-01_1of2.zip"
+        - "V46095-01_2of2.zip"
+      sha256sum:
+        - "31FDC2AF41687B4E547A3A18F796424D8C1AF36406D2160F65B0AF6A9CD47355"
+        - "03DA14F5E875304B28F0F3BB02AF0EC33227885B99C9865DF70749D1E220ACCD"
+    - name: 12102_base
+      version: 12.1.0.2.0
+      edition: SE2
+      files:
+        - "V77388-01_1of2.zip"
+        - "V77388-01_2of2.zip"
+      sha256sum:
+        - "73873369753230F5A0921F95ACEADB591388CB06ED72A7F3AEA7BCBCEA2403BC"
+        - "2492E1BE1E3E3531DA83D0843C09C08E435AC8CEFD9A00C0DF56BE4F15CEEBF3"
+    - name: 11204_base
+      version: 11.2.0.4.0
+      edition:
+        - EE
+        - SE
+      files:
+        - "p13390677_112040_Linux-x86-64_1of7.zip"
+        - "p13390677_112040_Linux-x86-64_2of7.zip"
+      sha256sum:
+        - "0B399A6593804C04B4BD65F61E73575341A49F8A273ACABA0DCDA2DFEC4979E0"
+        - "73E04957EE0BF6F3B3E6CFCF659BDF647800FE52A377FB8521BA7E3105CCC8DD"

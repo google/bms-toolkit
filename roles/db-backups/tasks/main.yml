@@ -1,0 +1,90 @@
+---
+  - name: Create required directories
+    file:
+      path: "{{ item }}"
+      state: directory
+      owner: "{{ oracle_user }}"
+      group: "{{ oracle_group }}"
+      mode: 0700
+    with_items:
+      - "{{ scripts_dir }}"
+      - "{{ logs_dir }}"
+    become: yes
+    become_user: "{{ oracle_user }}"
+    tags: db-backups,add-backups
+
+  - name: backup location | nfs mount
+    include_tasks: nfs.yml
+    when:
+      - backup_mount_src is defined
+      - backup_mount_path is defined
+
+  - name: Copy backup scripts to server
+    template:
+      src: "{{ item }}.j2"
+      dest: "{{ scripts_dir }}/{{ item }}"
+      owner: "{{ oracle_user }}"
+      group: "{{ oracle_group }}"
+      mode: '0700'
+    with_items:
+      - "rman_full_backup.sh"
+      - "rman_arch_backup.sh"
+      - "rman_restore_example.sh"
+    become: yes
+    become_user: "{{ oracle_user }}"
+    tags: db-backups,add-backups
+
+  - name: Schedule full backups
+    cron:
+      name: "{{ db_name }} RMAN weekly LEVEL={{ item.level }}"
+      weekday: "{{ item.days }}"
+      hour: "{{ full_bu_start_hour }}"
+      minute: "{{ full_bu_start_min }}"
+      user: "{{ oracle_user }}"
+      job: "{{ scripts_dir }}/rman_full_backup.sh {{ db_name }} {{ item.level }} {{ rman_db_bu_redundancy }} {{ rman_arch_redundancy }}"
+    with_items:
+      - "{{ [ { 'level': '0', 'days': '{{ full_bu_level0_day }}' } ] }}"
+      - "{{ [ { 'level': '1', 'days': '{{ full_bu_level1_days }}' } ] }}"
+    become: yes
+    become_user: "{{ oracle_user }}"
+    tags: db-backups,add-backups
+
+  - name: Schedule archived redo log backups
+    cron:
+      name: "{{ db_name }} ARCH backups"
+      minute: "{{ arch_bu_start_min }}"
+      user: "{{ oracle_user }}"
+      job: "{{ scripts_dir }}/rman_arch_backup.sh {{ db_name }} {{ rman_arch_redundancy }} {{ rman_archs_online_days }}"
+    become: yes
+    become_user: "{{ oracle_user }}"
+    tags: db-backups,add-backups
+
+  - name: Run initial full backup
+    shell: |
+      export PATH={{ oracle_home }}/bin:/usr/local/bin:${PATH}
+      {{ scripts_dir }}/rman_full_backup.sh {{ db_name }} 0 {{ rman_db_bu_redundancy }} {{ rman_arch_redundancy }}
+    when: run_initial_bu|bool
+    register: full_backup
+    become: yes
+    become_user: "{{ oracle_user }}"
+    tags: db-backups,run-backups
+
+  - name: Run initial archivelog backup
+    shell: |
+      export PATH={{ oracle_home }}/bin:/usr/local/bin:${PATH}
+      {{ scripts_dir }}/rman_arch_backup.sh {{ db_name }} {{ rman_arch_redundancy }} {{ rman_archs_online_days }}
+    when: run_initial_bu|bool
+    register: arch_backup
+    become: yes
+    become_user: "{{ oracle_user }}"
+    tags: db-backups,run-backups
+
+  - name: Backup execution results
+    debug:
+      msg: "{{ item }}"
+      verbosity: 1
+    when: run_initial_bu|bool
+    with_items:
+      - "{{ full_backup }}"
+      - "{{ arch_backup }}"
+    tags: db-backups,run-backups

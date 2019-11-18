@@ -1,0 +1,12 @@
+domain-needed
+bogus-priv
+#no-resolv
+#no-poll
+server=/{{ domain }}/127.0.0.1
+#server=/{{ domain }}/{{ ansible_ssh_host }}
+domain={{ domain }}
+local=/{{ domain }}/
+server=8.8.8.8
+no-hosts
+addn-hosts=/etc/hosts
+expand-hosts

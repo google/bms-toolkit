@@ -1,0 +1,21 @@
+## Customizable Global Variables
+
+# ASM and storage related variables:
+
+oracle_user_data_mounts:
+  - { purpose: software, blk_device: mapper/oracle-u01, fstype: xfs, mount_point: /u01, mount_opts: "defaults" }
+  - { purpose: other, blk_device: mapper/oracle-u02, fstype: xfs, mount_point: /u02, mount_opts: "defaults" }
+
+asm_disks:
+- diskgroup: "{{ data_diskgroup }}"
+  disks:
+  - name: DATA1
+    blk_device: /dev/mapper/oracle-data
+- diskgroup: "{{ reco_diskgroup }}"
+  disks:
+  - name: RECO1
+    blk_device: /dev/mapper/oracle-reco
+- diskgroup: DEMO
+  disks:
+  - name: DEMO1
+    blk_device: /dev/mapper/oracle-demo

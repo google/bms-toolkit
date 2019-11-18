@@ -1,0 +1,19 @@
+#!/bin/bash
+
+#
+#  Reference: "How to map device name to ASMLIB disk (Doc ID 1098682.1)"
+#
+#  Run as oracle or grid software owner - must have kfed in path
+#
+
+export PATH={{ grid_home }}/bin:${PATH}
+export ORACLE_HOME={{ grid_home }}
+
+for device in `ls /dev/sd*`
+do
+   asmdisk=`kfed read ${device} | grep ORCL | tr -s ' ' | cut -f2 -d' ' | cut -c1-4`
+   asmname=`kfed read ${device} | grep dskname | tr -s ' '| cut -f2 -d' '`
+   if [ "${asmdisk}" = "ORCL" ]; then
+      echo "Disk device ${device} may be an ASM disk - Disk name: ${asmname}"
+   fi
+done

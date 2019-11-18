@@ -1,0 +1,4 @@
+---
+  db_script_files:
+    - archivelog_mode.sh
+    - db_modifications.sh

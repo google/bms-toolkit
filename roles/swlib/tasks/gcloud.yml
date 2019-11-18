@@ -1,0 +1,19 @@
+---
+- name: add google cloud sdk repo
+  yum_repository:
+    name: google-gcloud-sdk
+    description: Google gcloud sdk
+    baseurl: https://packages.cloud.google.com/yum/repos/cloud-sdk-el7-x86_64
+    gpgkey:
+      - https://packages.cloud.google.com/yum/doc/yum-key.gpg
+      - https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+    gpgcheck: yes
+  when: ansible_os_family == "RedHat"
+
+- name: install the latest version of gcloud sdk
+  yum:
+    name: google-cloud-sdk
+    state: installed
+    lock_timeout: 180
+  when: ansible_os_family == "RedHat"
+

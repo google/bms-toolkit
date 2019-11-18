@@ -1,0 +1,34 @@
+
+# tasks file for roles/nfs-mount
+
+- name: nfs backups | Install NFS mount utility
+  become: true
+  yum:
+    name: nfs-utils
+    state: present
+    lock_timeout: 180
+  when: ansible_os_family == "RedHat"
+
+- name: nfs backups | Ensure rpcbind is running as configured.
+  service:
+    name: rpcbind
+    state: started
+    enabled: true
+  when: ansible_os_family == "RedHat"
+
+- name: Create a nfs backups mount folder
+  file:
+    path: "{{ backup_dest }}"
+    state: directory
+    mode: '0755'
+    owner: "{{ oracle_user}}"
+    group: backupdba
+
+- name: nfs backups | Mount NFS share (backup)
+  become: true
+  mount:
+    fstype: nfs
+    name: "{{ backup_dest }}"
+    opts: "user,vers=3,_netdev,rsize=8192,wsize=8192,timeo=14,intr"
+    src: "{{ backup_src }}"
+    state: mounted

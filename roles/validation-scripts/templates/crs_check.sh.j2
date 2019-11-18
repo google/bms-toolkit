@@ -1,0 +1,14 @@
+#!/bin/bash
+
+echo -e "\n\n***** CRS STATUS *****\n"
+{{ grid_home }}/bin/crsctl query has releaseversion
+{{ grid_home }}/bin/crsctl query has softwareversion
+{{ grid_home }}/bin/crsctl check has
+{{ grid_home }}/bin/crsctl check css
+echo -e "\n"
+{{ grid_home }}/bin/crsctl stat resource
+{{ grid_home }}/bin/crsctl stat res -t
+echo -e "\n\n\n\n***** SERVICE CONFIG *****\n"
+{{ grid_home }}/bin/srvctl config ASM ; echo -e "\n"
+{{ grid_home }}/bin/srvctl config LISTENER ; echo -e "\n"
+{{ grid_home }}/bin/srvctl config database -d {{ oracle_sid }} ; echo -e "\n"

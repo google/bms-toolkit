@@ -1,0 +1,130 @@
+---
+  - name: opatch_apply | Run prerequisite check
+    command: "{{ sw_home }}/OPatch/opatch prereq CheckConflictAgainstOHWithDetail -ph  ./"
+    register: opatch_prereq
+    args:
+      chdir: "{{ swlib_unzip_path }}/{{ patch.patchnum }}/{{ patch.patch_subdir }}"
+    when: patch.prereq_check
+    failed_when: opatch_prereq.rc != 0
+    become: yes
+    become_user: "{{ sw_user }}"
+    tags: opatch_prereq
+
+  - name: opatch_apply | prerequisite output
+    debug:
+      msg: "{{ opatch_prereq }}"
+      verbosity: 1
+    when: patch.prereq_check
+
+  - name: opatch_apply | Run opatch analyze
+    command: "{{ sw_home }}/OPatch/{{ patch.method }} -analyze {{ silent }}"
+    register: opatch_analyze
+    args:
+      chdir: "{{ swlib_unzip_path }}/{{ patch.patchnum }}/{{ patch.patch_subdir }}"
+    when: not patch.prereq_check and oracle_ver != '11.2.0.4.0'
+    failed_when: opatch_analyze.rc != 0
+    become: yes
+    become_user: "{{ sw_user }}"
+    tags: opatch_analyze
+
+  - name: opatch_apply | analyze output
+    debug:
+      msg: "{{ opatch_analyze }}"
+      verbosity: 1
+    when: not patch.prereq_check and oracle_ver != '11.2.0.4.0'
+
+  - name: opatch_apply | Set OCM command
+    set_fact:
+      response_command: "{{ '-ocmrf {{ swlib_unzip_path }}/ocm.rsp' if patch.ocm else '' }}"
+    tags: set_ocm
+
+  - name: opatch_apply | opatch apply
+    command: "{{ sw_home }}/OPatch/{{ patch.method }} {{ silent }} {{ response_command }}"
+    when: patch.release == oracle_ver
+    args:
+      chdir: "{{ swlib_unzip_path }}/{{ patch.patchnum }}{{ patch.patch_subdir }}"
+    register: opatch_apply
+    failed_when: opatch_apply.rc != 0
+    become: yes
+    become_user: "{{ sw_user }}"
+    tags: opatch_apply
+
+  - name: opatch_apply | opatch apply results
+    debug:
+      msg: "{{ opatch_apply }}"
+      #verbosity: 1
+    tags: opatch_apply
+
+  - name: opatch_apply | 12.1 bugfix - group of oracle binary set incorrectly by opatch - fix MOS (Doc ID 1084186.1)
+    shell: |
+      set -o pipefail
+      setasmgidwrap o={{ oracle_home }}/bin/oracle
+    environment:
+      ORACLE_HOME: "{{ grid_home }}"
+      ORACLE_SID: "{{ asm_sid }}"
+      PATH: "{{ grid_home }}/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin"
+    args:
+      chdir: "{{ grid_home }}/bin"
+    when: oracle_ver == '12.1.0.2.0'
+    register: setasmgidwrap_output
+    become: yes
+    become_user: "{{ grid_user }}"
+    tags: opatch_apply
+
+  - name: opatch_apply | 12.1 bugfix results
+    debug:
+      msg: "{{ setasmgidwrap_output }}"
+      verbosity: 1
+    tags: opatch_apply
+
+  - name: opatch_apply | pause for 90 seconds due to delayed startup after opatch on 12c
+    wait_for:
+      timeout: 90
+    delegate_to: localhost
+    when: oracle_ver in ['12.1.0.2.0','12.2.0.1.0'] and home_type == 'GRID'
+
+  - name: opatch_apply | shutdown db (for datapatch after GI or opatchauto patches)
+    shell: |
+      set -o pipefail
+      srvctl stop database -d {{ db_name }} -o immediate
+    environment:
+      ORACLE_HOME: "{{ oracle_home }}"
+      ORACLE_SID: "{{ oracle_sid }}"
+      PATH: "{{ oracle_home }}/bin:/usr/local/bin:/bin:/usr:/bin:/usr/local/sbin:/usr/sbin"
+    when: home_type == 'GRID' or patch.method == 'opatchauto apply'
+    register: shutdown_db
+    become: yes
+    become_user: "{{ oracle_user }}"
+    tags: patch_grid
+
+  - name: opatch_apply | shutdown db (for datapatch after GI or opatchauto patches) results
+    debug:
+      msg: "{{ shutdown_db }}"
+      verbosity: 1
+    when: home_type == 'GRID' or patch.method == 'opatchauto apply'
+    tags: patch_grid
+
+  - name: opatch_apply | SQL patching steps
+    include_tasks: sql_patch.yml
+    tags: patch_rdbms,opatch_apply
+
+  - name: opatch_apply | startup db (after GI or opatchauto patches)
+    shell: |
+      set -o pipefail
+      srvctl start database -d {{ db_name }}
+    environment:
+      ORACLE_HOME: "{{ oracle_home }}"
+      ORACLE_SID: "{{ oracle_sid }}"
+      PATH: "{{ oracle_home }}/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin"
+    when: home_type == 'GRID' or patch.method == 'opatchauto apply'
+    register: startup_db
+    become: yes
+    become_user: "{{ oracle_user }}"
+    tags: patch_grid
+
+  - name: opatch_apply | startup db (after GI or opatchauto patches) results
+    debug:
+      msg: "{{ startup_db }}"
+      verbosity: 1
+    when: home_type == 'GRID' or patch.method == 'opatchauto apply'
+    tags: patch_grid

@@ -1,0 +1,54 @@
+---
+  - name: Open listener port in firewall
+    firewalld:
+      port: "{{ listener_port }}/tcp"
+      permanent: yes
+      state: enabled
+
+  - name: Test whether port is free
+    shell: "set -o pipefail; netstat -lnpt | ( grep {{ listener_port }} || true ) | wc -l"
+    become: yes
+    changed_when: false
+    when: create_listener
+    register: lsnr_port_check
+    tags: lsnr-create
+
+  - name: Check if listener is already created
+    shell: "set -o pipefail; ps -ef | ( grep [t]ns ||true ) | ( grep -w {{ listener_name }} || true ) | wc -l"
+    become: yes
+    changed_when: false
+    when: create_listener
+    register: lsnr_name_check
+    tags: lsnr-create
+
+  - name: Listener check results
+    debug:
+      msg: "{{ item }}"
+      verbosity: 1
+    with_items:
+      - "{{ lsnr_port_check }}"
+      - "{{ lsnr_name_check }}"
+    when: create_listener
+    tags: lsnr-create
+
+  - name: Create listener
+    shell: |
+      export PATH={{ grid_home }}/bin:${PATH}
+      srvctl add listener -l {{ listener_name }} -p {{ listener_port }} -o {{ grid_home }}
+      srvctl start listener -l {{ listener_name }}
+      srvctl config listener -l {{ listener_name }}
+      srvctl status listener -l {{ listener_name }}
+    register: lsnr_output
+    when: create_listener and lsnr_port_check.stdout == "0" and lsnr_name_check.stdout == "0"
+    become: yes
+    become_user: "{{ grid_user }}"
+    tags: lsnr-create
+
+  - name: Listener creation output
+    debug:
+      msg:
+        - "{{ lsnr_output.cmd }}"
+        - "{{ lsnr_output.stdout_lines }}"
+      #verbosity: 1
+    when: create_listener and lsnr_port_check.stdout == "0" and lsnr_name_check.stdout == "0"
+    tags: lsnr-create

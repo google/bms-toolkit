@@ -1,0 +1,35 @@
+#!/bin/bash
+
+# Example: ./rman_arch_backup.sh ORCL 2 7
+
+ORA_INST_NAME=${1}
+ARCH_REDUNDANCY=${2}
+ARCH_DAYS_ONLINE=${3}
+
+export ORACLE_SID=${ORA_INST_NAME}
+export ORAENV_ASK=NO
+. oraenv
+
+outfile='{{ logs_dir }}/rman_arch_backup.out'
+
+${ORACLE_HOME}/bin/rman >> ${outfile} << EOF
+   set echo on
+   spool log to '{{ logs_dir }}/rman_arch_backup.log'
+   connect target {% if oracle_ver == "11.2.0.4.0" %}'/'{% else %}'/ AS SYSBACKUP'{% endif %}
+
+   configure controlfile autobackup on;
+   configure device type disk parallelism 4;
+   configure channel device type disk format '{{ backup_dest }}';
+   configure archivelog deletion policy to backed up ${ARCH_REDUNDANCY} times to disk;
+   run {
+      crosscheck archivelog all;
+      backup check logical archivelog all not backed up ${ARCH_REDUNDANCY} times;
+      delete noprompt archivelog all backed up ${ARCH_REDUNDANCY} times to disk completed before 'SYSDATE-${ARCH_DAYS_ONLINE}';
+   }
+   spool log off
+EOF
+if [ $? = 0 ]; then
+   echo "RMAN completed successfully"
+else
+   echo "RMAN error: See log file for details"
+fi

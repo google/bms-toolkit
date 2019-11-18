@@ -1,0 +1,25 @@
+---
+  - name: stop_all_dbs | Capture all databases
+    command: "{{ grid_home }}/bin/srvctl config database"
+    environment:
+      ORACLE_HOME: "{{ grid_home }}"
+    register: db_list
+    become: yes
+    become_user: "{{ grid_user }}"
+
+  - name: stop_all_dbs | Stopping databases found
+    command: "{{ grid_home }}/bin/srvctl stop database -d {{ item[0] }} -o immediate"
+    environment:
+      ORACLE_HOME: "{{ grid_home }}"
+    register: stop_home
+    ignore_errors: yes
+    failed_when: stop_home.rc not in [0,2]
+    become: yes
+    become_user: "{{ grid_user }}"
+    loop:
+      - "{{ db_list.stdout_lines }}"
+
+  - name: stop_all_dbs | Stop home results
+    debug:
+      msg: "{{ stop_home }}"
+      verbosity: 1

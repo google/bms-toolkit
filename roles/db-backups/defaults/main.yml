@@ -1,0 +1,15 @@
+scripts_dir: "/home/{{ oracle_user }}/scripts"
+logs_dir: "/home/{{ oracle_user }}/logs"
+
+rman_db_bu_redundancy: 2
+rman_arch_redundancy: 2
+rman_archs_online_days: 7
+
+full_bu_level0_day: "0"
+full_bu_level1_days: "1-6"
+full_bu_start_hour: "01"
+full_bu_start_min: "00"
+arch_bu_start_min: "30"
+
+#backup_mount_src: ""
+#backup_mount_path: ""

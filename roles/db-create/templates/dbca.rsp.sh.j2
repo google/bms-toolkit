@@ -1,0 +1,24 @@
+#!/bin/bash
+
+cp {{ oracle_home }}/assistants/dbca/dbca.rsp {{ swlib_unzip_path }}/dbca_{{ db_name }}.rsp
+
+sed -i '/^\#\{0,\} \{0,\}gdbName \{0,\}=/I                   s~\#\{0,\} \{0,\}gdbName \{0,\}=.*~gdbName='{{ db_name }}'.'{{ db_domain }}'~I'                        {{ swlib_unzip_path }}/dbca_{{ db_name }}.rsp
+sed -i '/^\#\{0,\} \{0,\}sid \{0,\}=/I                       s~\#\{0,\} \{0,\}sid \{0,\}=.*~sid='{{ db_name }}'~I'                                                  {{ swlib_unzip_path }}/dbca_{{ db_name }}.rsp
+sed -i '/^\#\{0,\} \{0,\}databaseConfigType \{0,\}=/I        s~\#\{0,\} \{0,\}databaseConfigType \{0,\}=.*~databaseConfigType='{{ db_config_type }}'~I'             {{ swlib_unzip_path }}/dbca_{{ db_name }}.rsp
+sed -i '/^\#\{0,\} \{0,\}createAsContainerDatabase \{0,\}=/I s~\#\{0,\} \{0,\}createAsContainerDatabase \{0,\}=.*~createAsContainerDatabase='{{ container_db }}'~I' {{ swlib_unzip_path }}/dbca_{{ db_name }}.rsp
+sed -i '/^\#\{0,\} \{0,\}numberOfPDBs \{0,\}=/I              s~\#\{0,\} \{0,\}numberOfPDBs \{0,\}=.*~numberOfPDBs='{{ pdb_count }}'~I'                              {{ swlib_unzip_path }}/dbca_{{ db_name }}.rsp
+sed -i '/^\#\{0,\} \{0,\}pdbName \{0,\}=/I                   s~\#\{0,\} \{0,\}pdbName \{0,\}=.*~pdbName='{{ pdb_prefix }}'~I'                                       {{ swlib_unzip_path }}/dbca_{{ db_name }}.rsp
+sed -i '/^\#\{0,\} \{0,\}templateName \{0,\}=/I              s~\#\{0,\} \{0,\}templateName \{0,\}=.*~templateName=General_Purpose.dbc~I'                            {{ swlib_unzip_path }}/dbca_{{ db_name }}.rsp
+sed -i '/^\#\{0,\} \{0,\}emConfiguration \{0,\}=/I           s~\#\{0,\} \{0,\}emConfiguration \{0,\}=.*~emConfiguration=NONE~I'                                     {{ swlib_unzip_path }}/dbca_{{ db_name }}.rsp
+sed -i '/^\#\{0,\} \{0,\}storageType \{0,\}=/I               s~\#\{0,\} \{0,\}storageType \{0,\}=.*~storageType=ASM~I'                                              {{ swlib_unzip_path }}/dbca_{{ db_name }}.rsp
+sed -i '/^\#\{0,\} \{0,\}diskGroupName \{0,\}=/I             s~\#\{0,\} \{0,\}diskGroupName \{0,\}=.*~diskGroupName='{{ data_diskgroup }}'~I'                       {{ swlib_unzip_path }}/dbca_{{ db_name }}.rsp
+sed -i '/^\#\{0,\} \{0,\}recoveryGroupName \{0,\}=/I         s~\#\{0,\} \{0,\}recoveryGroupName \{0,\}=.*~recoveryGroupName='{{ reco_diskgroup }}'~I'               {{ swlib_unzip_path }}/dbca_{{ db_name }}.rsp
+sed -i '/^\#\{0,\} \{0,\}characterSet \{0,\}=/I              s~\#\{0,\} \{0,\}characterSet \{0,\}=.*~characterSet='{{ charset }}'~I'                                {{ swlib_unzip_path }}/dbca_{{ db_name }}.rsp
+sed -i '/^\#\{0,\} \{0,\}nationalCharacterSet \{0,\}=/I      s~\#\{0,\} \{0,\}nationalCharacterSet \{0,\}=.*~nationalCharacterSet='{{ ncharset }}'~I'               {{ swlib_unzip_path }}/dbca_{{ db_name }}.rsp
+sed -i '/^\#\{0,\} \{0,\}databaseType \{0,\}=/I              s~\#\{0,\} \{0,\}databaseType \{0,\}=.*~databaseType='{{ db_type }}'~I'                                {{ swlib_unzip_path }}/dbca_{{ db_name }}.rsp
+sed -i '/^\#\{0,\} \{0,\}automaticMemoryManagement \{0,\}=/I s~\#\{0,\} \{0,\}automaticMemoryManagement \{0,\}=.*~automaticMemoryManagement=false~I'                {{ swlib_unzip_path }}/dbca_{{ db_name }}.rsp
+sed -i '/^\#\{0,\} \{0,\}initParams \{0,\}=/I                s~\#\{0,\} \{0,\}initParams \{0,\}=.*~initParams=pga_aggregate_target='{{ pga_aggtar_bytes }}',sga_target='{{ sga_target_bytes }}',streams_pool_size=64M,use_large_pages=TRUE,db_domain='{{ db_domain }}',diagnostic_dest='{{ oracle_base }}'~I' {{ swlib_unzip_path }}/dbca_{{ db_name }}.rsp
+
+sed -i '/^\#\{0,\} \{0,\}sysPassword \{0,\}=/I               s~\#\{0,\} \{0,\}sysPassword \{0,\}=.*~#sysPassword=~I'                                                {{ swlib_unzip_path }}/dbca_{{ db_name }}.rsp
+sed -i '/^\#\{0,\} \{0,\}systemPassword \{0,\}=/I            s~\#\{0,\} \{0,\}systemPassword \{0,\}=.*~#systemPassword=~I'                                          {{ swlib_unzip_path }}/dbca_{{ db_name }}.rsp
+sed -i '/^\#\{0,\} \{0,\}pdbAdminPassword \{0,\}=/I           s~\#\{0,\} \{0,\}pdbAdminPassword \{0,\}=.*~#pdbAdminPassword=~I'                                      {{ swlib_unzip_path }}/dbca_{{ db_name }}.rsp

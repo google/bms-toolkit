@@ -1,0 +1,74 @@
+#!/bin/bash
+
+RMAN_COMMANDS="
+   list backup by file;
+   list backup;
+   list backup summary;
+   report need backup;
+   report unrecoverable;
+"
+
+echo -e "
+
+====================================================================================================
+
+Running RMAN commands:\e[1m\e[32m
+${RMAN_COMMANDS} \e[0m
+====================================================================================================
+"
+
+echo "
+   connect target {% if oracle_ver == "11.2.0.4.0" %}'/'{% else %}'/ AS SYSBACKUP'{% endif %}
+
+   ${RMAN_COMMANDS}
+" | ${ORACLE_HOME}/bin/rman
+
+echo -e "
+
+====================================================================================================
+
+If database corruption or datafile loss is suspected, the database may possibly be restored (if
+required backup pieces are available) with commands such as or similar to:
+\e[1m\e[32m
+echo \"
+   connect target {% if oracle_ver == "11.2.0.4.0" %}'/'{% else %}'/ AS SYSBACKUP'{% endif %}
+
+   shutdown immediate;
+   startup nomount;
+
+   restore controlfile from autobackup;
+   alter database mount;
+
+   restore database;
+   recover database;
+   alter database open resetlogs;
+\" | \${ORACLE_HOME}/bin/rman
+\e[0m
+
+First carefully review the RMAN \"list\" and \"report\" command output shown previously.
+
+Optionally restore to a specific system change number by changing the restore database line to
+something similar to:
+
+   \e[1m\e[32mrestore database \e[4muntil scn 429022216\e[0m ;
+
+Or optionally restore to a specific date/time by changing the restore database line to something
+similar to:
+
+   \e[1m\e[32mrestore database \e[4muntil time \"TO_DATE('01-AUG-2019 12:00:00','DD-MON-YYYY HH24:MI:SS')\"\e[0m ;
+
+Substitute appropriate SCN value or DATE/TIME based on requirements and the output shown previously.
+
+
+***** IMPORTANT WARNINGS  ***** :
+  1) The restore examples shown above are provided for your reference only on an \"as is\" basis and
+     any use is at your own risk.
+  2) Restores such as the examples shown above will require database downtime (outage).
+  3) Additional, more advanced, restore options may be possible/applicable (possibly not requiring downtime).
+  4) Using the Oracle \"Flashback Database\" feature may be another viable option instead of restoring.
+  5) Since restoration involves a risk of corruption or loss of data, it is highly recommended that an
+     experienced Oracle DBA assist with any restoration.
+
+====================================================================================================
+
+"

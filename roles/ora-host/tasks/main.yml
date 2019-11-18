@@ -1,0 +1,296 @@
+---
+  - name: Check if firewall is installed
+    yum: list={{ firewall_service }} disablerepo=*
+    when: disable_firewall|bool and ansible_os_family == 'RedHat'
+    tags: firewall
+    register: firewall
+
+  - name: Disable firewall
+    service: name={{ firewall_service }} state=stopped enabled=no
+    when: disable_firewall|bool and ansible_os_family == 'RedHat' and firewall.results
+    tags: firewall
+
+  - name: Disable selinux (permanently)
+    selinux: state=disabled
+    when: disable_selinux and ansible_os_family == 'RedHat'
+    tags: selinux
+    register: selinux
+
+  - name: Disable selinux (runtime)
+    command: setenforce 0
+    when: disable_selinux and ansible_os_family == 'RedHat' and ansible_selinux.status != 'disabled'
+    changed_when: disable_selinux_runtime.rc == 0
+    failed_when: disable_selinux_runtime.rc > 0 and "SELinux is disabled" not in disable_selinux_runtime.stderr
+    register: disable_selinux_runtime
+    tags: selinux
+
+  - name: Install Oracle required package
+    package:
+      name: "{{ oracle_required_rpms }}"
+      state: present
+      lock_timeout: 180
+    when: install_os_packages|bool and ansible_os_family == 'RedHat'
+    tags: os-packages
+
+  - name: Add OS groups
+    group:
+      name: "{{ item.group }}"
+      gid: "{{ item.gid }}"
+      state: present
+    with_items:
+      - "{{ oracle_groups }}"
+      - "{{ asm_groups }}"
+    tags: os-groups
+
+  - name: Add users
+    user:
+      name: "{{ item.name }}"
+      comment: "{{ item.comment }}"
+      uid: "{{ item.uid }}"
+      group: "{{ item.group }}"
+    with_items: "{{ oracle_users }}"
+    tags: os-users
+
+  - name: Add necessary groups to grid user
+    user:
+      name: "{{ grid_user }}"
+      groups: "{{ item.group }}"
+      append: yes
+    with_items:
+      - "{{ asm_groups }}"
+      - { group: dba, gid: 54322 }
+    tags: os-users,os-groups
+
+  - name: Add necessary groups to the oracle user
+    user:
+      name: "{{ oracle_user }}"
+      groups: "{{ item.group }}"
+      append: yes
+    with_items:
+      - "{{ oracle_groups }}"
+      - { group: "asmadmin", gid: 54329 }
+      - { group: "asmdba", gid: 54327 }
+    tags: os-users,os-groups
+
+  - name: Add sysctl entries
+    sysctl:
+      name: "{{ item.name }}"
+      value: "{{ item.value }}"
+      state: present
+      reload: yes
+    with_items:
+      - "{{ sysctl_entries }}"
+    tags: sysctl
+
+  - name: Adjust kernel limits for users
+    pam_limits:
+      domain: "{{ item[0] }}"
+      limit_type: "{{ item[1].type }}"
+      limit_item: "{{ item[1].name }}"
+      value: "{{ item[1].value }}"
+    with_nested:
+      - [ "{{ oracle_user }}", "{{ grid_user }}" ]
+      - "{{ resource_limits }}"
+    tags: kernel-setup
+
+  - name: Create required directories
+    file:
+      path: "{{ item.name }}"
+      state: directory
+      owner: "{{ item.owner }}"
+      group: "{{ item.group }}"
+      mode: "{{ item.mode }}"
+    with_items: "{{ oracle_dirs }}"
+    tags: os-dirs
+
+  - name: tmp file configuration
+    blockinfile:
+      block: "{{ item }}"
+      dest: "/usr/lib/tmpfiles.d/tmp.conf"
+      marker: "# {mark} Oracle Temp Settings {{ item }}:"
+      backup: no
+    become: yes
+    with_items:
+      - x /var/tmp/.oracle
+      - x /tmp/.oracle
+      - x /usr/tmp/.oracle
+    tags: os-dirs
+
+  - name: Uncomment line from /etc/systemd/logind.conf
+    lineinfile:
+      dest: /etc/systemd/logind.conf
+      regexp: '^#\s*RemoveIPC.*$'
+      line: 'RemoveIPC=no'
+
+  - name: Append database variables to bash_profile
+    blockinfile:
+      block: "{{ lookup('template', 'bash_profile_rdbms.j2') }}"
+      dest: "/home/{{ oracle_user }}/.bash_profile"
+      marker: "# {mark} Oracle RDBMS Settings:"
+      backup: yes
+    become: yes
+    become_user: "{{ oracle_user }}"
+    tags: os-users
+
+  - name: Append GI variables to bash_profile
+    blockinfile:
+      block: "{{ lookup('template', 'bash_profile_gi.j2') }}"
+      dest: "/home/{{ grid_user }}/.bash_profile"
+      marker: "# {mark} Oracle Grid Infrastructure Settings:"
+      backup: yes
+    when: role_separaion|bool
+    become: yes
+    become_user: "{{ grid_user }}"
+    tags: os-users
+
+  - name: (asmlib) | asmlib or udev?
+    debug:
+      msg: "asm_disk_control is set to {{ asm_disk_control }}"
+    tags: asm-disks
+
+  - name: Partition all ASM raw disks
+    #debug: msg="{{ item }}"
+    parted:
+      device: "{{ item.1.blk_device }}"
+      number: 1
+      state: present
+      label: gpt
+    when: "'mapper' not in item.1.blk_device"
+    with_subelements:
+      - "{{ asm_disks }}"
+      - disks
+    tags: asm-disks
+
+  - name: Collect new disk facts
+    setup:
+      gather_subset:
+        - '!all'
+        - '!any'
+        - devices
+
+  - name: (udev) Add ASM disk rules on virtualbox
+    blockinfile:
+      block: "KERNEL==\"sd?1\", SUBSYSTEM==\"block\", PROGRAM==\"/usr/lib/udev/scsi_id -g -u -d /dev/$parent\", RESULT==\"1{{ hostvars[inventory_hostname]['ansible_device_links']['ids']['%s' | format( item.1.blk_device | regex_replace('/dev/') )][0] | regex_replace('ata-','ATA_') }}\", SYMLINK+=\"oracleasm/{{ item.1.name }}\", OWNER=\"{{ grid_user }}\", GROUP=\"{{ grid_group }}\", MODE=\"0660\""
+      dest: "/etc/udev/rules.d/99-oracle-asmdevices.rules"
+      marker: "# {mark} ASM disk udev rules for {{ item.1.name }}:"
+      create: yes
+    become: yes
+    register: udevRules
+    when:
+      - ansible_virtualization_type == "virtualbox"
+      - asm_disk_control == "udev"
+      - "'mapper' not in item.1.blk_device"
+    with_subelements:
+      - "{{ asm_disks }}"
+      - disks
+    tags: asm-disks
+
+  - name: (udev) Add ASM disk rules on baremetal
+    blockinfile:
+      block: "KERNEL==\"sd?1\", SUBSYSTEM==\"block\", PROGRAM==\"/usr/lib/udev/scsi_id -g -u -d /dev/$parent\", RESULT==\"{{ hostvars[inventory_hostname]['ansible_device_links']['ids']['%s' | format( item.1.blk_device | regex_replace('/dev/') )][0] | regex_replace('scsi-') }}\", SYMLINK+=\"oracleasm/{{ item.1.name }}\", OWNER=\"{{ grid_user }}\", GROUP=\"{{ grid_group }}\", MODE=\"0660\""
+      dest: "/etc/udev/rules.d/99-oracle-asmdevices.rules"
+      marker: "# {mark} ASM disk udev rules for {{ item.1.name }}:"
+      create: yes
+    become: yes
+    register: udevRules
+    when:
+      - ansible_virtualization_type == "kvm"
+      - ansible_virtualization_role == "host"
+      - asm_disk_control == "udev"
+      - "'mapper' not in item.1.blk_device"
+    with_subelements:
+      - "{{ asm_disks }}"
+      - disks
+    tags: asm-disks
+
+  - name: (udev) Add ASM disk rules on GCE
+    blockinfile:
+      block: "KERNEL==\"sd?1\", SUBSYSTEM==\"block\", PROGRAM==\"/usr/lib/udev/scsi_id -g -u -d /dev/$parent\", RESULT==\"{{ hostvars[inventory_hostname]['ansible_device_links']['ids']['%s' | format( item.1.blk_device | regex_replace('/dev/') )][1] | regex_replace('scsi-') }}\", SYMLINK+=\"oracleasm/{{ item.1.name }}\", OWNER=\"{{ grid_user }}\", GROUP=\"{{ grid_group }}\", MODE=\"0660\""
+      dest: "/etc/udev/rules.d/99-oracle-asmdevices.rules"
+      marker: "# {mark} ASM disk udev rules for {{ item.1.name }}:"
+      create: yes
+    become: yes
+    register: udevRules
+    when:
+      - ansible_system_vendor == "Google"
+      - ansible_virtualization_type == "kvm"
+      - ansible_virtualization_role == "guest"
+      - asm_disk_control == "udev"
+      - "'mapper' not in item.1.blk_device"
+    with_subelements:
+      - "{{ asm_disks }}"
+      - disks
+    tags: asm-disks
+
+  - name: (udev) reload rules
+    shell: ( /sbin/udevadm control --reload-rules && /sbin/udevadm trigger )
+    become: yes
+    tags: asm-disks
+
+  - name: (asmlib) Install Oracle ASM libraries
+    yum:
+      name: "{{ oracleasm_libs }}"
+    when: asm_disk_control == "asmlib" or (asm_disks | join(' ') |search('mapper'))
+    tags: oracleasmlib
+
+  - name: (asmlib) Configure oracleasm
+    shell: |
+      /usr/sbin/oracleasm configure -e -u {{ grid_user }} -g {{ grid_group }} -b -s y
+      /usr/sbin/oracleasm init
+      /usr/sbin/oracleasm status
+      /usr/sbin/oracleasm scandisks
+      cat /etc/sysconfig/oracleasm
+    register: asmconfig
+    when: asm_disk_control == "asmlib" or (asm_disks | join(' ') |search('mapper'))
+    become: yes
+    become_user: root
+    tags: asm-disks
+
+  - name: (asmlib) Create Oracle ASM raw disks
+    command: "/usr/sbin/oracleasm createdisk -v {{ item.1.name }} {{ item.1.blk_device }}1"
+    with_subelements:
+      - "{{ asm_disks }}"
+      - disks
+    when: asm_disk_control == "asmlib" and ( not ( item.1.blk_device |search('mapper') ) )
+    register: asmraw
+    failed_when: "( ( asmraw.rc != 0 ) and ( 'ERROR' in asmraw.stdout ) ) or ( ( asmraw.rc != 0 ) and ( 'is already labeled for ASM disk' not in asmraw.stdout ) )"
+    changed_when: "'Writing disk header: done' in asmraw.stdout"
+    become: yes
+    become_user: root
+    tags: asm-disks
+
+  - name: (asmlib) Create Oracle ASM lv disks
+    command: "/usr/sbin/oracleasm createdisk -v {{ item.1.name }} {{ item.1.blk_device }}"
+    with_subelements:
+      - "{{ asm_disks }}"
+      - disks
+    when: item.1.blk_device |search('mapper')
+    register: asmlv
+    failed_when: "( ( asmlv.rc != 0 ) and ( 'ERROR' in asmlv.stdout ) ) or ( ( asmlv.rc != 0 ) and ( 'is already labeled for ASM disk' not in asmlv.stdout ) )"
+    changed_when: "'Writing disk header: done' in asmlv.stdout"
+    become: yes
+    become_user: root
+    tags: asm-disks
+
+  - name: (asmlib) List ASM disks
+    shell: |
+      /usr/sbin/oracleasm-discover 'ORCL:*'
+      /usr/sbin/oracleasm listdisks
+      ls -l /dev/oracleasm/disks
+    register: listdisks
+    when: asm_disk_control == "asmlib"
+    become: yes
+    become_user: root
+    tags: asm-disks
+
+  - name: (asmlib) ASM listing results
+    debug:
+      msg:
+      - "{{ item.stderr_lines }}"
+      - "{{ item.stdout_lines }}"
+      #verbosity: 1
+    with_items:
+      - "{{ asmconfig }}"
+      - "{{ listdisks }}"
+    when: asm_disk_control == "asmlib"
+    tags: asm-disks

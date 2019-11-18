@@ -1,0 +1,19 @@
+---
+  gi_patches:
+    - { category: "PSU", release: "11.2.0.4.0", patchnum: "29255947", patchfile: "p29255947_112040_Linux-x86-64.zip", patch_subdir: "", prereq_check: FALSE, method: "opatch auto", ocm: TRUE, upgrade: FALSE }
+    - { category: "PSU", release: "12.1.0.2.0", patchnum: "29176115", patchfile: "p29176115_121020_Linux-x86-64.zip", patch_subdir: "", prereq_check: FALSE, method: "opatchauto apply", ocm: FALSE, upgrade: FALSE }
+    - { category: "RU", release: "12.2.0.1.0", patchnum: "29301687", patchfile: "p29301687_122010_Linux-x86-64.zip", patch_subdir: "", prereq_check: FALSE, method: "opatchauto apply", ocm: FALSE, upgrade: FALSE }
+    - { category: "RU", release: "18.0.0.0.0", patchnum: "29301682", patchfile: "p29301682_180000_Linux-x86-64.zip", patch_subdir: "", prereq_check: FALSE, method: "opatchauto apply", ocm: FALSE, upgrade: FALSE }
+    - { category: "RU", release: "19.3.0.0.0", patchnum: "29800658", patchfile: "p29800658_190000_Linux-x86-64.zip", patch_subdir: "", prereq_check: FALSE, method: "opatchauto apply", ocm: FALSE, upgrade: FALSE }
+
+  rdbms_patches:
+#    - { category: "PSU_Combo", release: "11.2.0.4.0", patchnum: "29252186", patchfile: "p29252186_112040_Linux-x86-64.zip", patch_subdir: "", method: "", ocm: TRUE, upgrade: FALSE }
+    - { category: "PSU_Combo", release: "11.2.0.4.0", patchnum: "28729262", patchfile: "p28729262_112040_Linux-x86-64.zip", patch_subdir: "", prereq_check: FALSE, method: "opatch apply", ocm: TRUE, upgrade: FALSE }
+#    - { category: "PSU_Combo", release: "12.1.0.2.0", patchnum: "29252171", patchfile: "p29252171_121020_Linux-x86-64.zip", patch_subdir: "/29176139/29141038", prereq_check: FALSE, method: "opatch apply", ocm: FALSE, upgrade: FALSE }
+    - { category: "PSU_Combo", release: "12.1.0.2.0", patchnum: "29252171", patchfile: "p29252171_121020_Linux-x86-64.zip", patch_subdir: "/29251241", prereq_check: FALSE, method: "opatch apply", ocm: FALSE, upgrade: TRUE }
+    - { category: "RU_Combo", release: "12.2.0.1.0", patchnum: "29252035", patchfile: "p29252035_122010_Linux-x86-64.zip", patch_subdir: "/29314339", prereq_check: TRUE, method: "opatch apply", ocm: FALSE, upgrade: FALSE }
+    - { category: "RU_Combo", release: "12.2.0.1.0", patchnum: "29252035", patchfile: "p29252035_122010_Linux-x86-64.zip", patch_subdir: "/29249637", prereq_check: TRUE, method: "opatch apply", ocm: FALSE, upgrade: TRUE }
+    - { category: "RU_Combo", release: "18.0.0.0.0", patchnum: "29249695", patchfile: "p29249695_180000_Linux-x86-64.zip", patch_subdir: "/29301631", prereq_check: TRUE, method: "opatch apply", ocm: FALSE, upgrade: FALSE }
+    - { category: "RU_Combo", release: "18.0.0.0.0", patchnum: "29249695", patchfile: "p29249695_180000_Linux-x86-64.zip", patch_subdir: "/29249584", prereq_check: TRUE, method: "opatch apply", ocm: FALSE, upgrade: TRUE }
+    - { category: "RU_Combo", release: "19.3.0.0.0", patchnum: "29859737", patchfile: "p29859737_190000_Linux-x86-64.zip", patch_subdir: "/29799057", prereq_check: TRUE, method: "opatch apply", ocm: FALSE, upgrade: FALSE }
+    - { category: "RU_Combo", release: "19.3.0.0.0", patchnum: "29859737", patchfile: "p29859737_190000_Linux-x86-64.zip", patch_subdir: "/29548437", prereq_check: TRUE, method: "opatch apply", ocm: FALSE, upgrade: TRUE }

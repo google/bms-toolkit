@@ -1,0 +1,45 @@
+#!/bin/bash
+
+# Example: ./rman_full_backup.sh ORCL 0 2 2
+
+ORA_INST_NAME=${1}
+RMAN_LEVEL=${2}
+RETENTION_REDUNDANCY=${3}
+ARCH_REDUNDANCY=${4}
+
+export ORACLE_SID=${ORA_INST_NAME}
+export ORAENV_ASK=NO
+. oraenv
+
+outfile='{{ logs_dir }}/rman_full_backup.out'
+
+${ORACLE_HOME}/bin/rman >> ${outfile} << EOF
+   set echo on
+   spool log to '{{ logs_dir }}/rman_full_backup.log'
+   connect target {% if oracle_ver == "11.2.0.4.0" %}'/'{% else %}'/ AS SYSBACKUP'{% endif %}
+
+   configure controlfile autobackup on;
+   configure device type disk parallelism 4;
+   configure channel device type disk format '{{ backup_dest }}';
+   configure archivelog deletion policy to backed up ${ARCH_REDUNDANCY} times to disk;
+   configure retention policy to redundancy ${RETENTION_REDUNDANCY};
+   show all;
+   run {
+      backup check logical
+      incremental level=${RMAN_LEVEL} cumulative database
+      filesperset 1
+      include current controlfile
+      plus archivelog not backed up ${ARCH_REDUNDANCY} times;
+      report unrecoverable;
+      report need backup;
+   }
+   crosscheck backup;
+   crosscheck archivelog all;
+   delete noprompt obsolete;
+   spool log off
+EOF
+if [ $? = 0 ]; then
+   echo "RMAN completed successfully"
+else
+   echo "RMAN error: See log file for details"
+fi

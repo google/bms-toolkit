@@ -1,0 +1,114 @@
+---
+  - name: get shmmax from sysctl if any
+    shell: sysctl -f /etc/sysctl.conf -r kernel.shmmax -n || true
+    register: v_shmmax_sysctl
+    changed_when: False
+
+  - name: get shmall from sysctl if any
+    shell: sysctl -f /etc/sysctl.conf -r kernel.shmall -n || true
+    register: v_shmall_sysctl
+    changed_when: False
+
+  - name: get shmmni from sysctl if any
+    shell: sysctl -f /etc/sysctl.conf -r kernel.shmmni -n || true
+    register: v_shmmni_sysctl
+    changed_when: False
+
+#  - name: get total RAM
+#    shell: set -o pipefail; cat /proc/meminfo | ( grep MemTotal || true ) | awk '{print $2*1024}'
+#    register: v_ram
+
+  - name: get shmmax from memory if not configured in sysctl
+    shell: cat /proc/sys/kernel/shmmax || true
+    register: v_shmmax
+    when: v_shmmax_sysctl.stdout == ""
+    changed_when: False
+
+  - name: get shmall from memory if not configured in sysctl
+    shell: cat /proc/sys/kernel/shmall || true
+    register: v_shmall
+    when: v_shmall_sysctl.stdout == ""
+    changed_when: False
+
+  - name: get shmmni from memory if not configured in sysctl
+    shell: cat /proc/sys/kernel/shmmni || true
+    register: v_shmmni
+    changed_when: False
+
+  - name: get Hugepagesize from memory
+    shell: set -o pipefail; ( cat /proc/meminfo | ( grep Hugepagesize || true ) | cut -d " " -f8 ) || true
+    register: v_Hugepagesize
+    changed_when: False
+
+  - debug: var=ansible_memory_mb.real.total
+  - debug: var=v_shmmax_sysctl.stdout_lines
+  - debug: var=v_shmmax.stdout_lines
+  - debug: var=v_shmall_sysctl.stdout_lines
+  - debug: var=v_shmall.stdout_lines
+  - debug: var=v_shmmni_sysctl.stdout_lines
+  - debug: var=v_shmmni.stdout_lines
+  - debug: var=v_Hugepagesize.stdout_lines
+  - debug: var=ram_pct_used
+
+  - name: configure memlock limits
+    pam_limits: domain=oracle limit_type={{ item }} limit_item=memlock value=unlimited
+    with_items:
+      - soft
+      - hard
+
+  - name: set shmmax,shmmni,shmall and hugepages if shmmax is not set
+    sysctl: name={{ item.name }} value={{ item.value }} sysctl_file=/etc/sysctl.conf sysctl_set=yes state=present reload=yes
+    with_items:
+      - { name: 'kernel.shmmax', value: "{{ (ansible_memory_mb.real.total*1024*1024*ram_pct_used|int)//100 }}" }
+      - { name: 'kernel.shmall', value: "{{ (((ansible_memory_mb.real.total*1024*1024*ram_pct_used|int)/100)/v_shmmni.stdout|int)|round(0,'ceil')|int }}" }
+      - { name: 'kernel.shmmni', value: "{{ v_shmmni.stdout|int }}" }
+      - { name: 'vm.nr_hugepages', value: "{{ ((ansible_memory_mb.real.total*ram_pct_used|int)//100)//((v_Hugepagesize.stdout|int)//1024) }}" }
+    when: v_shmmax_sysctl.stdout == ""
+
+  - name: adjust shmmax,shmmni,shmall and hugepages if shmmax is already set but not according recommendations
+    sysctl: name={{ item.name }} value={{ item.value }} sysctl_file=/etc/sysctl.conf sysctl_set=yes state=present reload=yes
+    with_items:
+      - { name: 'kernel.shmmax', value: "{{ (ansible_memory_mb.real.total*1024*1024*ram_pct_used|int)//100 }}" }
+      - { name: 'kernel.shmall', value: "{{ (((ansible_memory_mb.real.total*1024*1024*ram_pct_used|int)/100)/v_shmmni.stdout|int)|round(0,'ceil')|int }}" }
+      - { name: 'kernel.shmmni', value: "{{ v_shmmni.stdout|int }}" }
+      - { name: 'vm.nr_hugepages', value: "{{ ((ansible_memory_mb.real.total*ram_pct_used|int)//100)//((v_Hugepagesize.stdout|int)//1024) }}" }
+    when: v_shmmax_sysctl.stdout != "" and  (v_shmmax_sysctl.stdout|int  <  (ansible_memory_mb.real.total*1024*1024*ram_pct_used|int)//100)
+
+  - name: adjust shmmni,shmall and hugepages if shmmax is already set according recommendations
+    sysctl: name={{ item.name }} value={{ item.value }} sysctl_file=/etc/sysctl.conf sysctl_set=yes state=present reload=yes
+    with_items:
+      - { name: 'kernel.shmall', value: "{{ (v_shmmax_sysctl.stdout|int/v_shmmni.stdout|int)|round(0,'ceil')|int }}" }
+      - { name: 'kernel.shmmni', value: "{{ v_shmmni.stdout|int }}" }
+      - { name: 'vm.nr_hugepages', value: "{{ (((v_shmmax_sysctl.stdout|int)/1024/1024)//((v_Hugepagesize.stdout|int)//1024))|round(0,'ceil')|int }}" }
+    when: v_shmmax_sysctl.stdout != "" and  (v_shmmax_sysctl.stdout|int  >=  (ansible_memory_mb.real.total*1024*1024*ram_pct_used|int)//100) and (v_shmmax_sysctl.stdout|int  <  ansible_memory_mb.real.total*1024*1024)
+
+  - name: adjust shmmax,shmmni,shmall and hugepages if shmmax is already set but bigger then RAM
+    sysctl: name={{ item.name }} value={{ item.value }} sysctl_file=/etc/sysctl.conf sysctl_set=yes state=present reload=yes
+    with_items:
+      - { name: 'kernel.shmmax', value: "{{ (ansible_memory_mb.real.total*1024*1024*ram_pct_used|int)//100 }}" }
+      - { name: 'kernel.shmall', value: "{{ (((ansible_memory_mb.real.total*1024*1024*ram_pct_used|int)/100)/v_shmmni.stdout|int)|round(0,'ceil')|int }}" }
+      - { name: 'kernel.shmmni', value: "{{ v_shmmni.stdout|int }}" }
+      - { name: 'vm.nr_hugepages', value: "{{ ((ansible_memory_mb.real.total*ram_pct_used|int)//100)//((v_Hugepagesize.stdout|int)//1024) }}" }
+    when: v_shmmax_sysctl.stdout != "" and  (v_shmmax_sysctl.stdout|int  >  ansible_memory_mb.real.total*1024*1024)
+
+  - name: Check transparent hugepage
+    shell: ( cat /sys/kernel/mm/transparent_hugepage/enabled ) || true
+    become: yes
+    register: checkTPH
+    ignore_errors: yes
+    changed_when: False
+
+  - debug: var=checkTPH
+
+  - name: Update Grub default config
+    shell: grubby --args="transparent_hugepage=never" --update-kernel=ALL
+    when: checkTPH.stdout == "[always] madvise never" or checkTPH.stdout == "always [madvise] never"
+    register: grubbyTPH
+
+  - debug: var=grubbyTPH
+
+  - name: Temporary run-time disabling of THP
+    shell: |
+      echo 'never' > /sys/kernel/mm/transparent_hugepage/enabled
+      echo 'never' > /sys/kernel/mm/transparent_hugepage/defrag
+    when: checkTPH.stdout == "[always] madvise never" or checkTPH.stdout == "always [madvise] never"

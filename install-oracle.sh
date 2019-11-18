@@ -1,0 +1,590 @@
+#!/bin/bash
+
+shopt -s nocasematch
+
+# Check if we're using the Mac stock getopt and fail if true
+out=`getopt -T`
+if [ $? != 4 ]; then
+    echo -e "Your getopt does not support long parametrs, possibly you're on a Mac, if so please install gnu-getopt with brew"
+    echo -e "\thttps://brewformulas.org/Gnu-getopt"
+    exit
+fi
+
+ORA_VERSION="${ORA_VERSION:-18.0.0.0.0}"
+ORA_VERSION_PARAM='^(19\.3\.0\.0\.0|18\.0\.0\.0\.0|12\.2\.0\.1\.0|12\.1\.0\.2\.0|11\.2\.0\.4\.0)$'
+
+ORA_EDITION="${ORA_EDITION:-EE}"
+ORA_EDITION_PARAM="^(EE|SE|SE2)$"
+
+ORA_SWLIB_BUCKET="${ORA_SWLIB_BUCKET}"
+ORA_SWLIB_BUCKET_PARAM="^.+"
+
+ORA_SWLIB_TYPE="${ORA_SWLIB_TYPE:-\"\"}"
+ORA_SWLIB_TYPE_PARAM="^(\"\"|GCS|GCSFUSE|NFS)$"
+
+ORA_SWLIB_PATH="${ORA_SWLIB_PATH:-/swlib}"
+ORA_SWLIB_PATH_PARAM="^/.*"
+
+ORA_SWLIB_CREDENTIALS="${ORA_SWLIB_CREDENTIALS}"
+ORA_SWLIB_CREDENTIALS_PARAM=".*"
+
+ORA_STAGING="${ORA_STAGING:-/u02/oracle_install}"
+ORA_STAGING_PARAM="^/.+$"
+
+ORA_LISTENER_NAME="${ORA_LISTENER_NAME:-LISTENER}"
+ORA_LISTENER_NAME_PARAM="^[a-zA-Z0-9]+$"
+
+ORA_LISTENER_PORT="${ORA_LISTENER_PORT:-1521}"
+ORA_LISTENER_PORT_PARAM="^[0-9]+$"
+
+ORA_DB_NAME="${ORA_DB_NAME:-ORCL}"
+ORA_DB_NAME_PARAM="^[a-zA-Z0-9_$]+$"
+
+ORA_DB_DOMAIN="${ORA_DB_DOMAIN:-world}"
+ORA_DB_DOMAIN_PARAM="^[a-zA-Z0-9]+$"
+
+ORA_DB_CHARSET="${ORA_DB_CHARSET:-AL32UTF8}"
+ORA_DB_CHARSET_PARAM="^.+$"
+
+ORA_DB_NCHARSET="${ORA_DB_NCHARSET:-AL16UTF16}"
+ORA_DB_NCHARSET_PARAM="^.+$"
+
+ORA_DB_CONTAINER="${ORA_DB_CONTAINER:-TRUE}"
+ORA_DB_CONTAINER_PARAM="^(TRUE|FALSE)$"
+
+ORA_DB_TYPE="${ORA_DB_TYPE:-MULTIPURPOSE}"
+ORA_DB_TYPE_PARAM="MULTIPURPOSE|DATA_WAREHOUSING|OLTP"
+
+ORA_PDB_NAME_PREFIX="${ORA_PDB_NAME_PREFIX:-PDB}"
+ORA_PDB_NAME_PREFIX_PARAM="^[a-zA-Z0-9]+$"
+
+ORA_PDB_COUNT="${ORA_PDB_COUNT:-1}"
+ORA_PDB_COUNT_PARAM="^[0-9]+"
+
+ORA_REDO_LOG_SIZE="${ORA_REDO_LOG_SIZE:-100MB}"
+ORA_REDO_LOG_SIZE_PARAM="^[0-9]+MB$"
+
+ORA_DISK_MGMT="${ORA_DISK_MGMT:-UDEV}"
+ORA_DISK_MGMT_PARAM="ASMLIB|UDEV"
+
+ORA_ROLE_SEPARATION="${ORA_ROLE_SEPARATION:-TRUE}"
+ORA_ROLE_SEPARATION_PARAM="^(TRUE|FALSE)$"
+
+ORA_DATA_DISKGROUP="${ORA_DATA_DISKGROUP:-DATA}"
+ORA_DATA_DISKGROUP_PARAM="^[a-zA-Z0-9]+$"
+
+ORA_RECO_DISKGROUP="${ORA_RECO_DISKGROUP:-RECO}"
+ORA_RECO_DISKGROUP_PARAM="^[a-zA-Z0-9]+$"
+
+#ORA_ASM_DISKS="${ORA_ASM_DISKS:-asm_disk_config.json}"
+#ORA_ASM_DISKS_PARAM="^.*\.json$"
+#ORA_ASM_DISKS_PARAM="^.*$"
+
+BACKUP_DEST="${BACKUP_DEST}"
+BACKUP_DEST_PARAM="^.*$"
+
+BACKUP_REDUNDANCY="${BACKUP_REDUNDANCY:-2}"
+BACKUP_REDUNDANCY_PARAM="^[0-9]+$"
+
+ARCHIVE_REDUNDANCY="${ARCHIVE_REDUNDANCY:-2}"
+ARCHIVE_REDUNDANCY_PARAM="^[0-9]+$"
+
+ARCHIVE_ONLINE_DAYS="${ARCHIVE_ONLINE_DAYS:-7}"
+ARCHIVE_ONLINE_DAYS_PARAM="^[0-9]+$"
+
+BACKUP_LEVEL0_DAYS="${BACKUP_LEVEL0_DAYS:-0}"
+BACKUP_LEVEL0_DAYS_PARAM="^[0-6]-?[0-6]?$"
+
+BACKUP_LEVEL1_DAYS="${BACKUP_LEVEL1_DAYS:-1-6}"
+BACKUP_LEVEL1_DAYS_PARAM="^[0-6]-?[0-6]?$"
+
+BACKUP_START_HOUR="${BACKUP_START_HOUR:-01}"
+BACKUP_START_HOUR_PARAM="^(2[0-3]|[01]?[0-9])$"
+
+BACKUP_START_MIN="${BACKUP_START_MIN:-00}"
+BACKUP_START_MIN_PARAM="^[0-5][0-9]$"
+
+ARCHIVE_BACKUP_MIN="${ARCHIVE_BACKUP_MIN:-30}"
+ARCHIVE_BACKUP_MIN_PARAM="^[0-5][0-9]$"
+
+BACKUP_SCRIPT_LOCATION="${BACKUP_SCRIPT_LOCATION:-/home/oracle/scripts}"
+BACKUP_SCRIPT_LOCATION_PARAM="^/.+$"
+
+BACKUP_LOG_LOCATION="${BACKUP_LOG_LOCATION:-/home/oracle/logs}"
+BACKUP_LOG_LOCATION_PARAM="^/.+$"
+
+INSTANCE_IP_ADDR="${INSTANCE_IP_ADDR:-192.168.56.201}"
+INSTANCE_IP_ADDR_PARAM='^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$'
+
+INSTANCE_SSH_USER="${INSTANCE_SSH_USER:-vagrant}"
+INSTANCE_SSH_USER_PARAM="^[a-z0-9]+$"
+
+INSTANCE_ANSIBLE_HOSTGROUP_NAME="${INSTANCE_ANSIBLE_HOSTGROUP_NAME:-dbasm}"
+INSTANCE_ANSIBLE_HOSTGROUP_NAME_PARAM="^[a-z0-9]+$"
+
+INSTANCE_ANSIBLE_HOSTNAME="${INSTANCE_ANSIBLE_HOSTNAME:-oracledb1}"
+INSTANCE_ANSIBLE_HOSTNAME_PARAM="^[a-z0-9]+$"
+
+INSTANCE_SSH_KEY="${INSTANCE_SSH_KEY:-.vagrant/machines/oracledb1/virtualbox/private_key}"
+INSTANCE_SSH_KEY_PARAM="^.+$"
+
+INSTANCE_SSH_EXTRA_ARGS="${INSTANCE_SSH_EXTRA_ARGS:-'-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o IdentityAgent=no'}"
+INSTANCE_SSH_EXTRA_ARGS_PARAM="^/.+$"
+
+NTP_PREF="${NTP_PREF}"
+NTP_PREF_PARAM=".*"
+
+###
+GETOPT_MANDATORY="ora-swlib-bucket:,backup-dest:"
+GETOPT_OPTIONAL="ora-version:,ora-edition:,ora-staging:,ora-db-name:,ora-db-domain:,ora-db-charset:,ora-disk-mgmt:,ora-role-separation:"
+GETOPT_OPTIONAL="$GETOPT_OPTIONAL,ora-data-diskgroup:,ora-reco-diskgroup:,ora-asm-disks:,ora-listener-port:,ora-listener-name:"
+GETOPT_OPTIONAL="$GETOPT_OPTIONAL,ora-db-ncharset:,ora-db-container:,ora-db-type:,ora-pdb-name-prefix:,ora-pdb-count:,ora-redo-log-size:"
+GETOPT_OPTIONAL="$GETOPT_OPTIONAL,backup-redundancy:,archive-redundancy:,archive-online-days:,backup-level0-days:,backup-level1-days:"
+GETOPT_OPTIONAL="$GETOPT_OPTIONAL,backup-start-hour:,backup-start-min:,archive-backup-min:,backup-script-location:,backup-log-location:"
+GETOPT_OPTIONAL="$GETOPT_OPTIONAL,ora-swlib-type:,ora-swlib-path:,ora-swlib-credentials:,instance-ip-addr:,instance-ssh-user:"
+GETOPT_OPTIONAL="$GETOPT_OPTIONAL,instance-ssh-key:,instance-ansible-hostname:,instance-ansible-hostgroup-name:,ntp-pref:"
+GETOPT_OPTIONAL="$GETOPT_OPTIONAL,help,validate"
+GETOPT_LONG="$GETOPT_MANDATORY,$GETOPT_OPTIONAL"
+GETOPT_SHORT="h"
+
+VALIDATE=0
+INVENTORY_FILE=inventory
+
+options=$(getopt --longoptions "$GETOPT_LONG" --options "$GETOPT_SHORT" -- "$@")
+
+[ $? -eq 0 ] || {
+       echo "Invalid options provided: $*"
+       exit 1
+}
+
+eval set -- "$options"
+
+while true; do
+    case "$1" in
+    --ora-version)
+        ORA_VERSION="$2"
+        shift;
+        ;;
+    --ora-edition)
+        ORA_EDITION="$(echo $2| tr 'a-z' 'A-Z')"
+        shift;
+        ;;
+    --ora-swlib-bucket)
+        ORA_SWLIB_BUCKET="$2"
+        shift;
+        ;;
+    --ora-swlib-type)
+        ORA_SWLIB_TYPE="$2"
+        shift;
+        ;;
+    --ora-swlib-path)
+        ORA_SWLIB_PATH="$2"
+        shift;
+        ;;
+    --ora-swlib-credentials)
+        ORA_SWLIB_CREDENTIALS="$2"
+        shift;
+        ;;
+    --ora-staging)
+        ORA_STAGING="$2"
+        shift;
+        ;;
+    --ora-db-name)
+        ORA_DB_NAME="$2"
+        shift;
+        ;;
+    --ora-db-domain)
+        ORA_DB_DOMAIN="$2"
+        shift;
+        ;;
+    --ora-db-charset)
+        ORA_DB_CHARSET="$2"
+        shift;
+        ;;
+    --ora-db-ncharset)
+        ORA_DB_NCHARSET="$2"
+        shift;
+        ;;
+    --ora-disk-mgmt)
+        ORA_DISK_MGMT="$2"
+        shift;
+        ;;
+    --ora-role-separation)
+        ORA_ROLE_SEPARATION="$2"
+        shift;
+        ;;
+    --ora-data-diskgroup)
+        ORA_DATA_DISKGROUP="$2"
+        shift;
+        ;;
+    --ora-reco-diskgroup)
+        ORA_RECO_DISKGROUP="$2"
+        shift;
+        ;;
+    #--ora-asm-disks)
+    #    ORA_ASM_DISKS="$2"
+    #    shift;
+    #    ;;
+    --ora-listener-port)
+        ORA_LISTENER_PORT="$2"
+        shift;
+        ;;
+    --ora-listener-name)
+        ORA_LISTENER_NAME="$2"
+        shift;
+        ;;
+    --ora-db-container)
+        ORA_DB_CONTAINER="$2"
+        shift;
+        ;;
+    --ora-db-type)
+        ORA_DB_TYPE="$2"
+        shift;
+        ;;
+    --ora-pdb-name-prefix)
+        ORA_PDB_NAME_PREFIX="$2"
+        shift;
+        ;;
+    --ora-pdb-count)
+        ORA_PDB_COUNT="$2"
+        shift;
+        ;;
+    --ora-redo-log-size)
+        ORA_REDO_LOG_SIZE="$2"
+        shift;
+        ;;
+    --backup-dest)
+        BACKUP_DEST="$2"
+        shift;
+        ;;
+    --backup-redundancy)
+        BACKUP_REDUNDANCY="$2"
+        shift;
+        ;;
+    --archive-redundancy)
+        ARCHIVE_REDUNDANCY="$2"
+        shift;
+        ;;
+    --archive-online-days)
+        ARCHIVE_ONLINE_DAYS="$2"
+        shift;
+        ;;
+    --backup-level0-days)
+        BACKUP_LEVEL0_DAYS="$2"
+        shift;
+        ;;
+    --backup-level1-days)
+        BACKUP_LEVEL1_DAYS="$2"
+        shift;
+        ;;
+    --backup-start-hour)
+        BACKUP_START_HOUR="$2"
+        shift;
+        ;;
+    --backup-start-min)
+        BACKUP_START_MIN="$2"
+        shift;
+        ;;
+    --archive-backup-min)
+        ARCHIVE_BACKUP_MIN="$2"
+        shift;
+        ;;
+    --backup-script-location)
+        BACKUP_SCRIPT_LOCATION="$2"
+        shift;
+        ;;
+    --backup-log-location)
+        BACKUP_LOG_LOCATION="$2"
+        shift;
+        ;;
+    --instance-ip-addr)
+        INSTANCE_IP_ADDR="$2"
+        shift;
+        ;;
+    --instance-ssh-key)
+        INSTANCE_SSH_KEY="$2"
+        shift;
+        ;;
+    --instance-ansible-hostgroup-name)
+        INSTANCE_ANSIBLE_HOSTGROUP_NAME="$2"
+        shift;
+        ;;
+    --instance-ansible-hostname)
+        INSTANCE_ANSIBLE_HOSTNAME="$2"
+        shift;
+        ;;
+    --instance-ssh-user)
+        INSTANCE_SSH_USER="$2"
+        shift;
+        ;;
+    --instance-ssh-extra-args)
+        INSTANCE_SSH_EXTRA_ARGS="$2"
+        shift;
+        ;;
+    --ntp-pref)
+        NTP_PREF="$2"
+        shift;
+        ;;
+    --validate)
+        VALIDATE=1
+        ;;
+    --help|-h)
+        echo -e "\tUsage: `basename $0` "
+        echo $GETOPT_MANDATORY|sed 's/,/\n/g'|sed 's/:/ <value>/'|sed 's/\(.\+\)/\t --\1/'
+        echo $GETOPT_OPTIONAL |sed 's/,/\n/g'|sed 's/:/ <value>/'|sed 's/\(.\+\)/\t [ --\1 ]/'
+        echo -e "\t -- [parameters sent to ansible]"
+        exit 2
+        ;;
+    --)
+        shift
+        break
+        ;;
+    esac
+    shift
+done
+
+shopt -s nocasematch
+
+[[ ! "$ORA_VERSION" =~ $ORA_VERSION_PARAM ]] && {
+    echo "Incorrect parameter provided for ora-version: $ORA_VERSION"
+    exit 1
+}
+[[ ! "$ORA_EDITION" =~ $ORA_EDITION_PARAM ]] && {
+    echo "Incorrect parameter provided for ora-edition: $ORA_EDITION"
+    exit 1
+}
+[[ ! "$ORA_SWLIB_BUCKET" =~ $ORA_SWLIB_BUCKET_PARAM ]] && {
+    echo "Incorrect parameter provided for ora-swlib-bucket: $ORA_SWLIB_BUCKET"
+    exit 1
+}
+[[ ! "$ORA_SWLIB_TYPE" =~ $ORA_SWLIB_TYPE_PARAM ]] && {
+    echo "Incorrect parameter provided for ora-swlib-type: $ORA_SWLIB_TYPE"
+    exit 1
+}
+[[ ! "$ORA_SWLIB_PATH" =~ $ORA_SWLIB_PATH_PARAM ]] && {
+    echo "Incorrect parameter provided for ora-swlib-path: $ORA_SWLIB_PATH"
+    exit 1
+}
+[[ ! "$ORA_SWLIB_CREDENTIALS" =~ $ORA_SWLIB_CREDENTIALS_PARAM ]] && {
+    echo "Incorrect parameter provided for ora-swlib-credentials: $ORA_SWLIB_CREDENTIALS"
+    exit 1
+}
+[[ ! "$ORA_STAGING" =~ $ORA_STAGING_PARAM ]] && {
+    echo "Incorrect parameter provided for ora-staging: $ORA_STAGING"
+    exit 1
+}
+[[ ! "$ORA_DB_NAME" =~ $ORA_DB_NAME_PARAM ]] && {
+    echo "Incorrect parameter provided for ora-db-name: $ORA_DB_NAME"
+    exit 1
+}
+[[ ! "$ORA_DB_DOMAIN" =~ $ORA_DB_DOMAIN_PARAM ]] && {
+    echo "Incorrect parameter provided for ora-db-domain: $ORA_DB_DOMAIN"
+    exit 1
+}
+[[ ! "$ORA_DB_CHARSET" =~ $ORA_DB_CHARSET_PARAM ]] && {
+    echo "Incorrect parameter provided for ora-db-charset: $ORA_DB_CHARSET"
+    exit 1
+}
+[[ ! "$ORA_DB_NCHARSET" =~ $ORA_DB_NCHARSET_PARAM ]] && {
+    echo "Incorrect parameter provided for ora-db-ncharset: $ORA_DB_NCHARSET"
+    exit 1
+}
+[[ ! "$ORA_DISK_MGMT" =~ $ORA_DISK_MGMT_PARAM ]] && {
+    echo "Incorrect parameter provided for ora-disk-mgmt: $ORA_DISK_MGMT"
+    exit 1
+}
+[[ ! "$ORA_ROLE_SEPARATION" =~ $ORA_ROLE_SEPARATION_PARAM ]] && {
+    echo "Incorrect parameter provided for ora-role-separation: $ORA_ROLE_SEPARATION"
+    exit 1
+}
+[[ ! "$ORA_DATA_DISKGROUP" =~ $ORA_DATA_DISKGROUP_PARAM ]] && {
+    echo "Incorrect parameter provided for ora-data-diskgroup: $ORA_DATA_DISKGROUP"
+    exit 1
+}
+[[ ! "$ORA_RECO_DISKGROUP" =~ $ORA_RECO_DISKGROUP_PARAM ]] && {
+    echo "Incorrect parameter provided for ora-reco-diskgroup: $ORA_RECO_DISKGROUP"
+    exit 1
+}
+#[[ ! "$ORA_ASM_DISKS" =~ $ORA_ASM_DISKS_PARAM ]] && {
+#    echo "Incorrect parameter provided for ora-asm-disks: $ORA_ASM_DISKS"
+#    exit 1
+#}
+[[ ! "$ORA_LISTENER_PORT" =~ $ORA_LISTENER_PORT_PARAM ]] && {
+    echo "Incorrect parameter provided for ora-listener-port: $ORA_LISTENER_PORT"
+    exit 1
+}
+[[ ! "$ORA_LISTENER_NAME" =~ $ORA_LISTENER_NAME_PARAM ]] && {
+    echo "Incorrect parameter provided for ora-listener-name: $ORA_LISTENER_NAME"
+    exit 1
+}
+[[ ! "$ORA_DB_CONTAINER" =~ $ORA_DB_CONTAINER_PARAM ]] && {
+    echo "Incorrect parameter provided for ora-db-container: $ORA_DB_CONTAINER"
+    exit 1
+}
+[[ ! "$ORA_DB_TYPE" =~ $ORA_DB_TYPE_PARAM ]] && {
+    echo "Incorrect parameter provided for ora-db-type: $ORA_DB_TYPE"
+    exit 1
+}
+[[ ! "$ORA_PDB_NAME_PREFIX" =~ $ORA_PDB_NAME_PREFIX_PARAM ]] && {
+    echo "Incorrect parameter provided for ora-pdb-name-prefix: $ORA_PDB_NAME_PREFIX"
+    exit 1
+}
+[[ ! "$ORA_PDB_COUNT" =~ $ORA_PDB_COUNT_PARAM ]] && {
+    echo "Incorrect parameter provided for ora-pdb-count: $ORA_PDB_COUNT"
+    exit 1
+}
+[[ ! "$ORA_REDO_LOG_SIZE" =~ $ORA_REDO_LOG_SIZE_PARAM ]] && {
+    echo "Incorrect parameter provided for ora-redo-log-size: $ORA_REDO_LOG_SIZE"
+    exit 1
+}
+[[ ! "$BACKUP_DEST" =~ $BACKUP_DEST_PARAM ]] && {
+    echo "Incorrect parameter provided for backup-dest: $BACKUP_DEST"
+    exit 1
+}
+[[ ! "$BACKUP_REDUNDANCY" =~ $BACKUP_REDUNDANCY_PARAM ]] && {
+    echo "Incorrect parameter provided for backup-redundancy: $BACKUP_REDUNDANCY"
+    exit 1
+}
+[[ ! "$ARCHIVE_REDUNDANCY" =~ $ARCHIVE_REDUNDANCY_PARAM ]] && {
+    echo "Incorrect parameter provided for archive-redundancy: $ARCHIVE_REDUNDANCY"
+    exit 1
+}
+[[ ! "$ARCHIVE_ONLINE_DAYS" =~ $ARCHIVE_ONLINE_DAYS_PARAM ]] && {
+    echo "Incorrect parameter provided for archive-online-days: $ARCHIVE_ONLINE_DAYS"
+    exit 1
+}
+[[ ! "$BACKUP_LEVEL0_DAYS" =~ $BACKUP_LEVEL0_DAYS_PARAM ]] && {
+    echo "Incorrect parameter provided for backup-level0-days: $BACKUP_LEVEL0_DAYS"
+    exit 1
+}
+[[ ! "$BACKUP_LEVEL1_DAYS" =~ $BACKUP_LEVEL1_DAYS_PARAM ]] && {
+    echo "Incorrect parameter provided for backup-level1-days: $BACKUP_LEVEL1_DAYS"
+    exit 1
+}
+[[ ! "$BACKUP_START_HOUR" =~ $BACKUP_START_HOUR_PARAM ]] && {
+    echo "Incorrect parameter provided for backup-start-hour: $BACKUP_START_HOUR"
+    exit 1
+}
+[[ ! "$BACKUP_START_MIN" =~ $BACKUP_START_MIN_PARAM ]] && {
+    echo "Incorrect parameter provided for backup-start-min: $BACKUP_START_MIN"
+    exit 1
+}
+[[ ! "$ARCHIVE_BACKUP_MIN" =~ $ARCHIVE_BACKUP_MIN_PARAM ]] && {
+    echo "Incorrect parameter provided for archive-backup-min: $ARCHIVE_BACKUP_MIN"
+    exit 1
+}
+[[ ! "$BACKUP_SCRIPT_LOCATION" =~ $BACKUP_SCRIPT_LOCATION_PARAM ]] && {
+    echo "Incorrect parameter provided for backup-start-min: $BACKUP_SCRIPT_LOCATION"
+    exit 1
+}
+[[ ! "$BACKUP_LOG_LOCATION" =~ $BACKUP_LOG_LOCATION_PARAM ]] && {
+    echo "Incorrect parameter provided for backup-start-min: $BACKUP_LOG_LOCATION"
+    exit 1
+}
+[[ ! "$INSTANCE_IP_ADDR" =~ ${INSTANCE_IP_ADDR_PARAM} ]] && {
+    echo "Incorrect parameter provided for instance-ip-addr: $INSTANCE_IP_ADDR"
+    exit 1
+}
+[[ ! "$INSTANCE_SSH_USER" =~ $INSTANCE_SSH_USER_PARAM ]] && {
+    echo "Incorrect parameter provided for instance-ssh-user: $INSTANCE_SSH_USER"
+    exit 1
+}
+[[ ! "$INSTANCE_SSH_KEY" =~ $INSTANCE_SSH_KEY_PARAM ]] && {
+    echo "Incorrect parameter provided for instance-ssh-key: $INSTANCE_SSH_KEY"
+    exit 1
+}
+[[ ! "$NTP_PREF" =~ $NTP_PREF_PARAM ]] && {
+    echo "Incorrect parameter provided for ntp-pref: $NTP_PREF"
+    exit 1
+}
+
+
+# Mandatory options
+if [ "${ORA_SWLIB_BUCKET}" = "" ]; then
+    echo "Please specify a GS bucket with --ora-swlib-bucket"
+    exit 2
+fi
+
+if [ "${BACKUP_DEST}" = "" ]; then
+    echo "Please specify a Cloud Filestore or disk group location with --backup-dest"
+    exit 2
+fi
+
+# Build the inventory file
+
+INVENTORY_FILE=inventory
+cat <<EOF > inventory
+[${INSTANCE_ANSIBLE_HOSTGROUP_NAME}]
+${INSTANCE_ANSIBLE_HOSTNAME} ansible_ssh_host=${INSTANCE_IP_ADDR} ansible_ssh_user=${INSTANCE_SSH_USER} ansible_ssh_private_key_file=${INSTANCE_SSH_KEY} ansible_ssh_extra_args=${INSTANCE_SSH_EXTRA_ARGS}
+EOF
+
+export ARCHIVE_BACKUP_MIN
+export ARCHIVE_ONLINE_DAYS
+export ARCHIVE_REDUNDANCY
+export BACKUP_DEST
+export BACKUP_LEVEL0_DAYS
+export BACKUP_LEVEL1_DAYS
+export BACKUP_LOG_LOCATION
+export BACKUP_REDUNDANCY
+export BACKUP_START_HOUR
+export BACKUP_START_MIN
+export ORA_DATA_DISKGROUP
+export ORA_DB_CHARSET
+export ORA_DB_CONTAINER
+export ORA_DB_DOMAIN
+export ORA_DB_NAME
+export ORA_DB_NCHARSET
+export ORA_DB_TYPE
+export ORA_DISK_MGMT
+export ORA_EDITION
+export ORA_LISTENER_NAME
+export ORA_LISTENER_PORT
+export ORA_PDB_COUNT
+export ORA_PDB_NAME_PREFIX
+export ORA_RECO_DISKGROUP
+export ORA_REDO_LOG_SIZE
+export ORA_ROLE_SEPARATION
+export ORA_STAGING
+export ORA_SWLIB_BUCKET
+export ORA_SWLIB_CREDENTIALS
+export ORA_SWLIB_TYPE
+export ORA_SWLIB_PATH
+export ORA_VERSION
+export NTP_PREF
+
+echo -e "Running with parameters from command line or environment variables:\n"
+set | egrep '^(ORA_|BACKUP_|ARCHIVE_|INSTANCE_)' | grep -v '_PARAM='
+echo
+
+ANSIBLE_PARAMS="-i ${INVENTORY_FILE}"
+ANSIBLE_EXTRA_PARAMS="${*}"
+
+
+echo "Ansible params: ${ANSIBLE_EXTRA_PARAMS}"
+
+if [ $VALIDATE -eq 1 ]; then
+    echo "Exiting because of --validate"
+    exit;
+fi
+
+export ANSIBLE_NOCOWS=1
+
+ANSIBLE_PLAYBOOK=`which ansible-playbook 2> /dev/null`
+if [ $? -ne 0 ]; then
+    echo "Ansible executable not found in path"
+    exit 3
+else
+    echo "Found Ansible at $ANSIBLE_PLAYBOOK"
+fi
+
+# exit on any error from the following scripts
+set -e
+
+for PLAYBOOK in check-instance.yml prep-host.yml install-sw.yml config-db.yml ; do
+    ANSIBLE_COMMAND="${ANSIBLE_PLAYBOOK} ${ANSIBLE_PARAMS} ${ANSIBLE_EXTRA_PARAMS} ${PLAYBOOK}"
+    echo
+    echo "Running Ansible playbook: ${ANSIBLE_COMMAND}"
+    eval ${ANSIBLE_COMMAND}
+done
+
+exit 0;

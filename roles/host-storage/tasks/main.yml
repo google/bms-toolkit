@@ -1,0 +1,78 @@
+---
+  - name: Partition Oracle user data raw devices
+    parted:
+      device: "{{ item.blk_device }}"
+      number: 1
+      state: present
+      label: gpt
+    when: "'mapper' not in item.blk_device"
+    with_items:
+      - "{{ oracle_user_data_mounts }}"
+    tags: ora-mounts
+
+  - name: Add filesystem on Oracle user data raw devices
+    filesystem:
+      fstype: "{{ item.fstype }}"
+      dev: "{{ item.blk_device }}1"
+    when: "'mapper' not in item.blk_device"
+    with_items:
+      - "{{ oracle_user_data_mounts }}"
+    tags: ora-mounts
+
+  - name: Add filesystem on Oracle user data lv devices
+    filesystem:
+      fstype: "{{ item.fstype }}"
+      dev: "{{ item.blk_device }}"
+    when: "'mapper' in item.blk_device"
+    with_items:
+      - "{{ oracle_user_data_mounts }}"
+    tags: ora-mounts
+
+  - name: Mount Oracle user data raw devices
+    mount:
+      fstype: "{{ item.fstype }}"
+      src: "{{ item.blk_device }}1"
+      path: "{{ item.mount_point }}"
+      opts: "{{ item.mount_opts }}"
+      state: mounted
+    when: "'mapper' not in item.blk_device"
+    with_items:
+      - "{{ oracle_user_data_mounts }}"
+    tags: ora-mounts
+
+  - name: Mount Oracle user data lv devices
+    mount:
+      fstype: "{{ item.fstype }}"
+      src: "{{ item.blk_device }}"
+      path: "{{ item.mount_point }}"
+      opts: "{{ item.mount_opts }}"
+      state: mounted
+    when: "'mapper' in item.blk_device"
+    with_items:
+      - "{{ oracle_user_data_mounts }}"
+    tags: ora-mounts
+
+#  - name: This iteration to get all blk_devices regardless of their diskgroup - used for partitioning all asm disks
+#    debug: msg="Running parted {{ item.1.blk_device }}"
+#    with_subelements:
+#      - "{{ asm_disks }}"
+#      - disks
+
+#  - name: This iteration to create asm disks with their asm name and block_device
+#    debug: msg="Running create asmdisk {{ item.1.name }} with disk {{ item.1.blk_device }}"
+#    with_subelements:
+#      - "{{ asm_disks }}"
+#      - disks
+
+#  - name: This iteration to create asm diskgroup
+#    debug:
+#      msg: |
+#        CREATE DISKGROUP DATA EXTERNAL REDUNDANCY
+#        {% for i in item.disks %}  DISK 'ORCL: {{ i.name }}'
+#        {% endfor %}
+#        ATTRIBUTE
+#           'compatible.asm'   = '"${ORACLE_VERSION}"',
+#           'compatible.rdbms' = '11.2.0.4.0';
+#    with_items:
+#      - "{{ asm_disks }}"
+

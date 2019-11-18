@@ -1,0 +1,16 @@
+#!/bin/bash
+
+{% if oracle_ver == "11.2.0.4.0" or oracle_ver == "12.1.0.2.0" %}
+cp {{ swlib_unzip_path }}/grid/response/grid_install.rsp {{ swlib_unzip_path }}/grid_install.rsp
+{% else %}
+cp {{ grid_home }}/inventory/response/grid_install.rsp {{ swlib_unzip_path }}/grid_install.rsp
+{% endif %}
+ 
+sed -i '/^oracle.install.option/                            s~oracle.install.option=$~oracle.install.option=CRS_SWONLY~'                                                                 {{ swlib_unzip_path }}/grid_install.rsp
+sed -i '/^ORACLE_HOSTNAME/                                  s~ORACLE_HOSTNAME=$~ORACLE_HOSTNAME=`hostname -A`~'                                                                          {{ swlib_unzip_path }}/grid_install.rsp
+sed -i '/^INVENTORY_LOCATION/                               s~INVENTORY_LOCATION=$~INVENTORY_LOCATION='{{ oracle_root }}'/oraInventory~'                                                            {{ swlib_unzip_path }}/grid_install.rsp
+sed -i '/^ORACLE_BASE/                                      s~ORACLE_BASE=$~ORACLE_BASE='{{ oracle_base }}'~'                                                                            {{ swlib_unzip_path }}/grid_install.rsp
+sed -i '/^ORACLE_HOME/                                      s~ORACLE_HOME=$~ORACLE_HOME='{{ grid_home }}'~'                                                                              {{ swlib_unzip_path }}/grid_install.rsp
+sed -i '/^oracle.install.asm.OSDBA/                         s~oracle.install.asm.OSDBA=$~oracle.install.asm.OSDBA=asmdba~'                                                               {{ swlib_unzip_path }}/grid_install.rsp
+sed -i '/^oracle.install.asm.OSOPER/                        s~oracle.install.asm.OSOPER=$~oracle.install.asm.OSOPER=asmoper~'                                                            {{ swlib_unzip_path }}/grid_install.rsp
+sed -i '/^oracle.install.asm.OSASM/                         s~oracle.install.asm.OSASM=$~oracle.install.asm.OSASM=asmadmin~'                                                             {{ swlib_unzip_path }}/grid_install.rsp

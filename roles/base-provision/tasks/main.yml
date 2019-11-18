@@ -1,0 +1,130 @@
+---
+  - name: Validate OS and version
+    assert:
+      that:
+        - "ansible_os_family == '{{ os_family_supported }}'"
+        - "ansible_distribution_version is version_compare('{{ os_min_supported_version }}', '>=')"
+    tags: oscheck
+
+  - name: Validate architecture
+    assert:
+      that: "ansible_userspace_architecture == 'x86_64'"
+    tags: oscheck
+
+  - name: Remove Chrony package
+    package:
+      name:  chrony
+      state: absent
+      lock_timeout: 180
+    tags: ntp
+
+  - name: Remove Chrony rpmsave
+    file:
+      path: /etc/chrony.conf.rpmsave
+      state: absent
+    tags: ntp
+
+  # Temporarily use CentOS repo as lab RHEL servers are not registered with a Red Hat Entitlement Server
+  - name: Configure centos7 repo on rhel
+    yum_repository:
+      name: base
+      description: CentOS-$releasever - Base
+      file: CentOS-Base
+      #baseurl: http://mirror.centos.org/centos/$releasever/os/$basearch/
+      # Bug with iamseth/rhel73 where $releasever = "7server" and not just "7"
+      #mirrorlist: http://mirrorlist.centos.org/?release=$releasever&arch=$basearch&repo=os&infra=$infra
+      mirrorlist: http://mirrorlist.centos.org/?release=7&arch=$basearch&repo=os&infra=$infra
+      gpgkey: file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-7
+      gpgcheck: yes
+      enabled: yes
+    when: install_os_packages|bool and ansible_os_family == 'RedHat' and ansible_distribution == 'RedHat'
+    tags: os_packages,rhel
+
+  - name: Add centos7 rpm key on rhel
+    rpm_key:
+      state: present
+      key: http://mirror.centos.org/centos/RPM-GPG-KEY-CentOS-7
+    when: install_os_packages|bool and ansible_os_family == 'RedHat' and ansible_distribution == 'RedHat'
+    tags: os_packages,rhel
+
+  - name: Install packages
+    package:
+      name: "{{ packages }}"
+      state: present
+      lock_timeout: 180
+    tags: os_packages
+
+  - name: Make sure ntp is running
+    service:
+      name: ntpd
+      state: started
+      enabled: yes
+    tags: ntp
+
+  - name: Add ntp preferred server
+    blockinfile:
+      path: /etc/ntp.conf
+      marker: "# {mark} ANSIBLE MANAGED BLOCK"
+      insertafter: '^server '
+      block: "server {{ ntp_preferred }} prefer iburst"
+      state: "{{ (ntp_preferred != \"\" ) | ternary('present', 'absent') }}"
+    notify: restart ntpd
+
+#  - name: Check dns for host
+#    command: nslookup {{ ansible_hostname }}
+#    register: ns
+#    ignore_errors: true
+#    changed_when: false
+#    tags: etchosts
+
+  - name: Add fqdn to /etc/hosts if needed
+    lineinfile: dest=/etc/hosts regexp='.*{{ ansible_fqdn }}$' line="{{ etc_hosts_ip }} {{ ansible_hostname }} {{ ansible_fqdn }}" state=present
+    #when: "(': NXDOMAIN' in ns.stdout) or (' No answer' in ns.stdout)"
+    tags: etchosts
+
+  - name: Add localhost to /etc/hosts if needed
+    lineinfile: dest=/etc/hosts regexp='^127\.0\.0\.1' line="127.0.0.1 localhost localhost.localdomain" state=present
+    #when: "(': NXDOMAIN' in ns.stdout) or (' No answer' in ns.stdout)"
+    tags: etchosts
+
+#  - name: Generate /etc/hosts
+#    template:
+#      src: etc-hosts.j2
+#      dest: /etc/hosts
+#      backup: false
+#    tags: etchosts
+#    ignore_errors: true
+#    #notify: restart dnsmasq
+
+#  - name: Generate /etc/resolv.conf
+#    template:
+#      src: resolv.conf.j2
+#      dest: /etc/resolv.conf
+#      backup: false
+#    tags: resolv_conf
+#    ignore_errors: true
+#    notify: restart dnsmasq
+
+#  - name: Generate dnsmasq config
+#    template:
+#      src: dnsmasq.conf.j2
+#      dest: /etc/dnsmasq.conf
+#      backup: true
+#    ignore_errors: true
+#    tags: dnsmasq
+#    notify: restart dnsmasq
+
+#  - name: Start and enable dnsmasq
+#    service:
+#      name: dnsmasq
+#      state: started
+#      enabled: true
+#    tags: dnsmasq
+
+  - name: prep host | create swap on GCE
+    include_tasks: swap.yml
+    when:
+      - ansible_system_vendor == "Google"
+      - ansible_virtualization_type == "kvm"
+      - ansible_virtualization_role == "guest"
+      - swap_blk_device is defined

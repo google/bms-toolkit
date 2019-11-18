@@ -1,0 +1,58 @@
+---
+- hosts: all
+  gather_facts: false
+  pre_tasks:
+    - name: Verify Ansible meets the version requirements
+      assert:
+        that: "ansible_version.full is version_compare('2.8', '>=')"
+        fail_msg: >-
+          You must update Ansible to at least 2.8 to use these playbooks
+        success_msg: >-
+          Ansible version is {{ ansible_version.full }} , continuing
+
+  tasks:
+
+    - name: Collect facts
+      setup:
+ 
+    - fail:
+        msg: The system may not be provisioned on GCE according to Google.
+      when:
+        - ansible_system_vendor == "Google"
+        - ansible_virtualization_type == "kvm"
+        - ansible_virtualization_role == "guest"
+
+    - name: Test that we can connect to the instance
+      raw: sudo -u root whoami
+      register: rawrc
+      changed_when: False
+
+    - name: fail if we cannot sudo to root
+      assert:
+        that: "rawrc.stdout_lines[0] == 'root'"
+        fail_msg: >-
+          The account {{ ansible_user }} used to connect does not have sudo privileges to root
+        success_msg: >-
+          The account {{ ansible_user }} used to connect has sudo root privileges, continuing
+
+    - name: Check for Python installation
+      raw: test -e /usr/bin/python
+      changed_when: false
+      failed_when: false
+      register: check_python
+
+    - name: Install Python via raw if not installed
+      raw: sudo yum -y install python
+      when: check_python.rc != 0
+
+    - name: Test that we have an usable python on the instance
+      ping:
+      register: pingrc
+
+    - name: Abort if ping module fails
+      assert:
+        that: "pingrc.ping == 'pong'"
+        fail_msg: >-
+          The instance does not have an usable python distribution
+        success_msg: >-
+          The instance has an usable python installation, continuing

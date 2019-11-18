@@ -60,7 +60,7 @@
       ORACLE_VERSION: "{{ oracle_ver }}"
       ORACLE_SID: "{{ asm_sid }}"
       LD_LIBRARY_PATH: "{{ grid_home }}/lib:${LD_LIBRARY_PATH}"
-    when: asm_disk_control == "asmlib" or (asm_disks | join(' ') |search('mapper'))
+    when: asm_disk_control == "asmlib" or (asm_disks | join(' ') is search('mapper'))
     with_items:
       - "{{ asm_disks }}"
     register: create_dg
@@ -87,7 +87,7 @@
       ORACLE_VERSION: "{{ oracle_ver }}"
       ORACLE_SID: "{{ asm_sid }}"
       LD_LIBRARY_PATH: "{{ grid_home }}/lib:${LD_LIBRARY_PATH}"
-    when: asm_disk_control == "udev" and not (asm_disks | join(' ') |search('mapper'))
+    when: asm_disk_control == "udev" and not (asm_disks | join(' ') is search('mapper'))
     with_items:
       - "{{ asm_disks }}"
     register: create_dg

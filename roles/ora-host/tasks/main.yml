@@ -48,8 +48,19 @@
       comment: "{{ item.comment }}"
       uid: "{{ item.uid }}"
       group: "{{ item.group }}"
+      #skeleton: "/etc/skel"
     with_items: "{{ oracle_users }}"
     tags: os-users
+
+  - name: List contents of GI home 1
+    shell: ls -al /home/grid
+    register: out
+    when: role_separaion|bool
+    become: yes
+    become_user: "{{ grid_user }}"
+    tags: os-users
+
+  - debug: var=out.stdout_lines
 
   - name: Add necessary groups to grid user
     user:
@@ -131,6 +142,16 @@
     become: yes
     become_user: "{{ oracle_user }}"
     tags: os-users
+
+  - name: List contents of GI home
+    shell: ls -al /home/grid
+    register: out
+    when: role_separaion|bool
+    become: yes
+    become_user: "{{ grid_user }}"
+    tags: os-users
+
+  - debug: var=out.stdout_lines
 
   - name: Append GI variables to bash_profile
     blockinfile:
@@ -230,7 +251,7 @@
   - name: (asmlib) Install Oracle ASM libraries
     yum:
       name: "{{ oracleasm_libs }}"
-    when: asm_disk_control == "asmlib" or (asm_disks | join(' ') |search('mapper'))
+    when: asm_disk_control == "asmlib" or (asm_disks | join(' ') is search('mapper'))
     tags: oracleasmlib
 
   - name: (asmlib) Configure oracleasm
@@ -241,7 +262,7 @@
       /usr/sbin/oracleasm scandisks
       cat /etc/sysconfig/oracleasm
     register: asmconfig
-    when: asm_disk_control == "asmlib" or (asm_disks | join(' ') |search('mapper'))
+    when: asm_disk_control == "asmlib" or (asm_disks | join(' ') is search('mapper'))
     become: yes
     become_user: root
     tags: asm-disks
@@ -251,7 +272,7 @@
     with_subelements:
       - "{{ asm_disks }}"
       - disks
-    when: asm_disk_control == "asmlib" and ( not ( item.1.blk_device |search('mapper') ) )
+    when: asm_disk_control == "asmlib" and ( not ( item.1.blk_device is search('mapper') ) )
     register: asmraw
     failed_when: "( ( asmraw.rc != 0 ) and ( 'ERROR' in asmraw.stdout ) ) or ( ( asmraw.rc != 0 ) and ( 'is already labeled for ASM disk' not in asmraw.stdout ) )"
     changed_when: "'Writing disk header: done' in asmraw.stdout"
@@ -264,7 +285,7 @@
     with_subelements:
       - "{{ asm_disks }}"
       - disks
-    when: item.1.blk_device |search('mapper')
+    when: item.1.blk_device is search('mapper')
     register: asmlv
     failed_when: "( ( asmlv.rc != 0 ) and ( 'ERROR' in asmlv.stdout ) ) or ( ( asmlv.rc != 0 ) and ( 'is already labeled for ASM disk' not in asmlv.stdout ) )"
     changed_when: "'Writing disk header: done' in asmlv.stdout"

@@ -1,8 +1,9 @@
 ---
 
-  asm_diskstring: "{% if asm_disks | join(' ') |search('mapper') %}ORCL:*{% elif asm_disk_management == 'asmlib' and ansible_distribution == 'OracleLinux' %}ORCL:*{% else %}/dev/oracleasm/*{% endif %}"
+  asm_diskstring: "{% if asm_disks | join(' ') is search('mapper') %}ORCL:*{% elif asm_disk_management == 'asmlib' and ansible_distribution == 'OracleLinux' %}ORCL:*{% else %}/dev/oracleasm/*{% endif %}"
 
   diskgroup_compatible_asm: "{{ oracle_ver }}"
+# Set to 11.2.0.1.0 for >=2TB LUNs
   diskgroup_compatible_rdbms: "11.2.0.4.0"
 
   run_cluvfy: false

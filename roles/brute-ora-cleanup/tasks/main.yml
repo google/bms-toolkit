@@ -85,28 +85,6 @@
     become: yes
     become_user: root
 
-  - name: Remove users
-    user:
-      name: "{{ item.name }}"
-      state: absent
-      remove: yes
-      force: yes
-    with_items: "{{ oracle_users }}"
-    register: remove_users
-    become: yes
-    become_user: root
-
-  - name: Remove groups
-    group:
-      name: "{{ item.group }}"
-      state: absent
-    with_items:
-      - "{{ oracle_groups }}"
-      - "{{ asm_groups }}"
-    register: remove_groups
-    become: yes
-    become_user: root
-
   - name: (asmlib) Delete asmlib managed disk names
     command: "/usr/sbin/oracleasm deletedisk {{ item.1.name }}"
     with_subelements:
@@ -198,6 +176,28 @@
 
   - name: (udev) reload rules
     shell: ( /sbin/udevadm control --reload-rules && /sbin/udevadm trigger )
+    become: yes
+    become_user: root
+
+  - name: Remove users
+    user:
+      name: "{{ item.name }}"
+      state: absent
+      remove: yes
+      force: yes
+    with_items: "{{ oracle_users }}"
+    register: remove_users
+    become: yes
+    become_user: root
+
+  - name: Remove groups
+    group:
+      name: "{{ item.group }}"
+      state: absent
+    with_items:
+      - "{{ oracle_groups }}"
+      - "{{ asm_groups }}"
+    register: remove_groups
     become: yes
     become_user: root
 

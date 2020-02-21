@@ -63,6 +63,11 @@
 #    changed_when: false
 #    tags: etchosts
 
+  # cleanup /etc/hosts to solve a listener related issue, ora listener binds to hostname's IP.
+  - name: Remove all 127.0.0.1 lines from /etc/hosts
+    lineinfile: dest=/etc/hosts regexp='^127\.0\.0\.1' state=absent
+    tags: etchosts
+
   - name: Add fqdn to /etc/hosts if needed
     lineinfile: dest=/etc/hosts regexp='.*{{ ansible_fqdn }}$' line="{{ etc_hosts_ip }} {{ ansible_hostname }} {{ ansible_fqdn }}" state=present
     #when: "(': NXDOMAIN' in ns.stdout) or (' No answer' in ns.stdout)"

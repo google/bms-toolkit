@@ -510,6 +510,12 @@ if [ "${BACKUP_DEST}" = "" ]; then
     exit 2
 fi
 
+# if the hostgroup is not the default then error out when there is no corresponding group_vars/var.yml file
+if [ "${INSTANCE_ANSIBLE_HOSTGROUP_NAME}" != "dbasm" -a ! -r group_vars/${INSTANCE_ANSIBLE_HOSTGROUP_NAME}.yml ]; then
+    echo "Custom ansible hostgroup defined as ${INSTANCE_ANSIBLE_HOSTGROUP_NAME} but no corresponding group_vars/${INSTANCE_ANSIBLE_HOSTGROUP_NAME}.yml file found"
+    exit 2
+fi
+
 # Build the inventory file
 
 INVENTORY_FILE=inventory

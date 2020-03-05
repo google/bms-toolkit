@@ -13,18 +13,37 @@
     - { name: "{{ oracle_user }}", comment: "", uid: 801, group: "{{ oracle_group }}" }
     - { name: "{{ grid_user }}", comment: "", uid: 802, group: "{{ oracle_group }}" }
 
+  #
+  # Groups for the oracle user
+  # oracle_groups          : used in roles/ora-host/tasks/main.yml and roles/brute-ora-cleanup/tasks/main.yml
+  #                          to create and drop the groups
+  # extra_oracle_groups    : used in roles/ora-host/tasks/main.yml to be assigned to the user
+  #
   oracle_groups:
-    - { group: oinstall, gid: 801 }
-    - { group: dba, gid: 802 }
-    - { group: oper, gid: 803 }
-    - { group: backupdba, gid: 804 }
-    - { group: dgdba, gid: 805 }
-    - { group: kmdba, gid: 806 }
+    - { group: oinstall ,       gid: 801 }
+    - { group: dba      ,       gid: 802 }
+    - { group: oper     ,       gid: 803 }
+    - { group: backupdba,       gid: 804 }
+    - { group: dgdba    ,       gid: 805 }
+    - { group: kmdba    ,       gid: 806 }
 
+  extra_oracle_groups:
+    - { group: asmdba   ,       gid: 807 }
+    - { group: asmadmin ,       gid: 809 }
+
+  #
+  # Groups for the grid user
+  # asm_groups          : used in roles/ora-host/tasks/main.yml and roles/brute-ora-cleanup/tasks/main.yml
+  #                       to create and drop the groups
+  # extra_asm_groups    : used in roles/ora-host/tasks/main.yml to be assigned to the user
+  #
   asm_groups:
-    - { group: asmdba, gid: 807 }
-    - { group: asmoper, gid: 808 }
-    - { group: asmadmin, gid: 809 }
+    - { group: asmdba   ,       gid: 807 }
+    - { group: asmoper  ,       gid: 808 }
+    - { group: asmadmin ,       gid: 809 }
+
+  extra_asm_groups:
+    - { group: dba      ,       gid: 802 }
 
   oracle_dirs:
     - { name: "{{ swlib_unzip_path }}", owner: "{{ oracle_user }}", group: "{{ oracle_group }}", mode: 775 }

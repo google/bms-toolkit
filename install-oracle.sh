@@ -1,4 +1,63 @@
 #!/bin/bash
+#
+#export ANSIBLE_LOG_PATH=~/ansible.log
+#export ANSIBLE_DEBUG=True"
+#
+# Some variables
+#
+TIMESTAMP=`date +%Y%m%d_%H%M%S`				# A timestamp
+#
+# Playbooks
+#
+PB_CHECK_INSTANCE="check-instance.yml"
+     PB_PREP_HOST="prep-host.yml"
+    PB_INSTALL_SW="install-sw.yml"
+     PB_CONFIG_DB="config-db.yml"
+#
+# These playbooks must exist
+#
+for X in ${PB_CHECK_INSTANCE} ${PB_PREP_HOST} ${PB_INSTALL_SW} ${PB_CONFIG_DB}
+do
+	if [[ ! -f ${X} ]]; then
+                printf "\n\033[1;31m%s\033[m\n\n" "The playbook ${X} does not exist; cannot continue."
+		exit 126
+	else
+		if [[ -z ${PB_LIST} ]]; then
+			PB_LIST="$X"
+		else
+			PB_LIST="${PB_LIST} $X"
+		fi
+	fi
+done
+#
+# Inventory file (used to run the playbooks)
+#
+ INVENTORY_DIR="./inventory_files"			# Where to save the inventory files
+INVENTORY_FILE="${INVENTORY_DIR}/inventory"		# Default, the whole name will be built later using some parameters
+#
+if [[ ! -d ${INVENTORY_DIR} ]]; then
+	mkdir -p ${INVENTORY_DIR}
+	if [ $? -eq 0 ]; then
+		printf "\n\033[1;36m%s\033[m\n\n" "Successfully created the ${INVENTORY_DIR} directory to save the inventory files."
+	else
+		printf "\n\033[1;31m%s\033[m\n\n" "Unable to create the ${INVENTORY_DIR} directory to save the inventory files; cannot continue."
+		exit 123
+	fi
+fi
+#
+# Ansible logs directory, the logfile name is created later one
+#
+ LOG_DIR="./logs"
+LOG_FILE="${LOG_DIR}/log"
+if [[ ! -d ${LOG_DIR} ]]; then
+	mkdir -p ${LOG_DIR}
+	if [ $? -eq 0 ]; then
+		printf "\n\033[1;36m%s\033[m\n\n" "Successfully created the ${LOG_DIR} directory to save the ansible logs."
+	else
+		printf "\n\033[1;31m%s\033[m\n\n" "Unable to create the ${LOG_DIR} directory to save the ansible logs; cannot continue."
+		exit 123
+	fi
+fi
 
 shopt -s nocasematch
 
@@ -76,9 +135,13 @@ ORA_DATA_DISKGROUP_PARAM="^[a-zA-Z0-9]+$"
 ORA_RECO_DISKGROUP="${ORA_RECO_DISKGROUP:-RECO}"
 ORA_RECO_DISKGROUP_PARAM="^[a-zA-Z0-9]+$"
 
-#ORA_ASM_DISKS="${ORA_ASM_DISKS:-asm_disk_config.json}"
-#ORA_ASM_DISKS_PARAM="^.*\.json$"
-#ORA_ASM_DISKS_PARAM="^.*$"
+ORA_ASM_DISKS="${ORA_ASM_DISKS:-asm_disk_config.json}"
+ORA_ASM_DISKS_PARAM="^.*\.json$"
+ORA_ASM_DISKS_PARAM="^.*$"
+
+ORA_DATA_MOUNTS="${ORA_DATA_MOUNTS:-data_mounts_config.json}"
+ORA_DATA_MOUNTS_PARAM="^.*\.json$"
+ORA_DATA_MOUNTS_PARAM="^.*$"
 
 BACKUP_DEST="${BACKUP_DEST}"
 BACKUP_DEST_PARAM="^.*$"
@@ -122,7 +185,7 @@ INSTANCE_SSH_USER_PARAM="^[a-z0-9]+$"
 INSTANCE_ANSIBLE_HOSTGROUP_NAME="${INSTANCE_ANSIBLE_HOSTGROUP_NAME:-dbasm}"
 INSTANCE_ANSIBLE_HOSTGROUP_NAME_PARAM="^[a-z0-9]+$"
 
-INSTANCE_ANSIBLE_HOSTNAME="${INSTANCE_ANSIBLE_HOSTNAME:-oracledb1}"
+INSTANCE_ANSIBLE_HOSTNAME="${INSTANCE_ANSIBLE_HOSTNAME:-${INSTANCE_IP_ADDR}}"
 INSTANCE_ANSIBLE_HOSTNAME_PARAM="^[a-z0-9]+$"
 
 INSTANCE_SSH_KEY="${INSTANCE_SSH_KEY:-.vagrant/machines/oracledb1/virtualbox/private_key}"
@@ -137,20 +200,17 @@ NTP_PREF_PARAM=".*"
 ###
 GETOPT_MANDATORY="ora-swlib-bucket:,backup-dest:"
 GETOPT_OPTIONAL="ora-version:,ora-edition:,ora-staging:,ora-db-name:,ora-db-domain:,ora-db-charset:,ora-disk-mgmt:,ora-role-separation:"
-GETOPT_OPTIONAL="$GETOPT_OPTIONAL,ora-data-diskgroup:,ora-reco-diskgroup:,ora-asm-disks:,ora-listener-port:,ora-listener-name:"
+GETOPT_OPTIONAL="$GETOPT_OPTIONAL,ora-data-diskgroup:,ora-reco-diskgroup:,ora-asm-disks:,ora-data-mounts:,ora-listener-port:,ora-listener-name:"
 GETOPT_OPTIONAL="$GETOPT_OPTIONAL,ora-db-ncharset:,ora-db-container:,ora-db-type:,ora-pdb-name-prefix:,ora-pdb-count:,ora-redo-log-size:"
 GETOPT_OPTIONAL="$GETOPT_OPTIONAL,backup-redundancy:,archive-redundancy:,archive-online-days:,backup-level0-days:,backup-level1-days:"
 GETOPT_OPTIONAL="$GETOPT_OPTIONAL,backup-start-hour:,backup-start-min:,archive-backup-min:,backup-script-location:,backup-log-location:"
 GETOPT_OPTIONAL="$GETOPT_OPTIONAL,ora-swlib-type:,ora-swlib-path:,ora-swlib-credentials:,instance-ip-addr:,instance-ssh-user:"
-GETOPT_OPTIONAL="$GETOPT_OPTIONAL,instance-ssh-key:,instance-ansible-hostname:,instance-ansible-hostgroup-name:,ntp-pref:"
-
-GETOPT_OPTIONAL="$GETOPT_OPTIONAL,help,validate,skip-database-config"
-GETOPT_OPTIONAL="$GETOPT_OPTIONAL,allow-install-on-vm"
+GETOPT_OPTIONAL="$GETOPT_OPTIONAL,instance-ssh-key:,instance-ansible-hostname:,instance-ansible-hostgroup-name:,ntp-pref:,inventory-file:"
+GETOPT_OPTIONAL="$GETOPT_OPTIONAL,help,validate,check-instance,prep-host,install-sw,config-db,debug,allow-install-on-vm,skip-database-config"
 GETOPT_LONG="$GETOPT_MANDATORY,$GETOPT_OPTIONAL"
 GETOPT_SHORT="h"
 
 VALIDATE=0
-INVENTORY_FILE=inventory
 
 options=$(getopt --longoptions "$GETOPT_LONG" --options "$GETOPT_SHORT" -- "$@")
 
@@ -165,12 +225,22 @@ while true; do
     case "$1" in
     --ora-version)
         ORA_VERSION="$2"
+        if [[ ${ORA_VERSION} = "19" ]]   ; then ORA_VERSION="19.3.0.0.0"; fi
+        if [[ ${ORA_VERSION} = "18" ]]   ; then ORA_VERSION="18.0.0.0.0"; fi
+        if [[ ${ORA_VERSION} = "12" ]]   ; then ORA_VERSION="12.2.0.1.0"; fi
+        if [[ ${ORA_VERSION} = "12.2" ]] ; then ORA_VERSION="12.2.0.1.0"; fi
+        if [[ ${ORA_VERSION} = "12.1" ]] ; then ORA_VERSION="12.1.0.2.0"; fi
+        if [[ ${ORA_VERSION} = "11" ]]   ; then ORA_VERSION="11.2.0.4.0"; fi
         shift;
         ;;
     --ora-edition)
         ORA_EDITION="$(echo $2| tr 'a-z' 'A-Z')"
         shift;
         ;;
+    --inventory-file)
+       INVENTORY_FILE_PARAM="$2"
+       shift;
+	;;
     --ora-swlib-bucket)
         ORA_SWLIB_BUCKET="$2"
         shift;
@@ -223,10 +293,14 @@ while true; do
         ORA_RECO_DISKGROUP="$2"
         shift;
         ;;
-    #--ora-asm-disks)
-    #    ORA_ASM_DISKS="$2"
-    #    shift;
-    #    ;;
+    --ora-asm-disks)
+        ORA_ASM_DISKS="$2"
+        shift;
+        ;;
+    --ora-data-mounts)
+	ORA_DATA_MOUNTS="$2"
+	shift;
+	;;
     --ora-listener-port)
         ORA_LISTENER_PORT="$2"
         shift;
@@ -327,12 +401,27 @@ while true; do
         NTP_PREF="$2"
         shift;
         ;;
-    --skip-database-config)
-        PB_LIST="${PB_CHECK_INSTANCE} ${PB_PREP_HOST} ${PB_INSTALL_SW}"
+    --check-instance)
+	    PARAM_PB_CHECK_INSTANCE="${PB_CHECK_INSTANCE}"
+	    ;;
+    --prep-host)
+	    PARAM_PB_PREP_HOST="${PB_PREP_HOST}"
+        ;;
+    --install-sw)
+	    PARAM_PB_INSTALL_SW="${PB_INSTALL_SW}"
+	    ;; 
+    --config-db)
+	    PARAM_PB_CONFIG_DB="${PB_CONFIG_DB}"
+	    ;;
+    --debug)
+	    export ANSIBLE_DEBUG=1
         ;;
     --allow-install-on-vm)
         ANSIBLE_PARAMS="${ANSIBLE_PARAMS} -e allow_install_on_vm=true"
-	;;
+        ;;
+    --skip-database-config)
+        PB_LIST="${PB_CHECK_INSTANCE} ${PB_PREP_HOST} ${PB_INSTALL_SW}"
+        ;;
     --validate)
         VALIDATE=1
         ;;
@@ -350,7 +439,22 @@ while true; do
     esac
     shift
 done
-
+#
+# Build the playbook list to execute depending on the command line option if specified
+#
+for X in ${PARAM_PB_CHECK_INSTANCE} ${PARAM_PB_PREP_HOST} ${PARAM_PB_INSTALL_SW} ${PARAM_PB_CONFIG_DB}
+do
+	echo $X
+	if [[ -n ${X} ]]; then
+		PARAM_PB_LIST="${PARAM_PB_LIST} ${X}"
+	fi
+done
+if [[ -n ${PARAM_PB_LIST} ]]; then
+	PB_LIST=${PARAM_PB_LIST}
+fi
+#
+# Variables verification
+#
 shopt -s nocasematch
 
 [[ ! "$ORA_VERSION" =~ $ORA_VERSION_PARAM ]] && {
@@ -413,10 +517,14 @@ shopt -s nocasematch
     echo "Incorrect parameter provided for ora-reco-diskgroup: $ORA_RECO_DISKGROUP"
     exit 1
 }
-#[[ ! "$ORA_ASM_DISKS" =~ $ORA_ASM_DISKS_PARAM ]] && {
-#    echo "Incorrect parameter provided for ora-asm-disks: $ORA_ASM_DISKS"
-#    exit 1
-#}
+[[ ! "$ORA_ASM_DISKS" =~ $ORA_ASM_DISKS_PARAM ]] && {
+    echo "Incorrect parameter provided for ora-asm-disks: $ORA_ASM_DISKS"
+    exit 1
+}
+[[ ! "$ORA_DATA_MOUNTS" =~ $ORA_DATA_MOUNTS_PARAM ]] && {
+    echo "Incorrect parameter provided for ora-data-mounts: $ORA_DATA_MOUNTS"
+    exit 1
+}
 [[ ! "$ORA_LISTENER_PORT" =~ $ORA_LISTENER_PORT_PARAM ]] && {
     echo "Incorrect parameter provided for ora-listener-port: $ORA_LISTENER_PORT"
     exit 1
@@ -524,13 +632,30 @@ if [ "${INSTANCE_ANSIBLE_HOSTGROUP_NAME}" != "dbasm" -a ! -r group_vars/${INSTAN
     exit 2
 fi
 
-# Build the inventory file
-
-INVENTORY_FILE=inventory
-cat <<EOF > inventory
+#
+# Build the inventory file if no inventory file specified on the command line
+#
+if [[ -z ${INVENTORY_FILE_PARAM} ]]; then
+	INVENTORY_FILE="${INVENTORY_FILE}_${INSTANCE_ANSIBLE_HOSTNAME}_${ORA_VERSION}_${ORA_DB_NAME}"
+	cat <<EOF > ${INVENTORY_FILE}
 [${INSTANCE_ANSIBLE_HOSTGROUP_NAME}]
 ${INSTANCE_ANSIBLE_HOSTNAME} ansible_ssh_host=${INSTANCE_IP_ADDR} ansible_ssh_user=${INSTANCE_SSH_USER} ansible_ssh_private_key_file=${INSTANCE_SSH_KEY} ansible_ssh_extra_args=${INSTANCE_SSH_EXTRA_ARGS}
 EOF
+else
+	INVENTORY_FILE=${INVENTORY_FILE_PARAM}
+fi
+if [[ -f ${INVENTORY_FILE} ]]; then
+	printf "\n\033[1;36m%s\033[m\n\n" "Inventory file for this execution: ${INVENTORY_FILE}."
+else
+	printf "\n\033[1;31m%s\033[m\n\n" "Cannot find the inventory file ${INVENTORY_FILE}; cannot continue."
+	exit 124
+fi
+#
+# Build the logfile for this session
+#
+LOG_FILE="${LOG_FILE}_${INSTANCE_ANSIBLE_HOSTNAME}_${ORA_VERSION}_${ORA_DB_NAME}_${TIMESTAMP}.log"
+export ANSIBLE_LOG_PATH=${LOG_FILE}
+
 
 export ARCHIVE_BACKUP_MIN
 export ARCHIVE_ONLINE_DAYS
@@ -565,9 +690,10 @@ export ORA_SWLIB_TYPE
 export ORA_SWLIB_PATH
 export ORA_VERSION
 export NTP_PREF
+export PB_LIST
 
 echo -e "Running with parameters from command line or environment variables:\n"
-set | egrep '^(ORA_|BACKUP_|ARCHIVE_|INSTANCE_)' | grep -v '_PARAM='
+set | egrep '^(ORA_|BACKUP_|ARCHIVE_|INSTANCE_|PB_|ANSIBLE_)' | grep -v '_PARAM='
 echo
 
 ANSIBLE_PARAMS="-i ${INVENTORY_FILE} ${ANSIBLE_PARAMS}"
@@ -593,11 +719,24 @@ fi
 # exit on any error from the following scripts
 set -e
 
-for PLAYBOOK in check-instance.yml prep-host.yml install-sw.yml config-db.yml ; do
+#for PLAYBOOK in check-instance.yml prep-host.yml install-sw.yml config-db.yml ; do
+for PLAYBOOK in ${PB_LIST}
+do
     ANSIBLE_COMMAND="${ANSIBLE_PLAYBOOK} ${ANSIBLE_PARAMS} ${ANSIBLE_EXTRA_PARAMS} ${PLAYBOOK}"
     echo
     echo "Running Ansible playbook: ${ANSIBLE_COMMAND}"
     eval ${ANSIBLE_COMMAND}
 done
+#
+# Show the files used by this session
+#
+printf "\n\033[1;36m%s\033[m\n" "Files used by this session:"
+for X in ${INVENTORY_FILE} ${LOG_FILE}
+do
+	if [[ -f ${X} ]]; then
+		printf "\t\033[1;36m- %s\033[m\n" "${X}"
+	fi
+done
+printf "\n"
 
 exit 0;

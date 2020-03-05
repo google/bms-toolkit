@@ -2,20 +2,30 @@
 
 # Installation related variables:
 
-oracle_user_data_mounts:
-  - { purpose: software, blk_device: /dev/sdb, fstype: xfs, mount_point: /u01, mount_opts: "defaults" }
-  - { purpose: other, blk_device: /dev/sdc, fstype: xfs, mount_point: /u02, mount_opts: "defaults" }
+oracle_user_data_mounts_default:
+  - { purpose: software, blk_device: /dev/BOGUS, fstype: xfs, mount_point: /u01, mount_opts: "defaults" }
+  - { purpose: diag, blk_device: /dev/BOGUS, fstype: xfs, mount_point: /u02, mount_opts: "defaults" }
+data_mounts_definition_file: "{{ lookup('env','ORA_DATA_MOUNTS')|default('data_mounts_config.json',true) }}"
+data_mounts_input: "{{ lookup('file',data_mounts_definition_file,errors='ignore') }}"
+oracle_user_data_mounts: "{{ data_mounts_input | default(oracle_user_data_mounts_default,true) }}"
 
-asm_disks:
+# As all.yml precedes this var file, we have to define this here
+asm_disks_default:
 - diskgroup: "{{ data_diskgroup }}"
   disks:
   - name: DATA1
-    blk_device: /dev/sdd
+    blk_device: /dev/BOGUS
 - diskgroup: "{{ reco_diskgroup }}"
   disks:
   - name: RECO1
-    blk_device: /dev/sde
+    blk_device: /dev/BOGUS
 - diskgroup: DEMO
   disks:
   - name: DEMO1
-    blk_device: /dev/sdf
+    blk_device: /dev/BOGUS
+
+asm_definition_file: "{{ lookup('env','ORA_ASM_DISKS')|default('asm_disk_config.json',true) }}"
+
+# Read ASM disk group and disk details from a valid JSON formatted file (locally or fully qualified)
+asm_disk_input: "{{ lookup('file',asm_definition_file,errors='ignore') }}"
+asm_disks: "{{ asm_disk_input | default(asm_disks_default,true) }}"

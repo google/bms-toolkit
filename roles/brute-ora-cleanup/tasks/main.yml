@@ -156,6 +156,13 @@
     become: yes
     become_user: root
 
+  - name: Refresh kernel partition table view
+    command: "blockdev --rereadpt {{ item.blk_device }}"
+    with_items:
+      - "{{ oracle_user_data_mounts }}"
+    become: yes
+    become_user: root
+
   - name: Delete partition all ASM disks
     #debug: msg="{{ item }}"
     parted:

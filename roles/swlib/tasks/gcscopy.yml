@@ -61,7 +61,7 @@
     executable: /bin/bash
   with_items:
     - "{{ gi_patches }}"
-  when: item.release == oracle_ver
+  when: item.release == oracle_rel and patching_type == "gi_patching"
   delegate_to: 127.0.0.1
 
 - name: verifying gi patch archive integrity
@@ -181,7 +181,7 @@
     executable: /bin/bash
   with_items:
     - "{{ rdbms_patches }}"
-  when: item.release == oracle_ver
+  when: item.release == oracle_rel and patching_type == "db_patching"
   delegate_to: 127.0.0.1
 
 - name: verifying rdbms patch file integrity

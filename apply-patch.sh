@@ -11,8 +11,14 @@ fi
 ORA_VERSION="${ORA_VERSION:-18.0.0.0.0}"
 ORA_VERSION_PARAM='^(19\.3\.0\.0\.0|18\.0\.0\.0\.0|12\.2\.0\.1\.0|12\.1\.0\.2\.0|11\.2\.0\.4\.0)$'
 
+ORA_RELEASE="${ORA_RELEASE}"
+ORA_RELEASE_PARAM=""
+
 ORA_SWLIB_BUCKET="${ORA_SWLIB_BUCKET}"
 ORA_SWLIB_BUCKET_PARAM="^gs://.+"
+
+ORA_SWLIB_PATH="${ORA_SWLIB_PATH:-/swlib}"
+ORA_SWLIB_PATH_PARAM="^/.*"
 
 ORA_STAGING="${ORA_STAGING:-/u02/oracle_install}"
 ORA_STAGING_PARAM="^/.+$"
@@ -20,9 +26,14 @@ ORA_STAGING_PARAM="^/.+$"
 ORA_DB_NAME="${ORA_DB_NAME:-ORCL}"
 ORA_DB_NAME_PARAM="^[a-zA-Z0-9_$]+$"
 
+#
+# The default inventory file
+#
+INVENTORY_FILE="inventory"
+
 ###
 GETOPT_MANDATORY="ora-swlib-bucket:"
-GETOPT_OPTIONAL="ora-version:,ora-staging:,ora-db-name:"
+GETOPT_OPTIONAL="ora-version:,ora-release:,ora-swlib-path:,ora-staging:,ora-db-name:,inventory-file:"
 GETOPT_OPTIONAL="$GETOPT_OPTIONAL,help,validate"
 GETOPT_LONG="$GETOPT_MANDATORY,$GETOPT_OPTIONAL"
 GETOPT_SHORT="h"
@@ -44,12 +55,24 @@ while true; do
         ORA_VERSION="$2"
         shift;
         ;;
+    --ora-release)
+        ORA_RELEASE="$2"
+        shift;
+        ;;
     --ora-swlib-bucket)
         ORA_SWLIB_BUCKET="$2"
         shift;
         ;;
+    --ora-swlib-path)
+        ORA_SWLIB_PATH="$2"
+        shift;
+        ;;
     --ora-staging)
         ORA_STAGING="$2"
+        shift;
+        ;;
+   --inventory-file)
+        INVENTORY_FILE="$2"
         shift;
         ;;
     --ora-db-name)
@@ -80,8 +103,16 @@ shopt -s nocasematch
     echo "Incorrect parameter provided for ora-version: $ORA_VERSION"
     exit 1
 }
+[[ ! "$ORA_RELEASE" =~ $ORA_RELEASE_PARAM ]] && {
+    echo "Incorrect parameter provided for ora-version: $ORA_RELEASE"
+    exit 1
+}
 [[ ! "$ORA_SWLIB_BUCKET" =~ $ORA_SWLIB_BUCKET_PARAM ]] && {
     echo "Incorrect parameter provided for ora-swlib-bucket: $ORA_SWLIB_BUCKET"
+    exit 1
+}
+[[ ! "$ORA_SWLIB_PATH" =~ $ORA_SWLIB_PATH_PARAM ]] && {
+    echo "Incorrect parameter provided for ora-swlib-path: $ORA_SWLIB_PATH"
     exit 1
 }
 [[ ! "$ORA_STAGING" =~ $ORA_STAGING_PARAM ]] && {
@@ -102,13 +133,16 @@ fi
 export ORA_DB_NAME
 export ORA_STAGING
 export ORA_SWLIB_BUCKET
+export ORA_SWLIB_PATH
 export ORA_VERSION
+export ORA_RELEASE
 
 echo -e "Running with parameters from command line or environment variables:\n"
 set | egrep '^(ORA_|BACKUP_|ARCHIVE_)' | grep -v '_PARAM='
 echo
 
-ANSIBLE_PARAMS="$*"
+ANSIBLE_PARAMS="-i ${INVENTORY_FILE} "
+ANSIBLE_PARAMS=${ANSIBLE_PARAMS}" $*"
 
 echo "Ansible params: ${ANSIBLE_PARAMS}"
 

@@ -1,32 +1,4 @@
 ---
-  - name: Update OPatch in GRID_HOME
-    unarchive:
-      src: "{{ swlib_path }}/{{ item.patchfile }}"
-      dest: "{{ grid_home }}"
-      remote_src: yes
-    with_items:
-      - "{{ opatch_patches }}"
-    when:
-      - item.release == oracle_ver
-      - item.category == "OPatch"
-    become: yes
-    become_user: "{{ grid_user }}"
-    tags: update_opatch
-
-  - name: Update OPatch in RDBMS_HOME
-    unarchive:
-      src: "{{ swlib_path }}/{{ item.patchfile }}"
-      dest: "{{ oracle_home }}"
-      remote_src: yes
-    with_items:
-      - "{{ opatch_patches }}"
-    when:
-      - item.release == oracle_ver
-      - item.category == "OPatch"
-    become: yes
-    become_user: "{{ oracle_user }}"
-    tags: patch_grid,update_opatch
-
   - name: Create OCM response file
     script: expect_rsp.sh {{ oracle_base }} {{ oracle_home }} {{ swlib_unzip_path }}
     args:
@@ -53,14 +25,50 @@
     become: yes
     become_user: root
 
+  - name: (GI) Copy patches from bucket
+    import_role:
+      name: swlib
+      tasks_from: gcscopy
+    vars:
+      patching_type: gi_patching
+    tags: patch_grid,sw_copy
+
+  - name: (GI) Update OPatch
+    unarchive:
+      src: "{{ swlib_unzip_path }}/{{ item.patchfile }}"
+      dest: "{{ grid_home }}"
+      remote_src: yes
+    with_items:
+      - "{{ opatch_patches }}"
+    when:
+      - item.release == oracle_ver
+      - item.category == "OPatch"
+    become: yes
+    become_user: "{{ grid_user }}"
+    tags: update_opatch_gi
+
+  - name: (RDBMS) Update OPatch
+    unarchive:
+      src: "{{ swlib_unzip_path }}/{{ item.patchfile }}"
+      dest: "{{ oracle_home }}"
+      remote_src: yes
+    with_items:
+      - "{{ opatch_patches }}"
+    when:
+      - item.release == oracle_ver
+      - item.category == "OPatch"
+    become: yes
+    become_user: "{{ oracle_user }}"
+    tags: update_opatch_db
+
   - name: (GI) Unzip patch
     unarchive:
-      src: "{{ swlib_path }}/{{ item.patchfile }}"
+      src: "{{ swlib_unzip_path }}/{{ item.patchfile }}"
       dest: "{{ swlib_unzip_path }}"
       remote_src: yes
     with_items:
       - "{{ gi_patches }}"
-    when: item.release == oracle_ver and item.category != "HAS_Bugfix"
+    when: item.release == oracle_rel and item.category != "HAS_Bugfix"
     become: yes
     become_user: "{{ grid_user }}"
     tags: patch_grid,sw_unzip
@@ -76,16 +84,44 @@
       - "{{ gi_patches }}"
     loop_control:
       loop_var: patch
-    when: patch.release == oracle_ver and patch.category != "HAS_Bugfix"
+    when: patch.release == oracle_rel and patch.category != "HAS_Bugfix"
     tags: patch_grid,opatch_apply
 
-  - name: (RDBMS) Remove state file
+  - name: (GI) Remove unzipped patch
+    file:
+      path: "{{ swlib_unzip_path }}/{{ item.patchnum }}"
+      state: absent
+    with_items:
+      - "{{ gi_patches }}"
+    when: item.release == oracle_rel and item.category != "HAS_Bugfix"
+    become: yes
+    become_user: root
+    tags: patch_grid,sw_remove
+
+  - name: (RDBMS) Copy patches from bucket
+    import_role:
+      name: swlib
+      tasks_from: gcscopy
+    vars:
+      patching_type: db_patching
+    tags: patch_rdbms,sw_copy
+
+  - name: (RDBMS) Unzip patch
+    unarchive:
+      src: "{{ swlib_unzip_path }}/{{ item.patchfile }}"
+      dest: "{{ swlib_unzip_path }}"
+      remote_src: yes
+    with_items:
+      - "{{ rdbms_patches }}"
+    when: item.release == oracle_rel
+    become: yes
+    become_user: "{{ oracle_user }}"
+    tags: patch_rdbms,sw_unzip
+
+  - name: (RDBMS) remove db_state.out if it exists
     file:
       path: "{{ swlib_unzip_path }}/db_state.out"
       state: absent
-    become: yes
-    become_user: root
-    tags: patch_rdbms,pre_rdbms,stop_home
 
   - name: (RDBMS) Stop home
     command: "{{ oracle_home }}/bin/srvctl stop home -o {{ oracle_home }} -t immediate -s {{ swlib_unzip_path }}/db_state.out"
@@ -103,18 +139,6 @@
       verbosity: 1
     tags: patch_rdbms
 
-  - name: (RDBMS) Unzip patch
-    unarchive:
-      src: "{{ swlib_path }}/{{ item.patchfile }}"
-      dest: "{{ swlib_unzip_path }}"
-      remote_src: yes
-    with_items:
-      - "{{ rdbms_patches }}"
-    when: item.release == oracle_ver
-    become: yes
-    become_user: "{{ oracle_user }}"
-    tags: patch_rdbms,sw_unzip
-
   - name: (RDBMS) Apply patch
     include_tasks: opatch_apply.yml
     vars:
@@ -126,8 +150,19 @@
       - "{{ rdbms_patches }}"
     loop_control:
       loop_var: patch
-    when: patch.release == oracle_ver
+    when: patch.release == oracle_rel
     tags: patch_rdbms,opatch_apply
+
+  - name: (RDBMS) Remove unzipped patch
+    file:
+      path: "{{ swlib_unzip_path }}/{{ item.patchnum }}"
+      state: absent
+    with_items:
+      - "{{ rdbms_patches }}"
+    when: item.release == oracle_rel
+    become: yes
+    become_user: root
+    tags: patch_rdbms,sw_remove
 
   - name: (RDBMS) Start home
     command: "{{ oracle_home }}/bin/srvctl start home -o {{ oracle_home }} -s {{ swlib_unzip_path }}/db_state.out"

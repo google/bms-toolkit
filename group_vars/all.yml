@@ -23,6 +23,7 @@ ntp_preferred: "{{ lookup('env','NTP_PREF')|lower|default('',true) }}"
 db_name: "{{ lookup('env','ORA_DB_NAME')|default('ORCL',true) }}"
 db_domain: "{{ lookup('env','ORA_DB_DOMAIN')|default('world',true) }}"
 oracle_ver: "{{ lookup('env','ORA_VERSION')|default('18.0.0.0.0',true) }}"
+oracle_rel: "{{ lookup('env','ORA_RELEASE')|default('latest',true) }}"
 oracle_edition: "{{ lookup('env','ORA_EDITION')|default('EE',true) }}"
 
 container_db: "{{ lookup('env','ORA_DB_CONTAINER')|lower|default('false',true) }}"
@@ -48,26 +49,6 @@ role_separaion: "{{ lookup('env','ORA_ROLE_SEPARATION')|lower|default('true',tru
 
 data_diskgroup: "{{ lookup('env','ORA_DATA_DISKGROUP')|default('DATA',true) }}"
 reco_diskgroup: "{{ lookup('env','ORA_RECO_DISKGROUP')|default('RECO',true) }}"
-
-asm_disks:
-- diskgroup: "{{ data_diskgroup }}"
-  disks:
-  - name: DATA1
-    blk_device: /dev/sdd_BOGUS
-- diskgroup: "{{ reco_diskgroup }}"
-  disks:
-  - name: RECO1
-    blk_device: /dev/sde_BOGUS
-- diskgroup: DEMO
-  disks:
-  - name: DEMO1
-    blk_device: /dev/sdf_BOGUS
-
-#asm_definition_file: "{{ lookup('env','ORA_ASM_DISKS')|default('asm_disk_config.json',true) }}"
-
-# Read ASM disk group and disk details from a valid JSON formatted file (locally or fully qualified)
-#asm_disk_input: "{{ lookup('file',asm_definition_file,errors='ignore') }}"
-#asm_disks: "{{ asm_disk_input|default(asm_disks_default,true) }}"
 
 # Listener related variables:
 

@@ -39,13 +39,13 @@
           The account {{ ansible_user }} used to connect has sudo root privileges, continuing
 
     - name: Check for Python installation
-      raw: test -e /usr/bin/python
+      raw: test -e /usr/bin/python || test -e /usr/bin/python3
       changed_when: false
       failed_when: false
       register: check_python
 
     - name: Install Python via raw if not installed
-      raw: sudo yum -y install python
+      raw: sudo yum -y install python3
       when: check_python.rc != 0
 
     - name: Test that we have an usable python on the instance

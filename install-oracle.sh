@@ -197,6 +197,9 @@ INSTANCE_SSH_EXTRA_ARGS_PARAM="^/.+$"
 NTP_PREF="${NTP_PREF}"
 NTP_PREF_PARAM=".*"
 
+COMPATIBLE_RDBMS="${COMPATIBLE_RDBMS:-${ORA_VERSION}}"
+COMPATIBLE_RDBMS_PARAM="^[0-9][0-9]\.[0-9].*"
+
 ###
 GETOPT_MANDATORY="ora-swlib-bucket:,backup-dest:"
 GETOPT_OPTIONAL="ora-version:,ora-edition:,ora-staging:,ora-db-name:,ora-db-domain:,ora-db-charset:,ora-disk-mgmt:,ora-role-separation:"
@@ -205,7 +208,7 @@ GETOPT_OPTIONAL="$GETOPT_OPTIONAL,ora-db-ncharset:,ora-db-container:,ora-db-type
 GETOPT_OPTIONAL="$GETOPT_OPTIONAL,backup-redundancy:,archive-redundancy:,archive-online-days:,backup-level0-days:,backup-level1-days:"
 GETOPT_OPTIONAL="$GETOPT_OPTIONAL,backup-start-hour:,backup-start-min:,archive-backup-min:,backup-script-location:,backup-log-location:"
 GETOPT_OPTIONAL="$GETOPT_OPTIONAL,ora-swlib-type:,ora-swlib-path:,ora-swlib-credentials:,instance-ip-addr:,instance-ssh-user:"
-GETOPT_OPTIONAL="$GETOPT_OPTIONAL,instance-ssh-key:,instance-ansible-hostname:,instance-ansible-hostgroup-name:,ntp-pref:,inventory-file:"
+GETOPT_OPTIONAL="$GETOPT_OPTIONAL,instance-ssh-key:,instance-ansible-hostname:,instance-ansible-hostgroup-name:,ntp-pref:,inventory-file:,compatible-rdbms:"
 GETOPT_OPTIONAL="$GETOPT_OPTIONAL,help,validate,check-instance,prep-host,install-sw,config-db,debug,allow-install-on-vm,skip-database-config"
 GETOPT_LONG="$GETOPT_MANDATORY,$GETOPT_OPTIONAL"
 GETOPT_SHORT="h"
@@ -239,6 +242,10 @@ while true; do
         ;;
     --inventory-file)
        INVENTORY_FILE_PARAM="$2"
+       shift;
+	;;
+    --compatible-rdbms)
+       COMPATIBLE_RDBMS="$2"
        shift;
 	;;
     --ora-swlib-bucket)
@@ -613,7 +620,23 @@ shopt -s nocasematch
     echo "Incorrect parameter provided for ntp-pref: $NTP_PREF"
     exit 1
 }
+[[ ! "$COMPATIBLE_RDBMS" =~ $COMPATIBLE_RDBMS_PARAM ]] && {
+    echo "Incorrect parameter provided for compatible-rdbms: $COMPATIBLE_RDBMS"
+    exit 1
+}
 
+#
+# compatible-rdbms cannot be > ORA-VERSION
+#
+   NON_DOTTED_VER=$(echo $ORA_VERSION | sed s'/\.//g')
+NON_DOTTED_COMPAT=$(echo $COMPATIBLE_RDBMS | sed s'/\.//g' | sed s'/0*$//')
+NON_DOTTED_VER=$(echo ${NON_DOTTED_VER:0:${#NON_DOTTED_COMPAT}})
+
+if (( NON_DOTTED_COMPAT > NON_DOTTED_VER )) 
+then
+        printf "\n\033[1;36m%s\033[m\n\n" "compatible-rdbms cannot be more than the database version we will be installed."
+	exit 345
+fi
 
 # Mandatory options
 if [ "${ORA_SWLIB_BUCKET}" = "" ]; then
@@ -691,6 +714,7 @@ export ORA_SWLIB_PATH
 export ORA_VERSION
 export NTP_PREF
 export PB_LIST
+export COMPATIBLE_RDBMS
 
 echo -e "Running with parameters from command line or environment variables:\n"
 set | egrep '^(ORA_|BACKUP_|ARCHIVE_|INSTANCE_|PB_|ANSIBLE_)' | grep -v '_PARAM='

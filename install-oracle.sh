@@ -143,7 +143,9 @@ GETOPT_OPTIONAL="$GETOPT_OPTIONAL,backup-redundancy:,archive-redundancy:,archive
 GETOPT_OPTIONAL="$GETOPT_OPTIONAL,backup-start-hour:,backup-start-min:,archive-backup-min:,backup-script-location:,backup-log-location:"
 GETOPT_OPTIONAL="$GETOPT_OPTIONAL,ora-swlib-type:,ora-swlib-path:,ora-swlib-credentials:,instance-ip-addr:,instance-ssh-user:"
 GETOPT_OPTIONAL="$GETOPT_OPTIONAL,instance-ssh-key:,instance-ansible-hostname:,instance-ansible-hostgroup-name:,ntp-pref:"
+
 GETOPT_OPTIONAL="$GETOPT_OPTIONAL,help,validate,skip-database-config"
+GETOPT_OPTIONAL="$GETOPT_OPTIONAL,allow-install-on-vm"
 GETOPT_LONG="$GETOPT_MANDATORY,$GETOPT_OPTIONAL"
 GETOPT_SHORT="h"
 
@@ -328,6 +330,9 @@ while true; do
     --skip-database-config)
         PB_LIST="${PB_CHECK_INSTANCE} ${PB_PREP_HOST} ${PB_INSTALL_SW}"
         ;;
+    --allow-install-on-vm)
+        ANSIBLE_PARAMS="${ANSIBLE_PARAMS} -e allow_install_on_vm=true"
+	;;
     --validate)
         VALIDATE=1
         ;;
@@ -565,9 +570,8 @@ echo -e "Running with parameters from command line or environment variables:\n"
 set | egrep '^(ORA_|BACKUP_|ARCHIVE_|INSTANCE_)' | grep -v '_PARAM='
 echo
 
-ANSIBLE_PARAMS="-i ${INVENTORY_FILE}"
+ANSIBLE_PARAMS="-i ${INVENTORY_FILE} ${ANSIBLE_PARAMS}"
 ANSIBLE_EXTRA_PARAMS="${*}"
-
 
 echo "Ansible params: ${ANSIBLE_EXTRA_PARAMS}"
 

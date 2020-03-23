@@ -9,6 +9,8 @@
           You must update Ansible to at least 2.8 to use these playbooks
         success_msg: >-
           Ansible version is {{ ansible_version.full }} , continuing
+  vars:
+    allow_install_on_vm: false
 
   tasks:
 
@@ -16,11 +18,12 @@
       setup:
  
     - fail:
-        msg: The system may not be provisioned on GCE according to Google.
+        msg: The system may not be provisioned on VM by default. Change allow_install_on_vm to true to test
       when:
         - ansible_system_vendor == "Google"
         - ansible_virtualization_type == "kvm"
         - ansible_virtualization_role == "guest"
+        - allow_install_on_vm == false
 
     - name: Test that we can connect to the instance
       raw: sudo -u root whoami

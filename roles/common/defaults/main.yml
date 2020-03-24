@@ -10,21 +10,21 @@
   asm_disk_control: "{% if asm_disk_management == 'asmlib' and ansible_distribution == 'OracleLinux' %}asmlib{% else %}udev{% endif %}"
 
   oracle_users:
-    - { name: "{{ oracle_user }}", comment: "", uid: 54321, group: "{{ oracle_group }}" }
-    - { name: "{{ grid_user }}", comment: "", uid: 54322, group: "{{ oracle_group }}" }
+    - { name: "{{ oracle_user }}", comment: "", uid: 801, group: "{{ oracle_group }}" }
+    - { name: "{{ grid_user }}", comment: "", uid: 802, group: "{{ oracle_group }}" }
 
   oracle_groups:
-    - { group: oinstall, gid: 54321 }
-    - { group: dba, gid: 54322 }
-    - { group: oper, gid: 54323 }
-    - { group: backupdba, gid: 54324 }
-    - { group: dgdba, gid: 54325 }
-    - { group: kmdba, gid: 54326 }
+    - { group: oinstall, gid: 801 }
+    - { group: dba, gid: 802 }
+    - { group: oper, gid: 803 }
+    - { group: backupdba, gid: 804 }
+    - { group: dgdba, gid: 805 }
+    - { group: kmdba, gid: 806 }
 
   asm_groups:
-    - { group: asmdba, gid: 54327 }
-    - { group: asmoper, gid: 54328 }
-    - { group: asmadmin, gid: 54329 }
+    - { group: asmdba, gid: 807 }
+    - { group: asmoper, gid: 808 }
+    - { group: asmadmin, gid: 809 }
 
   oracle_dirs:
     - { name: "{{ swlib_unzip_path }}", owner: "{{ oracle_user }}", group: "{{ oracle_group }}", mode: 775 }

@@ -5,3 +5,5 @@
 hosts.yml
 .terraform
 inventory
+logs/*.log
+inventory_files/*

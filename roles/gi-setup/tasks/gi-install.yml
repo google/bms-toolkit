@@ -136,6 +136,18 @@
     become_user: "{{ grid_user }}"
     tags: gi-setup,patch
 
+  - name: 12.2 bugfix - MOS (Doc ID 2401455.1)
+    copy:
+      src: "{{ oracle_root }}/oraInventory/oraInst.loc"
+      dest: "{{ grid_home }}/oraInst.loc"
+      remote_src: yes
+      owner: "{{ grid_user }}"
+      group: "{{ oracle_group }}"
+      mode: '0640'
+    when: oracle_ver == '12.2.0.1.0'
+    become: yes
+    become_user: root
+
   - name: gi-install | Create patch-dirs
     file:
       path: "{{ swlib_unzip_path }}/{{ item.patchfile | replace('.zip','') }}"
@@ -167,13 +179,13 @@
       export PATH={{ grid_home }}/OPatch:${PATH}
       if [ "{{ item.patchutil }}" = "opatch" ]; then
          if [ -f "{{ swlib_unzip_path }}/ocm.rsp" ]; then
-            opatch napply -oh {{ grid_home }} {{ swlib_unzip_path }}/{{ item.patchfile | replace('.zip','') }}/{{ item.patchnum }} \
+            opatch napply -silent -oh {{ grid_home }} {{ swlib_unzip_path }}/{{ item.patchfile | replace('.zip','') }}/{{ item.patchnum }} \
               -ocmrf {{ swlib_unzip_path }}/ocm.rsp
          else
-            opatch napply -oh {{ grid_home }} {{ swlib_unzip_path }}/{{ item.patchfile | replace('.zip','') }}/{{ item.patchnum }} -silent
+            opatch napply -silent -oh {{ grid_home }} {{ swlib_unzip_path }}/{{ item.patchfile | replace('.zip','') }}/{{ item.patchnum }} -silent
          fi
       elif [ "{{ item.patchutil }}" = "gridsetup" ]; then
-         {{ grid_home }}/gridSetup.sh -applyOneOffs {{ swlib_unzip_path }}/{{ item.patchfile | replace('.zip','') }}/{{ item.patchnum }}
+         {{ grid_home }}/gridSetup.sh -silent -applyOneOffs {{ swlib_unzip_path }}/{{ item.patchfile | replace('.zip','') }}/{{ item.patchnum }} -responseFile {{ swlib_unzip_path }}/grid_install.rsp
       fi
     with_items:
       - "{{ gi_patches }}"

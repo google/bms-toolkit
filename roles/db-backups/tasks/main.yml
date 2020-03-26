@@ -43,8 +43,10 @@
       user: "{{ oracle_user }}"
       job: "{{ scripts_dir }}/rman_full_backup.sh {{ db_name }} {{ item.level }} {{ rman_db_bu_redundancy }} {{ rman_arch_redundancy }}"
     with_items:
-      - "{{ [ { 'level': '0', 'days': '{{ full_bu_level0_day }}' } ] }}"
-      - "{{ [ { 'level': '1', 'days': '{{ full_bu_level1_days }}' } ] }}"
+#      - "{{ [ { 'level': '0', 'days': '{{ full_bu_level0_day }}' } ] }}"
+#      - "{{ [ { 'level': '1', 'days': '{{ full_bu_level1_days }}' } ] }}"
+       - {level: 0, days: '{{ full_bu_level0_day }}' }
+       - {level: 1, days: '{{ full_bu_level1_days }}' }
     become: yes
     become_user: "{{ oracle_user }}"
     tags: db-backups,add-backups

@@ -11,6 +11,10 @@
       that: "ansible_userspace_architecture == 'x86_64'"
     tags: oscheck
 
+  - name: Ensure yum is not running, send Ctrl-C if it is
+    shell: pidof -x /usr/bin/yum /bin/yum | xargs -t -r -n 1 kill -INT
+    tags: os_packages
+
   - name: Remove Chrony package
     package:
       name:  chrony

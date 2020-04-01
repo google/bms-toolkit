@@ -12,7 +12,7 @@ packages:
   - expect
   - wget
   - net-tools
-  - pwgen
+  #- pwgen
   #- dnsmasq
 
 

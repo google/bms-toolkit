@@ -1,0 +1,4 @@
+---
+pwgen_file: pwgen.sh
+pwgen_path: /usr/local/bin
+pass_param: "{{pwgen_path}}/{{pwgen_file}} 16"

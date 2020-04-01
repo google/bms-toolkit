@@ -189,11 +189,14 @@ This will launch the installation process which should take approximately 20 min
 
 This wrapper script create an inventory file for ansible, using `--instance-ansible-hostgroup-name db-asm-1` as a hostgroup name.
 This is where the hostgroup name needs to match the customized group_vars file we have created previously.
-
+#
+# compatible.rdbms
+#
+The --compatible.rdbms option allows to chose the value for this parameter -- if not specified, it takes the value of the Oracle version installed
+As documented in https://docs.oracle.com/database/121/OSTMG/GUID-BC6544D7-6D59-42B3-AE1F-4201D3459ADD.htm#GUID-5AC1176D-D331-4C1C-978F-0ECA43E0900F, keep in mind that if compatible.rdbms is set to a value lower than 12.1, each ASM disk has a 2 terabytes (TB) maximum storage limit
+#
 ## Host Setup Steps ##
-
-
-
+#
 The first set of activities involve setting up the host servers in preparation of installing Oracle software. This can include creating ASM candidate disks (using udev rules, not ASMlib or ASMFD currently).
 
 These activites are mostly root steps and have to be run with superuser privileges.

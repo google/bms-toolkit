@@ -48,19 +48,8 @@
       comment: "{{ item.comment }}"
       uid: "{{ item.uid }}"
       group: "{{ item.group }}"
-      #skeleton: "/etc/skel"
     with_items: "{{ oracle_users }}"
     tags: os-users
-
-  - name: List contents of GI home 1
-    shell: ls -al /home/grid
-    register: out
-    when: role_separaion|bool
-    become: yes
-    become_user: "{{ grid_user }}"
-    tags: os-users
-
-  - debug: var=out.stdout_lines
 
   - name: Add necessary groups to grid user
     user:
@@ -143,16 +132,6 @@
     become_user: "{{ oracle_user }}"
     tags: os-users
 
-  - name: List contents of GI home
-    shell: ls -al /home/grid
-    register: out
-    when: role_separaion|bool
-    become: yes
-    become_user: "{{ grid_user }}"
-    tags: os-users
-
-  - debug: var=out.stdout_lines
-
   - name: Append GI variables to bash_profile
     blockinfile:
       block: "{{ lookup('template', 'bash_profile_gi.j2') }}"
@@ -170,7 +149,6 @@
     tags: asm-disks
 
   - name: Partition all ASM raw disks
-    #debug: msg="{{ item }}"
     parted:
       device: "{{ item.1.blk_device }}"
       number: 1
@@ -188,6 +166,13 @@
         - '!all'
         - '!any'
         - devices
+
+  - name: (debug) asm disk configuration
+    debug:
+      msg:
+       - asm_disks {{ asm_disks }}
+       - asm_def_file {{ asm_definition_file }}
+       - asm_disk_input {{ asm_disk_input }}
 
   - name: (udev) Add ASM disk rules on virtualbox
     blockinfile:

@@ -25,6 +25,20 @@
   when: item.version == oracle_ver
   delegate_to: 127.0.0.1
 
+- name: verifying gi zip file integrity
+  shell: |
+    set -o pipefail
+    {% for i in item.files %}
+    unzip -t {{ swlib_path }}/{{ i }} > /dev/null
+        {% endfor %}
+  register: shell_result
+  args:
+    executable: /bin/bash
+  with_items:
+    - "{{ gi_software }}"
+  when: item.version == oracle_ver
+  failed_when: shell_result.stderr != ""
+
 - name: copy gi patch archives from gcs to BM instance
   shell: |
     set -o pipefail
@@ -41,7 +55,7 @@
         fi
       else
         gsutil cat gs://{{ swlib_mount_src}}/{{ item.patchfile }} | ssh -i {{ ansible_ssh_private_key_file}} {{ ansible_ssh_extra_args }} \
-          {{ ansible_ssh_user }}@{{ ansible_ssh_host }} "cat > {{ swlib_path }}/{{ item.patchfile }}" 
+          {{ ansible_ssh_user }}@{{ ansible_ssh_host }} "cat > {{ swlib_path }}/{{ item.patchfile }}"
     fi
   args:
     executable: /bin/bash
@@ -49,6 +63,21 @@
     - "{{ gi_patches }}"
   when: item.release == oracle_ver
   delegate_to: 127.0.0.1
+
+- name: verifying gi patch archive integrity
+  shell: |
+    set -o pipefail
+    {% for i in item.files %}
+    unzip -t {{ swlib_path }}/{{ i }} > /dev/null
+        {% endfor %}
+  register: shell_result
+  args:
+    executable: /bin/bash
+  with_items:
+    - "{{ gi_patches }}"
+  when: item.version == oracle_ver
+  failed_when: shell_result.stderr != ""
+
 
 - name: copy gi opatches archives from gcs to BM instance
   shell: |
@@ -66,7 +95,7 @@
         fi
       else
         gsutil cat gs://{{ swlib_mount_src}}/{{ item.patchfile }} | ssh -i {{ ansible_ssh_private_key_file}} {{ ansible_ssh_extra_args }} \
-          {{ ansible_ssh_user }}@{{ ansible_ssh_host }} "cat > {{ swlib_path }}/{{ item.patchfile }}" 
+          {{ ansible_ssh_user }}@{{ ansible_ssh_host }} "cat > {{ swlib_path }}/{{ item.patchfile }}"
     fi
   args:
     executable: /bin/bash
@@ -74,6 +103,19 @@
     - "{{ opatch_patches }}"
   when: item.release == oracle_ver
   delegate_to: 127.0.0.1
+
+- name: verifying opatch zip file integrity
+  shell: |
+    set -o pipefail
+    unzip -t {{ swlib_path }}/{{ item.patchfile }} > /dev/null
+  register: shell_result
+  args:
+    executable: /bin/bash
+  with_items:
+    - "{{ opatch_patches }}"
+  when: item.release == oracle_ver
+  failed_when: shell_result.stderr != ""
+
 
 - name: copy rdbms archives from gcs to BM instance
   shell: |
@@ -102,6 +144,21 @@
   when: item.version == oracle_ver
   delegate_to: 127.0.0.1
 
+- name: verifying rdbms archives integrity
+  shell: |
+    set -o pipefail
+    {% for i in item.files %}
+    unzip -t {{ swlib_path }}/{{ i }} > /dev/null
+        {% endfor %}
+  register: shell_result
+  args:
+    executable: /bin/bash
+  with_items:
+    - "{{ rdbms_software }}"
+  when: item.version == oracle_ver
+  failed_when: shell_result.stderr != ""
+
+
 - name: copy rdbms patch archives from gcs to BM instance
   shell: |
     set -o pipefail
@@ -118,7 +175,7 @@
         fi
       else
         gsutil cat gs://{{ swlib_mount_src}}/{{ item.patchfile }} | ssh -i {{ ansible_ssh_private_key_file}} {{ ansible_ssh_extra_args }} \
-          {{ ansible_ssh_user }}@{{ ansible_ssh_host }} "cat > {{ swlib_path }}/{{ item.patchfile }}" 
+          {{ ansible_ssh_user }}@{{ ansible_ssh_host }} "cat > {{ swlib_path }}/{{ item.patchfile }}"
     fi
   args:
     executable: /bin/bash
@@ -126,3 +183,17 @@
     - "{{ rdbms_patches }}"
   when: item.release == oracle_ver
   delegate_to: 127.0.0.1
+
+- name: verifying rdbms patch file integrity
+  shell: |
+    set -o pipefail
+    {% for i in item.files %}
+    unzip -t {{ swlib_path }}/{{ i }} > /dev/null
+        {% endfor %}
+  register: shell_result
+  args:
+    executable: /bin/bash
+  with_items:
+    - "{{ rdbms_patches }}"
+  when: item.version == oracle_ver
+  failed_when: shell_result.stderr != ""

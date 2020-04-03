@@ -58,7 +58,7 @@
       append: yes
     with_items:
       - "{{ asm_groups }}"
-      - { group: dba, gid: 54322 }
+      - "{{ extra_asm_groups }}"
     tags: os-users,os-groups
 
   - name: Add necessary groups to the oracle user
@@ -68,8 +68,7 @@
       append: yes
     with_items:
       - "{{ oracle_groups }}"
-      - { group: "asmadmin", gid: 54329 }
-      - { group: "asmdba", gid: 54327 }
+      - "{{ extra_oracle_groups }}"
     tags: os-users,os-groups
 
   - name: Add sysctl entries

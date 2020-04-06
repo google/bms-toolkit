@@ -172,6 +172,7 @@
        - asm_disks {{ asm_disks }}
        - asm_def_file {{ asm_definition_file }}
        - asm_disk_input {{ asm_disk_input }}
+    tags: asm-disks
 
   - name: (udev) Add ASM disk rules on virtualbox
     blockinfile:
@@ -190,7 +191,7 @@
       - disks
     tags: asm-disks
 
-  - name: (udev) Add ASM disk rules on baremetal
+  - name: (udev) Add ASM disk rules on baremetal (not mpath)
     blockinfile:
       block: "KERNEL==\"sd?1\", SUBSYSTEM==\"block\", PROGRAM==\"/usr/lib/udev/scsi_id -g -u -d /dev/$parent\", RESULT==\"{{ hostvars[inventory_hostname]['ansible_device_links']['ids']['%s' | format( item.1.blk_device | regex_replace('/dev/') )][0] | regex_replace('scsi-') }}\", SYMLINK+=\"oracleasm/{{ item.1.name }}\", OWNER=\"{{ grid_user }}\", GROUP=\"{{ grid_group }}\", MODE=\"0660\""
       dest: "/etc/udev/rules.d/99-oracle-asmdevices.rules"
@@ -207,6 +208,47 @@
       - "{{ asm_disks }}"
       - disks
     tags: asm-disks
+
+  - name: (udev) Add ASM mpath disk rules on BM (udevadm info)
+    shell: udevadm info --query=all --name={{ item.1.blk_device }} | grep DM_UUID | awk -F'=' '{print $2}'
+    become: yes
+    register: udevadm_result
+    when:
+      - "'mapper' in item.1.blk_device"
+    with_subelements:
+      - "{{ asm_disks }}"
+      - disks
+    tags: udev_mpath
+
+  - name: (udev) Add ASM mpath disk rules on BM (init dict)
+    set_fact:
+      uuid_result: []
+    when:
+      - udevadm_result is defined
+    tags: udev_mpath
+
+  - name: (udev) Add ASM mpath disk rules on BM (filling dict)
+    set_fact:
+      uuid_result: "{{ uuid_result | combine({item.stdout: item.item}) }}"
+    when:
+      - udevadm_result is defined
+    with_items:
+      - "{{ udevadm_result.results }}"
+    tags: udev_mpath
+
+  - name: (udev) Add ASM mpath disk rules on BM (udev rules file)
+    blockinfile:
+      block: "ACTION==\"add|change\", ENV{DM_UUID}==\"{{ item }}\", SYMLINK+=\"oracleasm/{{ uuid_result[item] | json_query ('[*].name') | list | join(', ') }}\", GROUP=\"{{ grid_group }}\", OWNER=\"{{ grid_user }}\", MODE=\"0660\""
+      path: "/etc/udev/rules.d/99-oracle-asmdevices.rules"
+      marker: "# {mark} ASM disk udev rules for {{ uuid_result[item] | json_query ('[*].blk_device') | list | join(', ') }}"
+      create: yes
+    become: yes
+    register: udevRules
+    when:
+      - uuid_result is defined
+    with_items:
+      - "{{ uuid_result.keys() }}"
+    tags: udev_mpath
 
   - name: (udev) Add ASM disk rules on GCE
     blockinfile:
@@ -235,7 +277,7 @@
   - name: (asmlib) Install Oracle ASM libraries
     yum:
       name: "{{ oracleasm_libs }}"
-    when: asm_disk_control == "asmlib" or (asm_disks | join(' ') is search('mapper'))
+    when: asm_disk_control == "asmlib"
     tags: oracleasmlib
 
   - name: (asmlib) Configure oracleasm
@@ -246,7 +288,7 @@
       /usr/sbin/oracleasm scandisks
       cat /etc/sysconfig/oracleasm
     register: asmconfig
-    when: asm_disk_control == "asmlib" or (asm_disks | join(' ') is search('mapper'))
+    when: asm_disk_control == "asmlib"
     become: yes
     become_user: root
     tags: asm-disks
@@ -269,7 +311,7 @@
     with_subelements:
       - "{{ asm_disks }}"
       - disks
-    when: item.1.blk_device is search('mapper')
+    when: asm_disk_control == "asmlib"
     register: asmlv
     failed_when: "( ( asmlv.rc != 0 ) and ( 'ERROR' in asmlv.stdout ) ) or ( ( asmlv.rc != 0 ) and ( 'is already labeled for ASM disk' not in asmlv.stdout ) )"
     changed_when: "'Writing disk header: done' in asmlv.stdout"

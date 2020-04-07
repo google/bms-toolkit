@@ -22,7 +22,7 @@
     executable: /bin/bash
   with_items:
     - "{{ gi_software }}"
-  when: item.version == oracle_ver
+  when: item.version == oracle_ver and patching_type is not defined
   delegate_to: 127.0.0.1
 
 - name: verifying gi zip file integrity
@@ -36,7 +36,7 @@
     executable: /bin/bash
   with_items:
     - "{{ gi_software }}"
-  when: item.version == oracle_ver
+  when: item.version == oracle_ver and patching_type is not defined
   failed_when: shell_result.stderr != ""
 
 - name: copy gi patch archives from gcs to BM instance
@@ -67,7 +67,7 @@
 - name: verifying gi patch archive integrity
   shell: |
     set -o pipefail
-    {% for i in item.files %}
+    {% for i in item.patchfile %}
     unzip -t {{ swlib_path }}/{{ i }} > /dev/null
         {% endfor %}
   register: shell_result
@@ -75,7 +75,7 @@
     executable: /bin/bash
   with_items:
     - "{{ gi_patches }}"
-  when: item.version == oracle_ver
+  when: item.release == oracle_rel and patching_type == "gi_patching"
   failed_when: shell_result.stderr != ""
 
 
@@ -101,7 +101,7 @@
     executable: /bin/bash
   with_items:
     - "{{ opatch_patches }}"
-  when: item.release == oracle_ver
+  when: item.release == oracle_ver and patching_type is defined
   delegate_to: 127.0.0.1
 
 - name: verifying opatch zip file integrity
@@ -113,7 +113,7 @@
     executable: /bin/bash
   with_items:
     - "{{ opatch_patches }}"
-  when: item.release == oracle_ver
+  when: item.release == oracle_ver and patching_type is defined
   failed_when: shell_result.stderr != ""
 
 
@@ -141,7 +141,7 @@
     executable: /bin/bash
   with_items:
     - "{{ rdbms_software }}"
-  when: item.version == oracle_ver
+  when: item.version == oracle_ver and patching_type is not defined
   delegate_to: 127.0.0.1
 
 - name: verifying rdbms archives integrity
@@ -155,7 +155,7 @@
     executable: /bin/bash
   with_items:
     - "{{ rdbms_software }}"
-  when: item.version == oracle_ver
+  when: item.version == oracle_ver and patching_type is not defined
   failed_when: shell_result.stderr != ""
 
 
@@ -187,7 +187,7 @@
 - name: verifying rdbms patch file integrity
   shell: |
     set -o pipefail
-    {% for i in item.files %}
+    {% for i in item.patchfile %}
     unzip -t {{ swlib_path }}/{{ i }} > /dev/null
         {% endfor %}
   register: shell_result
@@ -195,5 +195,5 @@
     executable: /bin/bash
   with_items:
     - "{{ rdbms_patches }}"
-  when: item.version == oracle_ver
+  when: item.release == oracle_rel and patching_type == "db_patching"
   failed_when: shell_result.stderr != ""

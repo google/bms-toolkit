@@ -24,12 +24,37 @@
     register: disable_selinux_runtime
     tags: selinux
 
-  - name: Install Oracle required package
-    package:
+  - name: Stat RHEL7 base repo
+    stat:
+      path: /etc/yum.repos.d/redhat.repo
+    register: redhat_repo
+
+  - name: Stat RHEL7 rhui repo
+    stat:
+      path: /etc/yum.repos.d/rh-cloud.repo
+    register: rh_cloud_repo
+
+  - name: Install Oracle required packages (base/non-rhui config)
+    yum:
       name: "{{ oracle_required_rpms }}"
       state: present
       lock_timeout: 180
-    when: install_os_packages|bool and ansible_os_family == 'RedHat'
+      enablerepo: server_optional_rpms
+    when:
+      - install_os_packages|bool and ansible_os_family == 'RedHat'
+      - redhat_repo.stat.exists|bool
+    tags: os-packages
+
+  - name: Install Oracle required packages (rhui config)
+    yum:
+      name: "{{ oracle_required_rpms }}"
+      state: present
+      lock_timeout: 180
+      enablerepo: rhui-rhel-7-server-rhui-optional-rpms
+    when:
+      - install_os_packages|bool and ansible_os_family == 'RedHat'
+      - rh_cloud_repo.stat.exists|bool
+      - not redhat_repo.stat.exists|bool
     tags: os-packages
 
   - name: Add OS groups

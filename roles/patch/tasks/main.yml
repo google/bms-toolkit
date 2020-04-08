@@ -137,7 +137,7 @@
     debug:
       msg: "{{ stop_home }}"
       verbosity: 1
-    tags: patch_rdbms
+    tags: patch_rdbms,stop_home
 
   - name: (RDBMS) Apply patch
     include_tasks: opatch_apply.yml
@@ -172,10 +172,10 @@
     failed_when: start_home.rc not in [0,2]
     become: yes
     become_user: "{{ oracle_user }}"
-    tags: patch_rdbms
+    tags: patch_rdbms,start_home
 
   - name: (RDBMS) Start home results
     debug:
       msg: "{{ start_home }}"
       verbosity: 1
-    tags: patch_rdbms
+    tags: patch_rdbms,start_home

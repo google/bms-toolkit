@@ -122,7 +122,7 @@
       remote_src: yes
     with_items:
       - "{{ opatch_patches }}"
-    when: item.release == osw.version and item.category == "OPatch"
+    when: item.release == osw.version and item.category == "OPatch" and patching_type is defined
     become: yes
     become_user: "{{ grid_user }}"
     tags: gi-setup,opatch

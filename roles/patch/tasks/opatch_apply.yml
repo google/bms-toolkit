@@ -40,7 +40,7 @@
 
   - name: opatch_apply | opatch apply
     command: "{{ sw_home }}/OPatch/{{ patch.method }} {{ silent }} {{ response_command }}"
-    when: patch.release == oracle_ver
+    when: patch.release == oracle_rel
     args:
       chdir: "{{ swlib_unzip_path }}/{{ patch.patchnum }}{{ patch.patch_subdir }}"
     register: opatch_apply
@@ -95,14 +95,14 @@
     register: shutdown_db
     become: yes
     become_user: "{{ oracle_user }}"
-    tags: patch_grid
+    tags: patch_grid,shutdown_db
 
   - name: opatch_apply | shutdown db (for datapatch after GI or opatchauto patches) results
     debug:
       msg: "{{ shutdown_db }}"
       verbosity: 1
     when: home_type == 'GRID' or patch.method == 'opatchauto apply'
-    tags: patch_grid
+    tags: patch_grid,shutdown_db
 
   - name: opatch_apply | SQL patching steps
     include_tasks: sql_patch.yml
@@ -120,11 +120,11 @@
     register: startup_db
     become: yes
     become_user: "{{ oracle_user }}"
-    tags: patch_grid
+    tags: patch_grid,startup_db
 
   - name: opatch_apply | startup db (after GI or opatchauto patches) results
     debug:
       msg: "{{ startup_db }}"
       verbosity: 1
     when: home_type == 'GRID' or patch.method == 'opatchauto apply'
-    tags: patch_grid
+    tags: patch_grid,startup_db

@@ -32,6 +32,10 @@
     become: yes
     become_user: root
 
+  - name: Wait for processes to die (10 seconds)
+    pause:
+      seconds: 10
+
   - name: Remove directories and files
     file:
       path: "{{ item }}"

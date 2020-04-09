@@ -39,7 +39,7 @@
       name: "{{ oracle_required_rpms }}"
       state: present
       lock_timeout: 180
-      enablerepo: server_optional_rpms
+      enablerepo: rhel-7-server-optional-rpms
     when:
       - install_os_packages|bool and ansible_os_family == 'RedHat'
       - redhat_repo.stat.exists|bool

@@ -249,14 +249,14 @@
     set_fact:
       uuid_result: []
     when:
-      - udevadm_result is defined
+      - udevadm_result.results.0.stdout is defined
     tags: udev_mpath
 
   - name: (udev) Add ASM mpath disk rules on BM (filling dict)
     set_fact:
       uuid_result: "{{ uuid_result | combine({item.stdout: item.item}) }}"
     when:
-      - udevadm_result is defined
+      - udevadm_result.results.0.stdout is defined
     with_items:
       - "{{ udevadm_result.results }}"
     tags: udev_mpath

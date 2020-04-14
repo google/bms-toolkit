@@ -25,6 +25,7 @@ db_domain: "{{ lookup('env','ORA_DB_DOMAIN')|default('world',true) }}"
 oracle_ver: "{{ lookup('env','ORA_VERSION')|default('19.3.0.0.0',true) }}"
 oracle_rel: "{{ lookup('env','ORA_RELEASE')|default('latest',true) }}"
 oracle_edition: "{{ lookup('env','ORA_EDITION')|default('EE',true) }}"
+cluster_type: "{{ lookup('env','CLUSTER_TYPE')|default('NONE',true) }}"
 
 container_db: "{{ lookup('env','ORA_DB_CONTAINER')|lower|default('false',true) }}"
 pdb_prefix: "{{ lookup('env','ORA_PDB_NAME_PREFIX')|default('PDB',true) }}"

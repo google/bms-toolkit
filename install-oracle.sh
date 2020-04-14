@@ -17,47 +17,46 @@ PB_CHECK_INSTANCE="check-instance.yml"
 #
 # These playbooks must exist
 #
-for X in ${PB_CHECK_INSTANCE} ${PB_PREP_HOST} ${PB_INSTALL_SW} ${PB_CONFIG_DB}
-do
-	if [[ ! -f ${X} ]]; then
-                printf "\n\033[1;31m%s\033[m\n\n" "The playbook ${X} does not exist; cannot continue."
-		exit 126
-	else
-		if [[ -z ${PB_LIST} ]]; then
-			PB_LIST="$X"
-		else
-			PB_LIST="${PB_LIST} $X"
-		fi
-	fi
+for PBOOK in "${PB_CHECK_INSTANCE}" "${PB_PREP_HOST}" "${PB_INSTALL_SW}" "${PB_CONFIG_DB}"; do
+  if [[ ! -f "${PBOOK}" ]]; then
+    printf "\n\033[1;31m%s\033[m\n\n" "The playbook ${PBOOK} does not exist; cannot continue."
+    exit 126
+  else
+    if [[ -z "${PB_LIST}" ]]; then
+      PB_LIST="${PBOOK}"
+    else
+      PB_LIST="${PB_LIST} ${PBOOK}"
+    fi
+  fi
 done
 #
 # Inventory file (used to run the playbooks)
 #
- INVENTORY_DIR="./inventory_files"			# Where to save the inventory files
-INVENTORY_FILE="${INVENTORY_DIR}/inventory"		# Default, the whole name will be built later using some parameters
+ INVENTORY_DIR="./inventory_files"  # Where to save the inventory files
+INVENTORY_FILE="${INVENTORY_DIR}/inventory"  # Default, the whole name will be built later using some parameters
 #
-if [[ ! -d ${INVENTORY_DIR} ]]; then
-	mkdir -p ${INVENTORY_DIR}
-	if [ $? -eq 0 ]; then
-		printf "\n\033[1;36m%s\033[m\n\n" "Successfully created the ${INVENTORY_DIR} directory to save the inventory files."
-	else
-		printf "\n\033[1;31m%s\033[m\n\n" "Unable to create the ${INVENTORY_DIR} directory to save the inventory files; cannot continue."
-		exit 123
-	fi
+if [[ ! -d "${INVENTORY_DIR}" ]]; then
+  mkdir -p "${INVENTORY_DIR}"
+  if [ $? -eq 0 ]; then
+    printf "\n\033[1;36m%s\033[m\n\n" "Successfully created the ${INVENTORY_DIR} directory to save the inventory files."
+  else
+    printf "\n\033[1;31m%s\033[m\n\n" "Unable to create the ${INVENTORY_DIR} directory to save the inventory files; cannot continue."
+    exit 123
+  fi
 fi
 #
 # Ansible logs directory, the logfile name is created later one
 #
  LOG_DIR="./logs"
 LOG_FILE="${LOG_DIR}/log"
-if [[ ! -d ${LOG_DIR} ]]; then
-	mkdir -p ${LOG_DIR}
-	if [ $? -eq 0 ]; then
-		printf "\n\033[1;36m%s\033[m\n\n" "Successfully created the ${LOG_DIR} directory to save the ansible logs."
-	else
-		printf "\n\033[1;31m%s\033[m\n\n" "Unable to create the ${LOG_DIR} directory to save the ansible logs; cannot continue."
-		exit 123
-	fi
+if [[ ! -d "${LOG_DIR}" ]]; then
+  mkdir -p "{LOG_DIR}"
+  if [ $? -eq 0 ]; then
+    printf "\n\033[1;36m%s\033[m\n\n" "Successfully created the ${LOG_DIR} directory to save the ansible logs."
+  else
+    printf "\n\033[1;31m%s\033[m\n\n" "Unable to create the ${LOG_DIR} directory to save the ansible logs; cannot continue."
+    exit 123
+  fi
 fi
 
 shopt -s nocasematch
@@ -65,9 +64,9 @@ shopt -s nocasematch
 # Check if we're using the Mac stock getopt and fail if true
 out=`getopt -T`
 if [ $? != 4 ]; then
-    echo -e "Your getopt does not support long parametrs, possibly you're on a Mac, if so please install gnu-getopt with brew"
-    echo -e "\thttps://brewformulas.org/Gnu-getopt"
-    exit
+  echo -e "Your getopt does not support long parametrs, possibly you're on a Mac, if so please install gnu-getopt with brew"
+  echo -e "\thttps://brewformulas.org/Gnu-getopt"
+  exit
 fi
 
 ORA_VERSION="${ORA_VERSION:-19.3.0.0.0}"
@@ -75,6 +74,9 @@ ORA_VERSION_PARAM='^(19\.3\.0\.0\.0|18\.0\.0\.0\.0|12\.2\.0\.1\.0|12\.1\.0\.2\.0
 
 ORA_EDITION="${ORA_EDITION:-EE}"
 ORA_EDITION_PARAM="^(EE|SE|SE2)$"
+
+CLUSTER_TYPE="${CLUSTER_TYPE:-NONE}"
+CLUSTER_TYPE_PARAM="NONE|RAC"
 
 ORA_SWLIB_BUCKET="${ORA_SWLIB_BUCKET}"
 ORA_SWLIB_BUCKET_PARAM="^.+"
@@ -144,6 +146,10 @@ ORA_DATA_MOUNTS="${ORA_DATA_MOUNTS:-data_mounts_config.json}"
 ORA_DATA_MOUNTS_PARAM="^.*\.json$"
 ORA_DATA_MOUNTS_PARAM="^.*$"
 
+CLUSTER_CONFIG="${CLUSTER_CONFIG:-cluster_config.json}"
+CLUSTER_CONFIG_PARAM="^.*\.json$"
+CLUSTER_CONFIG_PARAM="^.*$"
+
 BACKUP_DEST="${BACKUP_DEST}"
 BACKUP_DEST_PARAM="^.*$"
 
@@ -203,7 +209,7 @@ COMPATIBLE_RDBMS_PARAM="^[0-9][0-9]\.[0-9].*"
 
 ###
 GETOPT_MANDATORY="ora-swlib-bucket:,backup-dest:"
-GETOPT_OPTIONAL="ora-version:,ora-edition:,ora-staging:,ora-db-name:,ora-db-domain:,ora-db-charset:,ora-disk-mgmt:,ora-role-separation:"
+GETOPT_OPTIONAL="ora-version:,ora-edition:,cluster-type:,cluster-config:,ora-staging:,ora-db-name:,ora-db-domain:,ora-db-charset:,ora-disk-mgmt:,ora-role-separation:"
 GETOPT_OPTIONAL="$GETOPT_OPTIONAL,ora-data-diskgroup:,ora-reco-diskgroup:,ora-asm-disks:,ora-data-mounts:,ora-listener-port:,ora-listener-name:"
 GETOPT_OPTIONAL="$GETOPT_OPTIONAL,ora-db-ncharset:,ora-db-container:,ora-db-type:,ora-pdb-name-prefix:,ora-pdb-count:,ora-redo-log-size:"
 GETOPT_OPTIONAL="$GETOPT_OPTIONAL,backup-redundancy:,archive-redundancy:,archive-online-days:,backup-level0-days:,backup-level1-days:"
@@ -219,248 +225,252 @@ VALIDATE=0
 options=$(getopt --longoptions "$GETOPT_LONG" --options "$GETOPT_SHORT" -- "$@")
 
 [ $? -eq 0 ] || {
-       echo "Invalid options provided: $*"
-       exit 1
+  echo "Invalid options provided: $*"
+  exit 1
 }
 
 eval set -- "$options"
 
 while true; do
-    case "$1" in
-    --ora-version)
-        ORA_VERSION="$2"
-        if [[ ${ORA_VERSION} = "19" ]]   ; then ORA_VERSION="19.3.0.0.0"; fi
-        if [[ ${ORA_VERSION} = "18" ]]   ; then ORA_VERSION="18.0.0.0.0"; fi
-        if [[ ${ORA_VERSION} = "12" ]]   ; then ORA_VERSION="12.2.0.1.0"; fi
-        if [[ ${ORA_VERSION} = "12.2" ]] ; then ORA_VERSION="12.2.0.1.0"; fi
-        if [[ ${ORA_VERSION} = "12.1" ]] ; then ORA_VERSION="12.1.0.2.0"; fi
-        if [[ ${ORA_VERSION} = "11" ]]   ; then ORA_VERSION="11.2.0.4.0"; fi
-        shift;
-        ;;
-    --ora-edition)
-        ORA_EDITION="$(echo $2| tr 'a-z' 'A-Z')"
-        shift;
-        ;;
-    --inventory-file)
-       INVENTORY_FILE_PARAM="$2"
-       shift;
-	;;
-    --compatible-rdbms)
-       COMPATIBLE_RDBMS="$2"
-       shift;
-	;;
-    --ora-swlib-bucket)
-        ORA_SWLIB_BUCKET="$2"
-        shift;
-        ;;
-    --ora-swlib-type)
-        ORA_SWLIB_TYPE="$2"
-        shift;
-        ;;
-    --ora-swlib-path)
-        ORA_SWLIB_PATH="$2"
-        shift;
-        ;;
-    --ora-swlib-credentials)
-        ORA_SWLIB_CREDENTIALS="$2"
-        shift;
-        ;;
-    --ora-staging)
-        ORA_STAGING="$2"
-        shift;
-        ;;
-    --ora-db-name)
-        ORA_DB_NAME="$2"
-        shift;
-        ;;
-    --ora-db-domain)
-        ORA_DB_DOMAIN="$2"
-        shift;
-        ;;
-    --ora-db-charset)
-        ORA_DB_CHARSET="$2"
-        shift;
-        ;;
-    --ora-db-ncharset)
-        ORA_DB_NCHARSET="$2"
-        shift;
-        ;;
-    --ora-disk-mgmt)
-        ORA_DISK_MGMT="$2"
-        shift;
-        ;;
-    --ora-role-separation)
-        ORA_ROLE_SEPARATION="$2"
-        shift;
-        ;;
-    --ora-data-diskgroup)
-        ORA_DATA_DISKGROUP="$2"
-        shift;
-        ;;
-    --ora-reco-diskgroup)
-        ORA_RECO_DISKGROUP="$2"
-        shift;
-        ;;
-    --ora-asm-disks)
-        ORA_ASM_DISKS="$2"
-        shift;
-        ;;
-    --ora-data-mounts)
-	ORA_DATA_MOUNTS="$2"
-	shift;
-	;;
-    --ora-listener-port)
-        ORA_LISTENER_PORT="$2"
-        shift;
-        ;;
-    --ora-listener-name)
-        ORA_LISTENER_NAME="$2"
-        shift;
-        ;;
-    --ora-db-container)
-        ORA_DB_CONTAINER="$2"
-        shift;
-        ;;
-    --ora-db-type)
-        ORA_DB_TYPE="$2"
-        shift;
-        ;;
-    --ora-pdb-name-prefix)
-        ORA_PDB_NAME_PREFIX="$2"
-        shift;
-        ;;
-    --ora-pdb-count)
-        ORA_PDB_COUNT="$2"
-        shift;
-        ;;
-    --ora-redo-log-size)
-        ORA_REDO_LOG_SIZE="$2"
-        shift;
-        ;;
-    --backup-dest)
-        BACKUP_DEST="$2"
-        shift;
-        ;;
-    --backup-redundancy)
-        BACKUP_REDUNDANCY="$2"
-        shift;
-        ;;
-    --archive-redundancy)
-        ARCHIVE_REDUNDANCY="$2"
-        shift;
-        ;;
-    --archive-online-days)
-        ARCHIVE_ONLINE_DAYS="$2"
-        shift;
-        ;;
-    --backup-level0-days)
-        BACKUP_LEVEL0_DAYS="$2"
-        shift;
-        ;;
-    --backup-level1-days)
-        BACKUP_LEVEL1_DAYS="$2"
-        shift;
-        ;;
-    --backup-start-hour)
-        BACKUP_START_HOUR="$2"
-        shift;
-        ;;
-    --backup-start-min)
-        BACKUP_START_MIN="$2"
-        shift;
-        ;;
-    --archive-backup-min)
-        ARCHIVE_BACKUP_MIN="$2"
-        shift;
-        ;;
-    --backup-script-location)
-        BACKUP_SCRIPT_LOCATION="$2"
-        shift;
-        ;;
-    --backup-log-location)
-        BACKUP_LOG_LOCATION="$2"
-        shift;
-        ;;
-    --instance-ip-addr)
-        INSTANCE_IP_ADDR="$2"
-        shift;
-        ;;
-    --instance-ssh-key)
-        INSTANCE_SSH_KEY="$2"
-        shift;
-        ;;
-    --instance-ansible-hostgroup-name)
-        INSTANCE_ANSIBLE_HOSTGROUP_NAME="$2"
-        shift;
-        ;;
-    --instance-ansible-hostname)
-        INSTANCE_ANSIBLE_HOSTNAME="$2"
-        shift;
-        ;;
-    --instance-ssh-user)
-        INSTANCE_SSH_USER="$2"
-        shift;
-        ;;
-    --instance-ssh-extra-args)
-        INSTANCE_SSH_EXTRA_ARGS="$2"
-        shift;
-        ;;
-    --ntp-pref)
-        NTP_PREF="$2"
-        shift;
-        ;;
-    --check-instance)
-	    PARAM_PB_CHECK_INSTANCE="${PB_CHECK_INSTANCE}"
-	    ;;
-    --prep-host)
-	    PARAM_PB_PREP_HOST="${PB_PREP_HOST}"
-        ;;
-    --install-sw)
-	    PARAM_PB_INSTALL_SW="${PB_INSTALL_SW}"
-	    ;;
-    --config-db)
-	    PARAM_PB_CONFIG_DB="${PB_CONFIG_DB}"
-	    ;;
-    --debug)
-	    export ANSIBLE_DEBUG=1
-        ;;
-    --allow-install-on-vm)
-        ANSIBLE_PARAMS="${ANSIBLE_PARAMS} -e allow_install_on_vm=true"
-        ;;
-    --skip-database-config)
-        PB_LIST="${PB_CHECK_INSTANCE} ${PB_PREP_HOST} ${PB_INSTALL_SW}"
-        # If database config is skipped we have to skip compatible.rdbms check
-        skip_compatible_rdbms="true"
-        ;;
-    --validate)
-        VALIDATE=1
-        ;;
-    --help|-h)
-        echo -e "\tUsage: `basename $0` "
-        echo $GETOPT_MANDATORY|sed 's/,/\n/g'|sed 's/:/ <value>/'|sed 's/\(.\+\)/\t --\1/'
-        echo $GETOPT_OPTIONAL |sed 's/,/\n/g'|sed 's/:/ <value>/'|sed 's/\(.\+\)/\t [ --\1 ]/'
-        echo -e "\t -- [parameters sent to ansible]"
-        exit 2
-        ;;
-    --)
-        shift
-        break
-        ;;
-    esac
+  case "$1" in
+  --ora-version)
+    ORA_VERSION="$2"
+    if [[ "${ORA_VERSION}" = "19" ]]   ; then ORA_VERSION="19.3.0.0.0"; fi
+    if [[ "${ORA_VERSION}" = "18" ]]   ; then ORA_VERSION="18.0.0.0.0"; fi
+    if [[ "${ORA_VERSION}" = "12" ]]   ; then ORA_VERSION="12.2.0.1.0"; fi
+    if [[ "${ORA_VERSION}" = "12.2" ]] ; then ORA_VERSION="12.2.0.1.0"; fi
+    if [[ "${ORA_VERSION}" = "12.1" ]] ; then ORA_VERSION="12.1.0.2.0"; fi
+    if [[ "${ORA_VERSION}" = "11" ]]   ; then ORA_VERSION="11.2.0.4.0"; fi
+    shift;
+    ;;
+  --ora-edition)
+    ORA_EDITION="$(echo $2| tr 'a-z' 'A-Z')"
+    shift;
+    ;;
+  --cluster-type)
+    CLUSTER_TYPE="$(echo $2| tr 'a-z' 'A-Z')"
+    shift;
+    ;;
+  --inventory-file)
+    INVENTORY_FILE_PARAM="$2"
+    shift;
+    ;;
+  --compatible-rdbms)
+    COMPATIBLE_RDBMS="$2"
+    shift;
+    ;;
+  --ora-swlib-bucket)
+    ORA_SWLIB_BUCKET="$2"
+    shift;
+    ;;
+  --ora-swlib-type)
+    ORA_SWLIB_TYPE="$2"
+    shift;
+    ;;
+  --ora-swlib-path)
+    ORA_SWLIB_PATH="$2"
+    shift;
+    ;;
+  --ora-swlib-credentials)
+    ORA_SWLIB_CREDENTIALS="$2"
+    shift;
+    ;;
+  --ora-staging)
+    ORA_STAGING="$2"
+    shift;
+    ;;
+  --ora-db-name)
+    ORA_DB_NAME="$2"
+    shift;
+    ;;
+  --ora-db-domain)
+    ORA_DB_DOMAIN="$2"
+    shift;
+    ;;
+  --ora-db-charset)
+    ORA_DB_CHARSET="$2"
+    shift;
+    ;;
+  --ora-db-ncharset)
+    ORA_DB_NCHARSET="$2"
+    shift;
+    ;;
+  --ora-disk-mgmt)
+    ORA_DISK_MGMT="$2"
+    shift;
+    ;;
+  --ora-role-separation)
+    ORA_ROLE_SEPARATION="$2"
+    shift;
+    ;;
+  --ora-data-diskgroup)
+    ORA_DATA_DISKGROUP="$2"
+    shift;
+    ;;
+  --ora-reco-diskgroup)
+    ORA_RECO_DISKGROUP="$2"
+    shift;
+    ;;
+  --ora-asm-disks)
+    ORA_ASM_DISKS="$2"
+    shift;
+    ;;
+  --ora-data-mounts)
+    ORA_DATA_MOUNTS="$2"
+    shift;
+    ;;
+  --cluster-config)
+    CLUSTER_CONFIG="$2"
+    shift;
+    ;;
+  --ora-listener-port)
+    ORA_LISTENER_PORT="$2"
+    shift;
+    ;;
+  --ora-listener-name)
+    ORA_LISTENER_NAME="$2"
+    shift;
+    ;;
+  --ora-db-container)
+    ORA_DB_CONTAINER="$2"
+    shift;
+    ;;
+  --ora-db-type)
+    ORA_DB_TYPE="$2"
+    shift;
+    ;;
+  --ora-pdb-name-prefix)
+    ORA_PDB_NAME_PREFIX="$2"
+    shift;
+    ;;
+  --ora-pdb-count)
+    ORA_PDB_COUNT="$2"
+    shift;
+    ;;
+  --ora-redo-log-size)
+    ORA_REDO_LOG_SIZE="$2"
+    shift;
+    ;;
+  --backup-dest)
+    BACKUP_DEST="$2"
+    shift;
+    ;;
+  --backup-redundancy)
+    BACKUP_REDUNDANCY="$2"
+    shift;
+    ;;
+  --archive-redundancy)
+    ARCHIVE_REDUNDANCY="$2"
+    shift;
+    ;;
+  --archive-online-days)
+    ARCHIVE_ONLINE_DAYS="$2"
+   shift;
+    ;;
+  --backup-level0-days)
+    BACKUP_LEVEL0_DAYS="$2"
+    shift;
+    ;;
+  --backup-level1-days)
+    BACKUP_LEVEL1_DAYS="$2"
+    shift;
+    ;;
+  --backup-start-hour)
+    BACKUP_START_HOUR="$2"
+    shift;
+    ;;
+  --backup-start-min)
+    BACKUP_START_MIN="$2"
+    shift;
+    ;;
+  --archive-backup-min)
+    ARCHIVE_BACKUP_MIN="$2"
+    shift;
+    ;;
+  --backup-script-location)
+    BACKUP_SCRIPT_LOCATION="$2"
+    shift;
+    ;;
+  --backup-log-location)
+    BACKUP_LOG_LOCATION="$2"
+    shift;
+    ;;
+  --instance-ip-addr)
+    INSTANCE_IP_ADDR="$2"
+    shift;
+    ;;
+  --instance-ssh-key)
+    INSTANCE_SSH_KEY="$2"
+    shift;
+    ;;
+  --instance-ansible-hostgroup-name)
+    INSTANCE_ANSIBLE_HOSTGROUP_NAME="$2"
+    shift;
+    ;;
+  --instance-ansible-hostname)
+    INSTANCE_ANSIBLE_HOSTNAME="$2"
+    shift;
+    ;;
+  --instance-ssh-user)
+    INSTANCE_SSH_USER="$2"
+    shift;
+    ;;
+  --instance-ssh-extra-args)
+    INSTANCE_SSH_EXTRA_ARGS="$2"
+    shift;
+    ;;
+  --ntp-pref)
+    NTP_PREF="$2"
+    shift;
+    ;;
+  --check-instance)
+    PARAM_PB_CHECK_INSTANCE="${PB_CHECK_INSTANCE}"
+    ;;
+  --prep-host)
+    PARAM_PB_PREP_HOST="${PB_PREP_HOST}"
+    ;;
+  --install-sw)
+    PARAM_PB_INSTALL_SW="${PB_INSTALL_SW}"
+    ;;
+  --config-db)
+    PARAM_PB_CONFIG_DB="${PB_CONFIG_DB}"
+    ;;
+  --debug)
+    export ANSIBLE_DEBUG=1
+    ;;
+  --allow-install-on-vm)
+    ANSIBLE_PARAMS="${ANSIBLE_PARAMS} -e allow_install_on_vm=true"
+    ;;
+  --skip-database-config)
+    PB_LIST="${PB_CHECK_INSTANCE} ${PB_PREP_HOST} ${PB_INSTALL_SW}"
+    ;;
+  --validate)
+    VALIDATE=1
+    ;;
+  --help|-h)
+    echo -e "\tUsage: `basename $0` "
+    echo $GETOPT_MANDATORY|sed 's/,/\n/g'|sed 's/:/ <value>/'|sed 's/\(.\+\)/\t --\1/'
+    echo $GETOPT_OPTIONAL |sed 's/,/\n/g'|sed 's/:/ <value>/'|sed 's/\(.\+\)/\t [ --\1 ]/'
+    echo -e "\t -- [parameters sent to ansible]"
+    exit 2
+    ;;
+  --)
     shift
+    break
+    ;;
+  esac
+  shift
 done
 #
 # Build the playbook list to execute depending on the command line option if specified
 #
-for X in ${PARAM_PB_CHECK_INSTANCE} ${PARAM_PB_PREP_HOST} ${PARAM_PB_INSTALL_SW} ${PARAM_PB_CONFIG_DB}
-do
-	echo $X
-	if [[ -n ${X} ]]; then
-		PARAM_PB_LIST="${PARAM_PB_LIST} ${X}"
-	fi
+for PARAM in "${PARAM_PB_CHECK_INSTANCE}" "${PARAM_PB_PREP_HOST}" "${PARAM_PB_INSTALL_SW}" "${PARAM_PB_CONFIG_DB}"; do
+  if [[ -n "${PARAM}" ]]; then
+    PARAM_PB_LIST="${PARAM_PB_LIST} ${PARAM}"
+  fi
 done
-if [[ -n ${PARAM_PB_LIST} ]]; then
-	PB_LIST=${PARAM_PB_LIST}
+if [[ -n "${PARAM_PB_LIST}" ]]; then
+  PB_LIST="${PARAM_PB_LIST}"
 fi
 #
 # Parameter defaults
@@ -482,6 +492,10 @@ shopt -s nocasematch
 }
 [[ ! "$ORA_EDITION" =~ $ORA_EDITION_PARAM ]] && {
     echo "Incorrect parameter provided for ora-edition: $ORA_EDITION"
+    exit 1
+}
+[[ ! "$CLUSTER_TYPE" =~ $CLUSTER_TYPE_PARAM ]] && {
+    echo "Incorrect parameter provided for cluster-type: $CLUSTER_TYPE"
     exit 1
 }
 [[ ! "$ORA_SWLIB_BUCKET" =~ $ORA_SWLIB_BUCKET_PARAM ]] && {
@@ -542,6 +556,10 @@ shopt -s nocasematch
 }
 [[ ! "$ORA_DATA_MOUNTS" =~ $ORA_DATA_MOUNTS_PARAM ]] && {
     echo "Incorrect parameter provided for ora-data-mounts: $ORA_DATA_MOUNTS"
+    exit 1
+}
+[[ ! "$CLUSTER_CONFIG" =~ $CLUSTER_CONFIG_PARAM ]] && {
+    echo "Incorrect parameter provided for cluster-config: $CLUSTER_CONFIG"
     exit 1
 }
 [[ ! "$ORA_LISTENER_PORT" =~ $ORA_LISTENER_PORT_PARAM ]] && {
@@ -644,7 +662,7 @@ if [[ "${skip_compatible_rdbms}" != "true" ]]; then
      NON_DOTTED_VER=$(echo $ORA_VERSION | sed s'/\.//g')
   NON_DOTTED_COMPAT=$(echo $COMPATIBLE_RDBMS | sed s'/\.//g' | sed s'/0*$//')
      NON_DOTTED_VER=$(echo ${NON_DOTTED_VER:0:${#NON_DOTTED_COMPAT}})
-  
+
   if (( NON_DOTTED_COMPAT > NON_DOTTED_VER ))
   then
     printf "\n\033[1;36m%s\033[m\n\n" "compatible-rdbms cannot be higher than the database version being installed."
@@ -654,43 +672,93 @@ fi
 
 # Mandatory options
 if [ "${ORA_SWLIB_BUCKET}" = "" ]; then
-    echo "Please specify a GS bucket with --ora-swlib-bucket"
-    exit 2
+  echo "Please specify a GS bucket with --ora-swlib-bucket"
+  exit 2
 fi
 
 if [ "${BACKUP_DEST}" = "" ]; then
-    echo "Please specify a Cloud Filestore or disk group location with --backup-dest"
-    exit 2
+  echo "Please specify a Cloud Filestore or disk group location with --backup-dest"
+  exit 2
 fi
 
 # if the hostgroup is not the default then error out when there is no corresponding group_vars/var.yml file
 if [ "${INSTANCE_ANSIBLE_HOSTGROUP_NAME}" != "dbasm" -a ! -r group_vars/${INSTANCE_ANSIBLE_HOSTGROUP_NAME}.yml ]; then
-    echo "Custom ansible hostgroup defined as ${INSTANCE_ANSIBLE_HOSTGROUP_NAME} but no corresponding group_vars/${INSTANCE_ANSIBLE_HOSTGROUP_NAME}.yml file found"
-    exit 2
+  echo "Custom ansible hostgroup defined as ${INSTANCE_ANSIBLE_HOSTGROUP_NAME} but no corresponding group_vars/${INSTANCE_ANSIBLE_HOSTGROUP_NAME}.yml file found"
+  exit 2
 fi
 
 #
 # Build the inventory file if no inventory file specified on the command line
 #
 if [[ -z ${INVENTORY_FILE_PARAM} ]]; then
-	INVENTORY_FILE="${INVENTORY_FILE}_${INSTANCE_ANSIBLE_HOSTNAME}_${ORA_VERSION}_${ORA_DB_NAME}"
-	cat <<EOF > ${INVENTORY_FILE}
-[${INSTANCE_ANSIBLE_HOSTGROUP_NAME}]
-${INSTANCE_ANSIBLE_HOSTNAME} ansible_ssh_host=${INSTANCE_IP_ADDR} ansible_ssh_user=${INSTANCE_SSH_USER} ansible_ssh_private_key_file=${INSTANCE_SSH_KEY} ansible_ssh_extra_args=${INSTANCE_SSH_EXTRA_ARGS}
+COMMON_OPTIONS="ansible_ssh_user=${INSTANCE_SSH_USER} ansible_ssh_private_key_file=${INSTANCE_SSH_KEY} ansible_ssh_extra_args=${INSTANCE_SSH_EXTRA_ARGS}"
+  #
+  # If $CLUSTER_TYPE = RAC then we use $CLUSTER_CONFIG to build the inventory file
+  #
+  if [[ "${CLUSTER_TYPE}" = "RAC" ]]; then
+    # We will be using jq to process the JSON configuration so we check if jq is installed on the system first
+    command -v jq >/dev/null 2>&1 || { echo >&2 "jq is needed for the RAC feature but has not been detected in this sytem. Cannot continue."; exit 678;}
+
+    # Verify that the JSON configuration file exists
+    if [[ ! -f "${CLUSTER_CONFIG}" ]]; then
+      printf "\n\033[1;31m%s\033[m\n\n" "Cluser type is set to ${CLUSTER_TYPE} but we cannot find the configuration file ${CLUSTER_CONFIG}; cannot continue."
+      exit 456
+    fi
+
+    # Name of the inventory file
+    INVENTORY_FILE="${INVENTORY_FILE}_${ORA_VERSION}_${ORA_DB_NAME}_${CLUSTER_TYPE}"
+
+    # We can now fill the inventory file with the information from the JSON file
+    echo "[${INSTANCE_ANSIBLE_HOSTGROUP_NAME}]" > "${INVENTORY_FILE}"
+
+    # jq filters for better visibility
+    OLDIFS="${IFS}"
+    IFS='' read -r -d '' JQF << EOF
+    .[] | .nodes[] | .node_name + " ansible_ssh_host=" + .host_ip
+    + " vip_name=" + .vip_name + " vip_ip=" + .vip_ip
 EOF
+    IFS="${OLDIFS}"
+    jq -rc "${JQF}" "${CLUSTER_CONFIG}" | awk -v COMMON_OPTIONS="${COMMON_OPTIONS}" '{print $0" " COMMON_OPTIONS}' >> "${INVENTORY_FILE}"
+
+    printf "\n" >> "${INVENTORY_FILE}"
+
+    echo "[${INSTANCE_ANSIBLE_HOSTGROUP_NAME}:vars]" >> "${INVENTORY_FILE}"
+
+    # jq filters for better visibility
+    OLDIFS="${IFS}"
+    IFS='' read -r -d '' JQF << EOF
+    .[] |
+    with_entries(.value = if .value|type != "array" then .value else empty end) |
+    with_entries(select(.value != "")) |
+    to_entries[] | .key + "=" + .value
+EOF
+    IFS="${OLDIFS}"
+    jq -rc "${JQF}" "${CLUSTER_CONFIG}" >> "${INVENTORY_FILE}"
+
+  else   # Non RAC
+    INVENTORY_FILE="${INVENTORY_FILE}_${INSTANCE_ANSIBLE_HOSTNAME}_${ORA_VERSION}_${ORA_DB_NAME}"
+    cat <<EOF > ${INVENTORY_FILE}
+[${INSTANCE_ANSIBLE_HOSTGROUP_NAME}]
+${INSTANCE_ANSIBLE_HOSTNAME} "ansible_ssh_host=${INSTANCE_IP_ADDR}" ${COMMON_OPTIONS}
+EOF
+  fi     # End of if RAC
 else
-	INVENTORY_FILE=${INVENTORY_FILE_PARAM}
+  INVENTORY_FILE="${INVENTORY_FILE_PARAM}"
 fi
-if [[ -f ${INVENTORY_FILE} ]]; then
-	printf "\n\033[1;36m%s\033[m\n\n" "Inventory file for this execution: ${INVENTORY_FILE}."
+if [[ -f "${INVENTORY_FILE}" ]]; then
+  printf "\n\033[1;36m%s\033[m\n\n" "Inventory file for this execution: ${INVENTORY_FILE}."
 else
-	printf "\n\033[1;31m%s\033[m\n\n" "Cannot find the inventory file ${INVENTORY_FILE}; cannot continue."
-	exit 124
+  printf "\n\033[1;31m%s\033[m\n\n" "Cannot find the inventory file ${INVENTORY_FILE}; cannot continue."
+  exit 124
 fi
 #
 # Build the logfile for this session
 #
-LOG_FILE="${LOG_FILE}_${INSTANCE_ANSIBLE_HOSTNAME}_${ORA_VERSION}_${ORA_DB_NAME}_${TIMESTAMP}.log"
+if [[ "${CLUSTER_TYPE}" = "RAC" ]]; then
+  LOG_FILE="${LOG_FILE}_${ORA_VERSION}_${ORA_DB_NAME}_${TIMESTAMP}_${CLUSTER_TYPE}.log"
+else
+  LOG_FILE="${LOG_FILE}_${INSTANCE_ANSIBLE_HOSTNAME}_${ORA_VERSION}_${ORA_DB_NAME}_${TIMESTAMP}.log"
+fi
 export ANSIBLE_LOG_PATH=${LOG_FILE}
 
 
@@ -714,6 +782,7 @@ export BACKUP_LOG_LOCATION
 export BACKUP_REDUNDANCY
 export BACKUP_START_HOUR
 export BACKUP_START_MIN
+export CLUSTER_TYPE
 export ORA_DATA_DISKGROUP
 export ORA_DB_CHARSET
 export ORA_DB_CONTAINER
@@ -752,41 +821,38 @@ ANSIBLE_EXTRA_PARAMS="${*}"
 echo "Ansible params: ${ANSIBLE_EXTRA_PARAMS}"
 
 if [ $VALIDATE -eq 1 ]; then
-    echo "Exiting because of --validate"
-    exit;
+  echo "Exiting because of --validate"
+  exit;
 fi
 
 export ANSIBLE_NOCOWS=1
 
 ANSIBLE_PLAYBOOK=`which ansible-playbook 2> /dev/null`
 if [ $? -ne 0 ]; then
-    echo "Ansible executable not found in path"
-    exit 3
+  echo "Ansible executable not found in path"
+  exit 3
 else
-    echo "Found Ansible at $ANSIBLE_PLAYBOOK"
+  echo "Found Ansible at $ANSIBLE_PLAYBOOK"
 fi
 
 # exit on any error from the following scripts
 set -e
 
-#for PLAYBOOK in check-instance.yml prep-host.yml install-sw.yml config-db.yml ; do
-for PLAYBOOK in ${PB_LIST}
-do
-    ANSIBLE_COMMAND="${ANSIBLE_PLAYBOOK} ${ANSIBLE_PARAMS} ${ANSIBLE_EXTRA_PARAMS} ${PLAYBOOK}"
-    echo
-    echo "Running Ansible playbook: ${ANSIBLE_COMMAND}"
-    eval ${ANSIBLE_COMMAND}
+for PLAYBOOK in ${PB_LIST}; do
+  ANSIBLE_COMMAND="${ANSIBLE_PLAYBOOK} ${ANSIBLE_PARAMS} ${ANSIBLE_EXTRA_PARAMS} ${PLAYBOOK}"
+  echo
+  echo "Running Ansible playbook: ${ANSIBLE_COMMAND}"
+  eval ${ANSIBLE_COMMAND}
 done
 #
 # Show the files used by this session
 #
 printf "\n\033[1;36m%s\033[m\n" "Files used by this session:"
-for X in ${INVENTORY_FILE} ${LOG_FILE}
-do
-	if [[ -f ${X} ]]; then
-		printf "\t\033[1;36m- %s\033[m\n" "${X}"
-	fi
+for FILE in "${INVENTORY_FILE}" "${LOG_FILE}"; do
+  if [[ -f "${FILE}" ]]; then
+    printf "\t\033[1;36m- %s\033[m\n" "${FILE}"
+  fi
 done
 printf "\n"
 
-exit 0;
+exit 0

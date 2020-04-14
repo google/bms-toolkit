@@ -51,12 +51,39 @@
       state: "{{ (ntp_preferred != \"\" ) | ternary('present', 'absent') }}"
     notify: restart ntpd
 
-#  - name: Check dns for host
-#    command: nslookup {{ ansible_hostname }}
-#    register: ns
-#    ignore_errors: true
-#    changed_when: false
-#    tags: etchosts
+  - name: Generate /etc/hosts
+    blockinfile:
+      path: /etc/hosts
+      marker: "# {mark} ANSIBLE MANAGED BLOCK"
+      block: |
+        {% for host in groups['all'] %}
+        {% if cluster_domain is defined %}
+        {{ hostvars[host]['ansible_ssh_host'] }}    {{ host }}.{{ cluster_domain }}  {{ host }}
+        {% else %}
+        {{ hostvars[host]['ansible_ssh_host'] }}    {{ host }}
+        {% endif %}
+        {% endfor %}
+        {% for host in groups['all'] %}
+        {% if hostvars[host]['vip_ip'] is defined %}
+        {% if cluster_domain is defined %}
+        {{ hostvars[host]['vip_ip'] }}    {{ hostvars[host]['vip_name']}}.{{ cluster_domain }}  {{ vip_name }}
+        {% else %}
+        {{ hostvars[host]['vip_ip'] }}    {{ hostvars[host]['vip_name']}}
+        {% endif %}
+        {% endif %}
+        {% endfor %}
+        {% for host in groups['all'] %}
+        {% if loop.first %}
+        {% if scan_name is defined %}
+        {% for h in hostvars[host] %}
+        {% if 'scan_ip' in h %}
+        {{ hostvars[host][h] }}    {{ scan_name }}.{{ cluster_domain }}  {{ scan_name }}
+        {% endif %}
+        {% endfor %}
+        {% endif %}
+        {% endif %}
+        {% endfor %}
+    tags: etchosts
 
   # cleanup /etc/hosts to solve a listener related issue, ora listener binds to hostname's IP.
   - name: Remove all 127.0.0.1 lines from /etc/hosts
@@ -65,47 +92,11 @@
 
   - name: Add fqdn to /etc/hosts if needed
     lineinfile: dest=/etc/hosts regexp='.*{{ ansible_fqdn }}$' line="{{ etc_hosts_ip }} {{ ansible_hostname }} {{ ansible_fqdn }}" state=present
-    #when: "(': NXDOMAIN' in ns.stdout) or (' No answer' in ns.stdout)"
     tags: etchosts
 
   - name: Add localhost to /etc/hosts if needed
     lineinfile: dest=/etc/hosts regexp='^127\.0\.0\.1' line="127.0.0.1 localhost localhost.localdomain" state=present
-    #when: "(': NXDOMAIN' in ns.stdout) or (' No answer' in ns.stdout)"
     tags: etchosts
-
-#  - name: Generate /etc/hosts
-#    template:
-#      src: etc-hosts.j2
-#      dest: /etc/hosts
-#      backup: false
-#    tags: etchosts
-#    ignore_errors: true
-#    #notify: restart dnsmasq
-
-#  - name: Generate /etc/resolv.conf
-#    template:
-#      src: resolv.conf.j2
-#      dest: /etc/resolv.conf
-#      backup: false
-#    tags: resolv_conf
-#    ignore_errors: true
-#    notify: restart dnsmasq
-
-#  - name: Generate dnsmasq config
-#    template:
-#      src: dnsmasq.conf.j2
-#      dest: /etc/dnsmasq.conf
-#      backup: true
-#    ignore_errors: true
-#    tags: dnsmasq
-#    notify: restart dnsmasq
-
-#  - name: Start and enable dnsmasq
-#    service:
-#      name: dnsmasq
-#      state: started
-#      enabled: true
-#    tags: dnsmasq
 
   - name: prep host | create swap on GCE
     include_tasks: swap.yml

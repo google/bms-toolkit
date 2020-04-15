@@ -61,6 +61,24 @@
     - { category: "OPatch", release: "18.0.0.0.0", patchnum: "6880880", patchfile: "p6880880_180000_Linux-x86-64.zip" }
     - { category: "OPatch", release: "19.3.0.0.0", patchnum: "6880880", patchfile: "p6880880_190000_Linux-x86-64.zip" }
 
+  gi_interim_patches:
+    - category: "HAS_interim_patch"
+      version: 12.2.0.1.0
+      patchnum: "25078431"
+      patchutil: "gridsetup"
+      files:
+        - "p25078431_122010_Linux-x86-64.zip"
+      sha256sum:
+        - "FA056EBD0FE0AD134F2B5C53F0DDF6F6A5DC73C7AE40DAEF18D0629850149525"
+    - category: "HAS_interim_patch"
+      version: 11.2.0.4.0
+      patchnum: "18370031"
+      patchutil: "opatch"
+      files:
+        - "p18370031_112040_Linux-x86-64.zip"
+      sha256sum:
+        - "D8506DF94D0E646084F1708BEA9948E996B26CF0C33289ACAB0F614518329F98"
+
   gi_patches:
 # 11.2.0.4 PSU
     - { category: "PSU", base: "11.2.0.4.0", release: "11.2.0.4.190416", patchnum: "29255947", patchfile: "p29255947_112040_Linux-x86-64.zip", patch_subdir: "", prereq_check: FALSE, method: "opatch auto", ocm: TRUE, upgrade: FALSE }

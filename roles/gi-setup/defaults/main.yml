@@ -8,10 +8,6 @@
 
   run_cluvfy: false
 
-  gi_patches:
-    - { category: "HAS_Bugfix", release: "11.2.0.4.0", patchnum: "18370031", patchfile: "p18370031_112040_Linux-x86-64.zip", patchutil: "opatch" }
-    - { category: "HAS_Bugfix", release: "12.2.0.1.0", patchnum: "25078431", patchfile: "p25078431_122010_Linux-x86-64.zip", patchutil: "gridsetup"  }
-
   gi_software:
     - name: 19c_gi
       version: 19.3.0.0.0

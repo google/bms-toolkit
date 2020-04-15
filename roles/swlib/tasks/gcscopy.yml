@@ -22,6 +22,7 @@
     executable: /bin/bash
   with_items:
     - "{{ gi_software }}"
+    - "{{ gi_interim_patches }}"
   when: item.version == oracle_ver and patching_type is not defined
   delegate_to: 127.0.0.1
 
@@ -36,6 +37,7 @@
     executable: /bin/bash
   with_items:
     - "{{ gi_software }}"
+    - "{{ gi_interim_patches }}"
   when: item.version == oracle_ver and patching_type is not defined
   failed_when: shell_result.stderr != ""
 

@@ -1,8 +1,6 @@
-export ORACLE_SID={{ db_name }}
-export ORACLE_HOME={{ oracle_home }}
-export PATH={{ oracle_home }}/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin
+source oraenv <<< {{ db_name }}
 
-echo "
+sqlplus -s / as sysdba << EOF
 shutdown immediate
 startup mount
 alter database archivelog;
@@ -24,4 +22,4 @@ union
 select name, display_value from v\$system_parameter2 where name like 'db_recovery%'
 )
 order by 1,2;
-" | sqlplus -s / as sysdba
+EOF

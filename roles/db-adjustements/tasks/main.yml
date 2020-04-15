@@ -1,10 +1,11 @@
 ---
   - name: Copy database adjustment scripts to server
     template:
-       src: "{{ item }}.j2"
-       dest: "{{ swlib_unzip_path }}/{{ item }}"
-       owner: "{{ oracle_user }}"
-       group: "{{ oracle_group }}"
+      src: "{{ item }}.j2"
+      dest: "{{ swlib_unzip_path }}/{{ item }}"
+      owner: "{{ oracle_user }}"
+      group: "{{ oracle_group }}"
+      mode: u=rwx,g=r,o=r
     with_items:
       - "{{ db_script_files }}"
     become: yes
@@ -12,7 +13,9 @@
     tags: db-adjustments
 
   - name: Run database adjustment scripts on server
-    command: "sh {{ swlib_unzip_path }}/{{ item }}"
+    shell: "{{ swlib_unzip_path }}/{{ item }}"
+    environment:
+      PATH: /usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin
     with_items:
       - "{{ db_script_files }}"
     register: scripts_output

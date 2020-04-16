@@ -20,7 +20,7 @@ ORA_SWLIB_BUCKET_PARAM="^gs://.+"
 ORA_SWLIB_PATH="${ORA_SWLIB_PATH:-/swlib}"
 ORA_SWLIB_PATH_PARAM="^/.*"
 
-ORA_STAGING="${ORA_STAGING:-/u02/oracle_install}"
+ORA_STAGING="${ORA_STAGING:-""}"
 ORA_STAGING_PARAM="^/.+$"
 
 ORA_DB_NAME="${ORA_DB_NAME:-ORCL}"
@@ -96,7 +96,15 @@ while true; do
     esac
     shift
 done
-
+#
+# Parameter defaults
+#
+[[ "$ORA_STAGING" == "" ]] && {
+    ORA_STAGING=$ORA_SWLIB_PATH
+}
+#
+# Variables verification
+#
 shopt -s nocasematch
 
 [[ ! "$ORA_VERSION" =~ $ORA_VERSION_PARAM ]] && {
@@ -129,6 +137,13 @@ if [ "${ORA_SWLIB_BUCKET}" = "" ]; then
     echo "Please specify a GS bucket with --ora-swlib-bucket"
     exit 2
 fi
+
+#
+# Trim tailing slashes from variables with paths
+#
+ORA_STAGING=${ORA_STAGING%/}
+ORA_SWLIB_BUCKET=${ORA_SWLIB_BUCKET%/}
+ORA_SWLIB_PATH=${ORA_SWLIB_PATH%/}
 
 export ORA_DB_NAME
 export ORA_STAGING

@@ -87,7 +87,7 @@ ORA_SWLIB_PATH_PARAM="^/.*"
 ORA_SWLIB_CREDENTIALS="${ORA_SWLIB_CREDENTIALS}"
 ORA_SWLIB_CREDENTIALS_PARAM=".*"
 
-ORA_STAGING="${ORA_STAGING:-/u02/oracle_install}"
+ORA_STAGING="${ORA_STAGING:-""}"
 ORA_STAGING_PARAM="^/.+$"
 
 ORA_LISTENER_NAME="${ORA_LISTENER_NAME:-LISTENER}"
@@ -416,7 +416,7 @@ while true; do
         ;;
     --install-sw)
 	    PARAM_PB_INSTALL_SW="${PB_INSTALL_SW}"
-	    ;; 
+	    ;;
     --config-db)
 	    PARAM_PB_CONFIG_DB="${PB_CONFIG_DB}"
 	    ;;
@@ -459,6 +459,15 @@ done
 if [[ -n ${PARAM_PB_LIST} ]]; then
 	PB_LIST=${PARAM_PB_LIST}
 fi
+#
+# Parameter defaults
+#
+[[ "$ORA_STAGING" == "" ]] && {
+    ORA_STAGING=$ORA_SWLIB_PATH
+}
+[[ "$COMPATIBLE_RDBMS" == "0" ]] && {
+    COMPATIBLE_RDBMS=$ORA_VERSION
+}
 #
 # Variables verification
 #
@@ -620,9 +629,6 @@ shopt -s nocasematch
     echo "Incorrect parameter provided for ntp-pref: $NTP_PREF"
     exit 1
 }
-[[ "$COMPATIBLE_RDBMS" == "0" ]] && {
-    COMPATIBLE_RDBMS=$ORA_VERSION
-}
 [[ ! "$COMPATIBLE_RDBMS" =~ $COMPATIBLE_RDBMS_PARAM ]] && {
     echo "Incorrect parameter provided for compatible-rdbms: $COMPATIBLE_RDBMS"
     exit 1
@@ -635,7 +641,7 @@ shopt -s nocasematch
 NON_DOTTED_COMPAT=$(echo $COMPATIBLE_RDBMS | sed s'/\.//g' | sed s'/0*$//')
    NON_DOTTED_VER=$(echo ${NON_DOTTED_VER:0:${#NON_DOTTED_COMPAT}})
 
-if (( NON_DOTTED_COMPAT > NON_DOTTED_VER )) 
+if (( NON_DOTTED_COMPAT > NON_DOTTED_VER ))
 then
         printf "\n\033[1;36m%s\033[m\n\n" "compatible-rdbms cannot be higher than the database version being installed."
 	exit 345
@@ -686,13 +692,12 @@ export ANSIBLE_LOG_PATH=${LOG_FILE}
 #
 # Trim tailing slashes from variables with paths
 #
-           BACKUP_DEST=${BACKUP_DEST%/}
-   BACKUP_LOG_LOCATION=${BACKUP_LOG_LOCATION%/}
+BACKUP_DEST=${BACKUP_DEST%/}
+BACKUP_LOG_LOCATION=${BACKUP_LOG_LOCATION%/}
 BACKUP_SCRIPT_LOCATION=${BACKUP_SCRIPT_LOCATION%/}
-           ORA_STAGING=${ORA_STAGING%/}
-      ORA_SWLIB_BUCKET=${ORA_SWLIB_BUCKET%/}
-        ORA_SWLIB_PATH=${ORA_SWLIB_PATH%/}
-
+ORA_STAGING=${ORA_STAGING%/}
+ORA_SWLIB_BUCKET=${ORA_SWLIB_BUCKET%/}
+ORA_SWLIB_PATH=${ORA_SWLIB_PATH%/}
 
 export ARCHIVE_BACKUP_MIN
 export ARCHIVE_ONLINE_DAYS

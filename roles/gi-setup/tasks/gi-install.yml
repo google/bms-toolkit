@@ -130,13 +130,13 @@
   - name: gi-install | Create OCM response file (if neccessary)
     script: expect_rsp.sh {{ oracle_base }} {{ grid_home }} {{ swlib_unzip_path }}
     with_items:
-      - "{{ gi_patches }}"
-    when: item.release == osw.version and item.category == "HAS_Bugfix"
+      - "{{ gi_interim_patches }}"
+    when: item.version == osw.version and item.category == "HAS_interim_patch"
     become: yes
     become_user: "{{ grid_user }}"
     tags: gi-setup,patch
 
-  - name: 12.2 bugfix - MOS (Doc ID 2401455.1)
+  - name: 12.2 bug solution - MOS (Doc ID 2401455.1)
     copy:
       src: "{{ oracle_root }}/oraInventory/oraInst.loc"
       dest: "{{ grid_home }}/oraInst.loc"
@@ -150,46 +150,46 @@
 
   - name: gi-install | Create patch-dirs
     file:
-      path: "{{ swlib_unzip_path }}/{{ item.patchfile | replace('.zip','') }}"
+      path: "{{ swlib_unzip_path }}/{{ item.files.0 | replace('.zip','') }}"
       state: directory
       owner: "{{ grid_user }}"
       group: "{{ oracle_group }}"
       mode: '0770'
     with_items:
-      - "{{ gi_patches }}"
-    when: item.release == osw.version and item.category == "HAS_Bugfix"
+      - "{{ gi_interim_patches }}"
+    when: item.version == osw.version and item.category == "HAS_interim_patch"
     become: yes
     become_user: "{{ grid_user }}"
     tags: gi-setup,patch
 
-  - name: gi-install | Unzip other pre-HAS patches
+  - name: gi-install | Unzip other pre-HAS critical interim patches
     unarchive:
-      src: "{{ swlib_path }}/{{ item.patchfile }}"
-      dest: "{{ swlib_unzip_path }}/{{ item.patchfile | replace('.zip','') }}"
+      src: "{{ swlib_path }}/{{ item.files.0 }}"
+      dest: "{{ swlib_unzip_path }}/{{ item.files.0 | replace('.zip','') }}"
       remote_src: yes
     with_items:
-      - "{{ gi_patches }}"
-    when: item.release == osw.version and item.category == "HAS_Bugfix"
+      - "{{ gi_interim_patches }}"
+    when: item.version == osw.version and item.category == "HAS_interim_patch"
     become: yes
     become_user: "{{ grid_user }}"
     tags: gi-setup,patch
 
-  - name: gi-install | Install pre-HAS patches
+  - name: gi-install | Install pre-HAS critical interim patches
     shell: |
       export PATH={{ grid_home }}/OPatch:${PATH}
       if [ "{{ item.patchutil }}" = "opatch" ]; then
          if [ -f "{{ swlib_unzip_path }}/ocm.rsp" ]; then
-            opatch napply -silent -oh {{ grid_home }} {{ swlib_unzip_path }}/{{ item.patchfile | replace('.zip','') }}/{{ item.patchnum }} \
+            opatch napply -silent -oh {{ grid_home }} {{ swlib_unzip_path }}/{{ item.files.0 | replace('.zip','') }}/{{ item.patchnum }} \
               -ocmrf {{ swlib_unzip_path }}/ocm.rsp
          else
-            opatch napply -silent -oh {{ grid_home }} {{ swlib_unzip_path }}/{{ item.patchfile | replace('.zip','') }}/{{ item.patchnum }} -silent
+            opatch napply -silent -oh {{ grid_home }} {{ swlib_unzip_path }}/{{ item.files.0 | replace('.zip','') }}/{{ item.patchnum }} -silent
          fi
       elif [ "{{ item.patchutil }}" = "gridsetup" ]; then
-         {{ grid_home }}/gridSetup.sh -silent -applyOneOffs {{ swlib_unzip_path }}/{{ item.patchfile | replace('.zip','') }}/{{ item.patchnum }} -responseFile {{ swlib_unzip_path }}/grid_install.rsp
+         {{ grid_home }}/gridSetup.sh -silent -applyOneOffs {{ swlib_unzip_path }}/{{ item.files.0 | replace('.zip','') }}/{{ item.patchnum }} -responseFile {{ swlib_unzip_path }}/grid_install.rsp
       fi
     with_items:
-      - "{{ gi_patches }}"
-    when: item.release == osw.version and item.category == "HAS_Bugfix"
+      - "{{ gi_interim_patches }}"
+    when: item.version == osw.version and item.category == "HAS_interim_patch"
     register: patch_output
     failed_when: "('OPatch succeeded' not in patch_output.stdout) and
                   ('Successfully applied the patch' not in patch_output.stdout)"
@@ -203,8 +203,8 @@
         - "{{ patch_output }}"
       verbosity: 1
     with_items:
-      - "{{ gi_patches }}"
-    when: item.release == osw.version and item.category == "HAS_Bugfix"
+      - "{{ gi_interim_patches }}"
+    when: item.version == osw.version and item.category == "HAS_interim_patch"
     tags: gi-setup,patch
 
   - name: gi-install | OCM response file cleanup
@@ -212,8 +212,8 @@
       path: "{{ swlib_unzip_path }}/ocm.rsp"
       state: absent
     with_items:
-      - "{{ gi_patches }}"
-    when: item.release == osw.version and item.category == "HAS_Bugfix"
+      - "{{ gi_interim_patches }}"
+    when: item.version == osw.version and item.category == "HAS_interim_patch"
     become: yes
     become_user: "{{ grid_user }}"
     tags: gi-setup,patch

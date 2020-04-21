@@ -55,7 +55,7 @@
       #verbosity: 1
     tags: opatch_apply
 
-  - name: opatch_apply | 12.1 bugfix - group of oracle binary set incorrectly by opatch - fix MOS (Doc ID 1084186.1)
+  - name: opatch_apply | 12.1 bug solution - group of oracle binary set incorrectly by opatch - MOS (Doc ID 1084186.1)
     shell: |
       set -o pipefail
       setasmgidwrap o={{ oracle_home }}/bin/oracle
@@ -71,7 +71,7 @@
     become_user: "{{ grid_user }}"
     tags: opatch_apply
 
-  - name: opatch_apply | 12.1 bugfix results
+  - name: opatch_apply | 12.1 bug solution results
     debug:
       msg: "{{ setasmgidwrap_output }}"
       verbosity: 1

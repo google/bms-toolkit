@@ -197,7 +197,7 @@ INSTANCE_SSH_EXTRA_ARGS_PARAM="^/.+$"
 NTP_PREF="${NTP_PREF}"
 NTP_PREF_PARAM=".*"
 
-COMPATIBLE_RDBMS="${COMPATIBLE_RDBMS:-0}"
+COMPATIBLE_RDBMS="${COMPATIBLE_RDBMS:-${ORA_VERSION}}"
 COMPATIBLE_RDBMS_PARAM="^[0-9][0-9]\.[0-9].*"
 
 ###
@@ -620,9 +620,6 @@ shopt -s nocasematch
     echo "Incorrect parameter provided for ntp-pref: $NTP_PREF"
     exit 1
 }
-[[ "$COMPATIBLE_RDBMS" == "0" ]] && {
-    COMPATIBLE_RDBMS=$ORA_VERSION
-}
 [[ ! "$COMPATIBLE_RDBMS" =~ $COMPATIBLE_RDBMS_PARAM ]] && {
     echo "Incorrect parameter provided for compatible-rdbms: $COMPATIBLE_RDBMS"
     exit 1
@@ -633,11 +630,11 @@ shopt -s nocasematch
 #
    NON_DOTTED_VER=$(echo $ORA_VERSION | sed s'/\.//g')
 NON_DOTTED_COMPAT=$(echo $COMPATIBLE_RDBMS | sed s'/\.//g' | sed s'/0*$//')
-   NON_DOTTED_VER=$(echo ${NON_DOTTED_VER:0:${#NON_DOTTED_COMPAT}})
+NON_DOTTED_VER=$(echo ${NON_DOTTED_VER:0:${#NON_DOTTED_COMPAT}})
 
 if (( NON_DOTTED_COMPAT > NON_DOTTED_VER )) 
 then
-        printf "\n\033[1;36m%s\033[m\n\n" "compatible-rdbms cannot be higher than the database version being installed."
+        printf "\n\033[1;36m%s\033[m\n\n" "compatible-rdbms cannot be more than the database version we will be installed."
 	exit 345
 fi
 
@@ -681,17 +678,6 @@ fi
 #
 LOG_FILE="${LOG_FILE}_${INSTANCE_ANSIBLE_HOSTNAME}_${ORA_VERSION}_${ORA_DB_NAME}_${TIMESTAMP}.log"
 export ANSIBLE_LOG_PATH=${LOG_FILE}
-
-
-#
-# Trim tailing slashes from variables with paths
-#
-           BACKUP_DEST=${BACKUP_DEST%/}
-   BACKUP_LOG_LOCATION=${BACKUP_LOG_LOCATION%/}
-BACKUP_SCRIPT_LOCATION=${BACKUP_SCRIPT_LOCATION%/}
-           ORA_STAGING=${ORA_STAGING%/}
-      ORA_SWLIB_BUCKET=${ORA_SWLIB_BUCKET%/}
-        ORA_SWLIB_PATH=${ORA_SWLIB_PATH%/}
 
 
 export ARCHIVE_BACKUP_MIN

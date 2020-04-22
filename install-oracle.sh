@@ -69,7 +69,7 @@ if [ $? != 4 ]; then
     exit
 fi
 
-ORA_VERSION="${ORA_VERSION:-18.0.0.0.0}"
+ORA_VERSION="${ORA_VERSION:-19.3.0.0.0}"
 ORA_VERSION_PARAM='^(19\.3\.0\.0\.0|18\.0\.0\.0\.0|12\.2\.0\.1\.0|12\.1\.0\.2\.0|11\.2\.0\.4\.0)$'
 
 ORA_EDITION="${ORA_EDITION:-EE}"

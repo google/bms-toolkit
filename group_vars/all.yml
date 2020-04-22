@@ -22,7 +22,7 @@ ntp_preferred: "{{ lookup('env','NTP_PREF')|lower|default('',true) }}"
 
 db_name: "{{ lookup('env','ORA_DB_NAME')|default('ORCL',true) }}"
 db_domain: "{{ lookup('env','ORA_DB_DOMAIN')|default('world',true) }}"
-oracle_ver: "{{ lookup('env','ORA_VERSION')|default('18.0.0.0.0',true) }}"
+oracle_ver: "{{ lookup('env','ORA_VERSION')|default('19.3.0.0.0',true) }}"
 oracle_rel: "{{ lookup('env','ORA_RELEASE')|default('latest',true) }}"
 oracle_edition: "{{ lookup('env','ORA_EDITION')|default('EE',true) }}"
 

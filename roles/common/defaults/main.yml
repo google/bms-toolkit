@@ -26,6 +26,7 @@
     - { group: backupdba,       gid: 804 }
     - { group: dgdba    ,       gid: 805 }
     - { group: kmdba    ,       gid: 806 }
+    - { group: racdba   ,       gid: 810 }
 
   extra_oracle_groups:
     - { group: asmdba   ,       gid: 807 }

@@ -1,0 +1,12 @@
+  - name: Copy pwgen script
+    copy:
+      src: "{{pwgen_file}}"
+      dest: "{{pwgen_path}}/{{pwgen_file}}"
+      owner: root
+      mode: "0755"
+    become: yes
+    become_user: root
+
+  - name: Generate random password
+    command: "{{pwgen_path}}/{{pwgen_file}} '{{ pwgen_len | default('') }}' '{{ pwgen_chars | default('@+~*') }}'"
+    register: pwgen_output

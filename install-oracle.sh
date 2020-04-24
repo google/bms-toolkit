@@ -5,7 +5,8 @@
 #
 # Some variables
 #
-TIMESTAMP=`date +%Y%m%d_%H%M%S`				# A timestamp
+TIMESTAMP="$(date +%Y%m%d_%H%M%S)"
+skip_compatible_rdbms="false"
 #
 # Playbooks
 #
@@ -428,6 +429,8 @@ while true; do
         ;;
     --skip-database-config)
         PB_LIST="${PB_CHECK_INSTANCE} ${PB_PREP_HOST} ${PB_INSTALL_SW}"
+        # If database config is skipped we have to skip compatible.rdbms check
+        skip_compatible_rdbms="true"
         ;;
     --validate)
         VALIDATE=1
@@ -634,17 +637,19 @@ shopt -s nocasematch
     exit 1
 }
 
-#
-# compatible-rdbms cannot be > ORA-VERSION
-#
-   NON_DOTTED_VER=$(echo $ORA_VERSION | sed s'/\.//g')
-NON_DOTTED_COMPAT=$(echo $COMPATIBLE_RDBMS | sed s'/\.//g' | sed s'/0*$//')
-   NON_DOTTED_VER=$(echo ${NON_DOTTED_VER:0:${#NON_DOTTED_COMPAT}})
-
-if (( NON_DOTTED_COMPAT > NON_DOTTED_VER ))
-then
-        printf "\n\033[1;36m%s\033[m\n\n" "compatible-rdbms cannot be higher than the database version being installed."
-	exit 345
+if [[ "${skip_compatible_rdbms}" != "true" ]]; then
+  #
+  # compatible-rdbms cannot be > ORA-VERSION
+  #
+     NON_DOTTED_VER=$(echo $ORA_VERSION | sed s'/\.//g')
+  NON_DOTTED_COMPAT=$(echo $COMPATIBLE_RDBMS | sed s'/\.//g' | sed s'/0*$//')
+     NON_DOTTED_VER=$(echo ${NON_DOTTED_VER:0:${#NON_DOTTED_COMPAT}})
+  
+  if (( NON_DOTTED_COMPAT > NON_DOTTED_VER ))
+  then
+    printf "\n\033[1;36m%s\033[m\n\n" "compatible-rdbms cannot be higher than the database version being installed."
+    exit 345
+  fi
 fi
 
 # Mandatory options

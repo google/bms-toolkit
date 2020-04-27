@@ -1,9 +1,9 @@
 ---
- - hosts: all
-   remote_user: "{{ grid_user }}"
-   become_user: root
-   become: true
-   pre_tasks:
+  - hosts: all
+    remote_user: "{{ grid_user }}"
+    become_user: root
+    become: true
+    pre_tasks:
      - name: Verify Ansible meets the version requirements
        assert:
          that: "ansible_version.full is version_compare('2.8', '>=')"
@@ -11,16 +11,18 @@
            You must update Ansible to at least 2.8 to use these playbooks
          success_msg: >-
            Ansible version is {{ ansible_version.full }}, continuing
-   roles:
+    roles:
      - role: gi-setup
-       when: install_gi|bool
-   tags: gi-setup
+       when:
+         - install_gi|bool
+         - cluster_type == "NONE"
+    tags: gi-setup
 
- - hosts: all
-   remote_user: "{{ oracle_user }}"
-   become_user: root
-   become: true
-   pre_tasks:
+  - hosts: all
+    remote_user: "{{ oracle_user }}"
+    become_user: root
+    become: true
+    pre_tasks:
      - name: Verify Ansible meets the version requirements
        assert:
          that: "ansible_version.full is version_compare('2.8', '>=')"
@@ -28,7 +30,91 @@
            You must update Ansible to at least 2.8 to use these playbooks
          success_msg: >-
            Ansible version is {{ ansible_version.full }}, continuing
-   roles:
+    roles:
      - role: rdbms-setup
-       when: install_rdbms|bool
-   tags: rdbms-setup
+       when:
+         - install_rdbms|bool
+         - cluster_type == "NONE"
+    tags: rdbms-setup
+
+  - hosts: all
+    gather_facts: false
+    serial: 1
+    tasks:
+      - name: rac-gi-install | defaults from common
+        include_vars:
+          dir: roles/common/defaults
+      - name: rac-gi-install | setup ssh keys
+        include_role:
+          name: ssh-setup
+        vars:
+          ssh_user: "{{ grid_user }}"
+          user_group: "{{ oracle_group }}"
+          ssh_nodes: "{{ groups['dbasm'] }}"
+        when:
+          - cluster_type == "RAC"
+    tags: rac-gi,ssh-keys
+
+  - hosts: dbasm[0]
+    gather_facts: false
+    remote_user: "{{ grid_user }}"
+    become_user: root
+    become: true
+    tasks:
+      - name: rac-gi-install | defaults from common
+        include_vars:
+          dir: roles/common/defaults
+      - name: rac-gi-install | GI installation
+        include_role:
+          name: rac-gi-setup
+          #if 11.2 or 12.1 then rac-gi-install-<oracle_ver>.yml otherwise rac-gi-install-default.yml
+          tasks_from: rac-gi-install-{% if oracle_ver_base in ('11.2','12.1') %}{{ oracle_ver }}{% else %}{{ 'default' }}{% endif %}.yml
+          public: yes
+        loop:
+          - "{{ gi_software  | json_query('[?version==`' + oracle_ver + '`].files[*]') | join() }}"
+        loop_control:
+          loop_var: osw_files
+        when:
+          - cluster_type == "RAC"
+    tags: rac-gi
+
+  - hosts: all
+    gather_facts: false
+    serial: 1
+    tasks:
+      - name: rac-db-install | defaults from common
+        include_vars:
+          dir: roles/common/defaults
+      - name: rac-db-install | setup ssh keys
+        include_role:
+          name: ssh-setup
+        vars:
+          ssh_user: "{{ oracle_user }}"
+          user_group: "{{ oracle_group }}"
+          ssh_nodes: "{{ groups['dbasm'] }}"
+        when:
+          - cluster_type == "RAC"
+    tags: rac-db,ssh-keys
+
+  - hosts: dbasm[0]
+    gather_facts: false
+    remote_user: "{{ oracle_user }}"
+    become_user: root
+    become: true
+    tasks:
+      - name: rac-db-install | defaults from common
+        include_vars:
+          dir: roles/common/defaults
+      - name: rac-db-install | RDBMS installation
+        include_role:
+          name: rac-db-setup
+          tasks_from: rac-db-install-default.yml
+          public: yes
+        loop:
+          - "{{ rdbms_software | json_query('[?version==`' + oracle_ver + '`].files[*]') | join() }}"
+        loop_control:
+          loop_var: osw_files
+        when:
+          - cluster_type == "RAC"
+    tags: rac-db
+

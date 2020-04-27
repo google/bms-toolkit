@@ -8,12 +8,11 @@ swlib_mount_type: "{{ lookup('env','ORA_SWLIB_TYPE')|lower|default('',true) }}" 
 swlib_mount_src: "{{ lookup('env','ORA_SWLIB_BUCKET')|default('',true) | regex_replace ('^gs://') }}"
 swlib_gcs_service_account_file: "{{ lookup('env','ORA_SWLIB_CREDENTIALS')|default('',true) }}"
 
-## On GCE we need swap.
+## The toolkit can optionally configure swap space
 #If your RAM size is less than or equal to 2 GB, your swap size should be 1.5 times of the RAM. For example, if your RAM size is 2 GB, you should create swap space of 3GB
 #If your RAM size is between 2 GB and 16 GB, your swap size should be the same size of the RAM. For example, if your RAM size is 4 GB, you should create swap space of 4GB
 #If your RAM size is more than 16 GB, your swap size should be 16 GB. For example, if your RAM size is 32 GB, it is enough if you create a swap space of 16GB
-#In Terraform you will add a disk of proper size to use as swap
-swap_blk_device: /dev/sdg_bogus
+swap_blk_device: ""
 
 # ntp preferred server
 ntp_preferred: "{{ lookup('env','NTP_PREF')|lower|default('',true) }}"

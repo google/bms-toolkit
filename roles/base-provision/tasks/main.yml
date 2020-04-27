@@ -113,4 +113,4 @@
       - ansible_system_vendor == "Google"
       - ansible_virtualization_type == "kvm"
       - ansible_virtualization_role == "guest"
-      - swap_blk_device is defined
+      - swap_blk_device is defined and swap_blk_device|lower is not search('bogus')

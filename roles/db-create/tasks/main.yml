@@ -115,3 +115,17 @@
       #verbosity: 1
     when: pmon_proc.stdout == "0" and check_oratab.stdout == "0"
     tags: db-create
+
+  - name: Get the running instance name
+    shell: "set -o pipefail; ps -ef | ( grep pmon || true ) | ( grep -i {{ db_name }} || true ) | ( grep -v grep || true ) | sed s'/^.*pmon_//g'"
+    changed_when: false
+    register: instance_name
+    tags: db-create
+
+  - name: Add instance in /etc/oratab
+    blockinfile:
+      path: /etc/oratab
+      marker: "# {mark} ANSIBLE MANAGED BLOCK"
+      block: |
+        {{ instance_name }}:{{ oracle_home }}:N   # Line managed by ansible
+    tags: db-create

@@ -1,0 +1,36 @@
+{% macro domain() -%}{% if hostvars[groups['dbasm'].0]['cluster_domain'] is defined and hostvars[groups['dbasm'].0]['cluster_domain']|length > 0 -%}.{{ hostvars[groups['dbasm'].0]['cluster_domain'] }}{% endif -%}{% endmacro -%}
+oracle.install.responseFileVersion=/oracle/install/rspfmt_crsinstall_response_schema_v18.0.0
+INVENTORY_LOCATION={{ oracle_inventory }}
+oracle.install.option=CRS_CONFIG
+ORACLE_BASE={{ oracle_base }}
+oracle.install.asm.OSDBA=asmdba
+oracle.install.asm.OSOPER=asmoper
+oracle.install.asm.OSASM=asmadmin
+oracle.install.crs.config.scanType=LOCAL_SCAN
+oracle.install.crs.config.gpnp.scanName={{ hostvars[groups['dbasm'].0]['scan_name'] }}{{ domain() }}
+oracle.install.crs.config.gpnp.scanPort={{ hostvars[groups['dbasm'].0]['scan_port'] }}
+oracle.install.crs.config.ClusterConfiguration=STANDALONE
+oracle.install.crs.config.clusterName={{ hostvars[groups['dbasm'].0]['cluster_name'][:15] }}
+
+oracle.install.crs.config.autoConfigureClusterNodeVIP=false
+
+oracle.install.crs.config.clusterNodes={% set c = joiner(",") %}{% for h in groups['dbasm'] %}{{ c() }}{{ h }}{{ domain() }}:{{ hostvars[h]['vip_name'] }}{{ domain() }}:HUB{% endfor %}
+
+oracle.install.crs.config.networkInterfaceList={% set pub = hostvars[groups['dbasm'].0]['public_net']|regex_replace('@.*$', '') -%}
+{% set prv = hostvars[groups['dbasm'].0]['private_net']|regex_replace('@.*$', '') -%}
+{{ pub }}:{{ hostvars[groups['dbasm'].0]['ansible_facts'][pub]['ipv4']['network'] }}:1,{{ prv }}:{{ hostvars[groups['dbasm'].0]['ansible_facts'][prv]['ipv4']['network'] }}:5
+
+oracle.install.crs.config.storageOption=FLEX_ASM_STORAGE
+
+oracle.install.asm.SYSASMPassword={{ pass_asmsys }}
+oracle.install.asm.diskGroup.name={{ hostvars[groups['dbasm'].0]['dg_name'] }}
+
+oracle.install.asm.diskGroup.redundancy=EXTERNAL
+oracle.install.asm.diskGroup.AUSize=4
+
+oracle.install.asm.diskGroup.disks={{ symlink | json_query('results[*].stdout') | join(',') }}
+
+oracle.install.asm.diskGroup.diskDiscoveryString=/dev/oracleasm/*
+oracle.install.asm.monitorPassword={{ pass_asmmon }}
+oracle.install.asm.configureAFD=false
+oracle.install.crs.configureRHPS=false

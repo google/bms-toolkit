@@ -1,0 +1,81 @@
+  - name: rac-asm-create | Check what disk groups created
+    shell: |
+      set -o pipefail
+      echo "
+      select name from v\$asm_diskgroup;
+      ;
+      " | sqlplus -s / as sysasm
+    environment:
+      ORACLE_HOME: "{{ grid_home }}"
+      PATH: "{{ grid_home }}/bin:${PATH}"
+      ORACLE_VERSION: "{{ oracle_ver }}"
+      ORACLE_SID: "{{ asm_sid }}"
+      LD_LIBRARY_PATH: "{{ grid_home }}/lib:${LD_LIBRARY_PATH}"
+    become: yes
+    become_user: "{{ grid_user }}"
+    register: created_dg
+    tags: rac-asm-create,check-dg
+
+  - name: rac-asm-create | (asmlib) Create disk groups
+    shell: |
+      set -o pipefail
+      echo "
+      CREATE DISKGROUP {{ item.diskgroup }} EXTERNAL REDUNDANCY
+      {% for i in item.disks %}  DISK 'ORCL:{{ i.name }}'
+      {% endfor %}
+      ATTRIBUTE
+         'compatible.asm'   = '{{ diskgroup_compatible_asm }}',
+         'compatible.rdbms' = '{{ diskgroup_compatible_rdbms }}';
+      ;
+      " | sqlplus -s / as sysasm
+    environment:
+      ORACLE_HOME: "{{ grid_home }}"
+      PATH: "{{ grid_home }}/bin:${PATH}"
+      ORACLE_VERSION: "{{ oracle_ver }}"
+      ORACLE_SID: "{{ asm_sid }}"
+      LD_LIBRARY_PATH: "{{ grid_home }}/lib:${LD_LIBRARY_PATH}"
+    when:
+      - asm_disk_control == "asmlib"
+      - created_dg is not search('{{ item.diskgroup }}')
+    with_items:
+      - "{{ asm_disks }}"
+    register: create_dg
+    failed_when: "'ERROR' in create_dg.stdout"
+    become: yes
+    become_user: "{{ grid_user }}"
+    tags: rac-asm-create,create-dg
+
+  - name: rac-asm-create | (udev) Create disk groups
+    shell: |
+      set -o pipefail
+      echo "
+      CREATE DISKGROUP {{ item.diskgroup }} EXTERNAL REDUNDANCY
+      {% for i in item.disks %}  DISK '/dev/oracleasm/{{ i.name }}'
+      {% endfor %}
+      ATTRIBUTE
+         'compatible.asm'   = '{{ diskgroup_compatible_asm }}',
+         'compatible.rdbms' = '{{ diskgroup_compatible_rdbms }}';
+      ;
+      " | sqlplus -s / as sysasm
+    environment:
+      ORACLE_HOME: "{{ grid_home }}"
+      PATH: "{{ grid_home }}/bin:${PATH}"
+      ORACLE_VERSION: "{{ oracle_ver }}"
+      ORACLE_SID: "{{ asm_sid }}"
+      LD_LIBRARY_PATH: "{{ grid_home }}/lib:${LD_LIBRARY_PATH}"
+    when:
+      - asm_disk_control == "udev"
+      - created_dg is not search('{{ item.diskgroup }}')
+    with_items:
+      - "{{ asm_disks }}"
+    register: create_dg
+    failed_when: "'ERROR' in create_dg.stdout"
+    become: yes
+    become_user: "{{ grid_user }}"
+    tags: rac-asm-create,create-dg
+
+  - name: rac-asm-create | debug asm disk group creation
+    debug:
+      msg: "{{ create_dg }}"
+      verbosity: 1
+    tags: rac-asm-create,list-dg

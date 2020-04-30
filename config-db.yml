@@ -47,3 +47,21 @@
           - create_db|bool
           - cluster_type == "RAC"
         tags: rac-db-create,rac-db-adjustments,rac-db-backups,rac-validation-scripts
+
+  - hosts: all
+    become: yes
+    tasks:
+      - name: Fill oratab with instances | include vars
+        include_vars:
+          dir: roles/common/defaults
+      - name: Fill oratab with instances | Get the running instance name
+        shell: "set -o pipefail; ps -ef | (grep -i pmon_{{ db_name }} || true ) | ( grep -v grep || true ) | sed s'/^.*pmon_//g'"
+        changed_when: false
+        register: instance_name
+      - name: Fill oratab with instances | Add instance in /etc/oratab
+        blockinfile:
+          path: /etc/oratab
+          marker: "# {mark} ANSIBLE MANAGED BLOCK"
+          block: |
+            {{ instance_name.stdout }}:{{ oracle_home }}:N   # Line managed by ansible
+    tags: rac-db-create

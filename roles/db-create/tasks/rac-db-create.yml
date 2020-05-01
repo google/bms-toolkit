@@ -90,6 +90,8 @@
       path: "{{ oracle_base }}/cfgtoollogs/dbca"
       state: directory
       mode: g+w
+      owner: "{{ oracle_user }}"
+      group: "{{ oracle_group }}"
     become: true
     become_user: root
     tags: rac-db-create

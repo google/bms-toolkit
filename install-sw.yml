@@ -38,7 +38,6 @@
     tags: rdbms-setup
 
   - hosts: all
-    gather_facts: false
     serial: 1
     tasks:
       - name: rac-gi-install | defaults from common
@@ -56,7 +55,6 @@
     tags: rac-gi,ssh-keys
 
   - hosts: dbasm[0]
-    gather_facts: false
     remote_user: "{{ grid_user }}"
     become_user: root
     become: true
@@ -79,7 +77,6 @@
     tags: rac-gi
 
   - hosts: all
-    gather_facts: false
     serial: 1
     tasks:
       - name: rac-db-install | defaults from common
@@ -97,7 +94,6 @@
     tags: rac-db,ssh-keys
 
   - hosts: dbasm[0]
-    gather_facts: false
     remote_user: "{{ oracle_user }}"
     become_user: root
     become: true
@@ -117,4 +113,3 @@
         when:
           - cluster_type == "RAC"
     tags: rac-db
-

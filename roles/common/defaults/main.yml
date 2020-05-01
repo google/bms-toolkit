@@ -60,7 +60,7 @@
   pass_param: "{{pwgen_path}}/{{pwgen_file}} 16"
 
   diskgroup_compatible_asm: "{{ oracle_ver }}"
-  diskgroup_compatible_rdbms: "11.2.0.4.0"
+  diskgroup_compatible_rdbms: "{{ lookup('env','COMPATIBLE_RDBMS')|default('11.2.0.4.0',true) }}"
 
   gi_software:
     - name: 19c_gi

@@ -1,0 +1,27 @@
+[
+  {
+    "scan_name": "scan-cluster",
+    "scan_port": "1521",
+    "cluster_name": "cluster",
+    "cluster_domain": "home",
+    "public_net": "public_interface",
+    "private_net": "private",
+    "scan_ip1": "10.0.1.256",
+    "scan_ip2": "10.0.1.257",
+    "scan_ip3": "10.0.1.258",
+    "dg_name": "DG_NAME",
+    "nodes": [
+      {  "node_name": "host_name",
+         "host_ip": "10.0.0.256",
+         "vip_name": "host_name-vip",
+         "vip_ip": "192.168.0.256"
+      },
+      {  "node_name": "host_name",
+         "host_ip": "10.0.0.257",
+         "vip_name": "host_name-vip",
+         "vip_ip": "192.168.0.257"
+      }
+    ]
+  }
+]
+

@@ -26,6 +26,26 @@
     delegate_to: "{{ item }}"
     tags: rac-gi,gi-dirs
 
+  - name: rac-gi-install | Unzipping HA interim patches
+    unarchive:
+      src: "{{ swlib_path }}/{{ item.files | join() }}"
+      dest: "{{ swlib_path }}"
+      remote_src: yes
+    with_items:
+      - "{{ gi_interim_patches }}"
+    when: item.version == oracle_ver and item.category == "HAS_interim_patch"
+    become: yes
+    become_user: "{{ grid_user }}"
+    tags: rac-gi,sw-unzip
+
+  - name: rac-gi-install | Set variable for HA interim patch
+    set_fact:
+      has_patch: "-applyOneOffs {{ swlib_path }}/{{ item.patchnum | join() }}"
+    with_items:
+      - "{{ gi_interim_patches }}"
+    when: item.version == oracle_ver and item.category == "HAS_interim_patch"
+    tags: rac-gi,has-patch
+
   - name: rac-gi-install | Unzipping
     unarchive:
       src: "{{ swlib_path }}/{{ item }}"
@@ -52,7 +72,7 @@
     include_role:
       name: pwgen
     vars:
-      pwgen_len: 12
+      pwgen_len: 16
       pwgen_chars: "$#_"
     tags: rac-gi
 
@@ -64,7 +84,7 @@
     include_role:
       name: pwgen
     vars:
-      pwgen_len: 12
+      pwgen_len: 16
       pwgen_chars: "$#_"
     tags: rac-gi
 
@@ -81,7 +101,7 @@
     tags: rac-gi,rac-gi-response
 
   - name: rac-gi-install | Run installer
-    command: "{{ installer_command }} -silent -responseFile {{ install_unzip_path }}/gridsetup.rsp -ignorePrereqFailure"
+    command: "{{ installer_command }} -silent -responseFile {{ install_unzip_path }}/gridsetup.rsp {{ has_patch | default('') }} -ignorePrereqFailure"
     register: install_rac_gi
     failed_when: "('Successfully Setup Software' not in install_rac_gi.stdout) or
                   (install_rac_gi.rc not in [0,6,250])"

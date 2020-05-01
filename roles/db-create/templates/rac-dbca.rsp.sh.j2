@@ -1,0 +1,16 @@
+{% macro domain() -%}{% if hostvars[groups['dbasm'].0]['cluster_domain'] is defined and hostvars[groups['dbasm'].0]['cluster_domain']|length > 0 -%}.{{ hostvars[groups['dbasm'].0]['cluster_domain'] }}{% endif -%}{% endmacro -%}
+dbca -silent -createDatabase -gdbName {{ db_name }}{{ domain() }} \
+-databaseType {{ db_type }} \
+-createAsContainerDatabase {{ container_db }} \
+-numberOfPDBs {{ pdb_count }} \
+-pdbAdminPassword {{ pass_pdbadmin }} \
+-pdbName {{ pdb_prefix }} \
+-databaseConfigType {{ db_config_type }} \
+-nodelist {% set c = joiner(",") %}{% for h in groups['dbasm'] %}{{ c() }}{{ h }}{% endfor %} \
+-templateName General_Purpose.dbc \
+-emConfiguration none -sysPassword {{ pass_sys }} \
+-systemPassword {{ pass_system }} -storageType ASM \
+-diskGroupName {{ data_diskgroup }} \
+-redoLogFileSize {{ redologsize }} \
+-initParams pga_aggregate_target='{{ pga_aggtar_bytes }}',sga_target='{{ sga_target_bytes }}',streams_pool_size=64M,use_large_pages=TRUE,{% if hostvars[groups['dbasm'].0]['cluster_domain'] is defined and hostvars[groups['dbasm'].0]['cluster_domain']|length > 0 %}db_domain='{{ hostvars[groups['dbasm'].0]['cluster_domain'] }}',{% endif %}diagnostic_dest='{{ oracle_base }}' \
+-ignorePreReqs -ignorePrereqFailure

@@ -91,7 +91,11 @@
         {% if scan_name is defined %}
         {% for h in hostvars[host] %}
         {% if 'scan_ip' in h %}
+        {% if cluster_domain is defined %}
         {{ hostvars[host][h] }}    {{ scan_name }}.{{ cluster_domain }}  {{ scan_name }}
+        {% else %}
+        {{ hostvars[host][h] }}    {{ scan_name }}
+        {% endif %}
         {% endif %}
         {% endfor %}
         {% endif %}

@@ -1,4 +1,4 @@
-source oraenv <<< {{ db_name }}
+source oraenv <<< {{ oracle_sid }}
 
 sqlplus -s / as sysdba << EOF
 set pages 32767 lines 180 trims on tab off

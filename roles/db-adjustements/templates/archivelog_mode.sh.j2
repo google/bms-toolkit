@@ -1,4 +1,4 @@
-source oraenv <<< {{ db_name }}
+source oraenv <<< {{ oracle_sid }}
 
 sqlplus -s / as sysdba << EOF
 shutdown immediate

@@ -75,7 +75,7 @@
     #if mapper in disk name - info taken from whole disk,
     #otherwise from first partition
     shell: |
-      udevadm info --query=all --name={% if item is search ('mapper') %}{{ item }}{% else %}{{ item }}1{% endif %} | grep "^S: " | grep oracleasm | awk '{ print "/dev/"$2 }'
+      udevadm info --query=all --name={% if item is search ('mapper') %}{{ item }}{% else %}{{ item }}1{% endif %} | grep "^S: " | grep {{ path_udev }} | awk '{ print "/dev/"$2 }'
     loop: "{{ asm_disks | json_query('[?diskgroup==`' + hostvars[groups['dbasm'].0]['dg_name'] + '`].disks[*].blk_device') | list | join() }}"
     when: lookup('env', 'ORA_DISK_MGMT') == "UDEV"
     become: True
@@ -87,7 +87,7 @@
       name: pwgen
     vars:
       pwgen_len: 16
-      pwgen_chars: "$#_"
+      pwgen_chars: "$#_12345"
     tags: rac-gi
 
   - name: rac-gi-install | Set password for asmsys
@@ -99,7 +99,7 @@
       name: pwgen
     vars:
       pwgen_len: 16
-      pwgen_chars: "$#_"
+      pwgen_chars: "$#_12345"
     tags: rac-gi
 
   - name: rac-gi-install | Set password for asmmon

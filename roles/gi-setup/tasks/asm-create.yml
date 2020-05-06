@@ -74,7 +74,7 @@
       ORACLE_VERSION: "{{ oracle_ver }}"
       ORACLE_SID: "{{ asm_sid }}"
       LD_LIBRARY_PATH: "{{ grid_home }}/lib:${LD_LIBRARY_PATH}"
-    when: asm_disk_control == "asmlib" or (asm_disks | join(' ') is search('mapper'))
+    when: asm_disk_management == "asmlib"
     with_items:
       - "{{ asm_disks }}"
     register: create_dg
@@ -88,7 +88,7 @@
       set -o pipefail
       echo "
       CREATE DISKGROUP {{ item.diskgroup }} EXTERNAL REDUNDANCY
-      {% for i in item.disks %}  DISK '/dev/oracleasm/{{ i.name }}'
+      {% for i in item.disks %}  DISK '/dev/{{ path_udev }}/{{ i.name }}'
       {% endfor %}
       ATTRIBUTE
          'compatible.asm'   = '{{ diskgroup_compatible_asm }}',
@@ -101,7 +101,7 @@
       ORACLE_VERSION: "{{ oracle_ver }}"
       ORACLE_SID: "{{ asm_sid }}"
       LD_LIBRARY_PATH: "{{ grid_home }}/lib:${LD_LIBRARY_PATH}"
-    when: asm_disk_control == "udev" and not (asm_disks | join(' ') is search('mapper'))
+    when: asm_disk_management == "udev"
     with_items:
       - "{{ asm_disks }}"
     register: create_dg

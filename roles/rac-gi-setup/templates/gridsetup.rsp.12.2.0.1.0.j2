@@ -22,7 +22,7 @@ oracle.install.crs.config.networkInterfaceList={% set pub = hostvars[groups['dba
 
 oracle.install.crs.config.storageOption=FLEX_ASM_STORAGE
 
-oracle.install.asm.SYSASMPassword=ASM12pass_
+oracle.install.asm.SYSASMPassword={{ pass_asmsys }}
 oracle.install.asm.diskGroup.name={{ hostvars[groups['dbasm'].0]['dg_name'] }}
 
 oracle.install.asm.diskGroup.redundancy=EXTERNAL
@@ -30,7 +30,7 @@ oracle.install.asm.diskGroup.AUSize=4
 
 oracle.install.asm.diskGroup.disks={{ symlink | json_query('results[*].stdout') | join(',') }}
 
-oracle.install.asm.diskGroup.diskDiscoveryString=/dev/oracleasm/*
-oracle.install.asm.monitorPassword=ASM12pass_
+oracle.install.asm.diskGroup.diskDiscoveryString={{ asm_diskstring }}
+oracle.install.asm.monitorPassword={{ pass_asmmon }}
 oracle.install.asm.configureAFD=false
 oracle.install.crs.configureRHPS=false

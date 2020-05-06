@@ -43,11 +43,11 @@ ORA_DB_NAME_PARAM="^[a-zA-Z0-9_$]+$"
 #
 # The default inventory file
 #
-INVENTORY_FILE="inventory"
+INVENTORY_FILE="${INVENTORY_FILE:-./inventory_files/inventory}"
 
 ###
-GETOPT_MANDATORY="ora-swlib-bucket:"
-GETOPT_OPTIONAL="ora-version:,ora-release:,ora-swlib-path:,ora-staging:,ora-db-name:,inventory-file:"
+GETOPT_MANDATORY="ora-swlib-bucket:,inventory-file:"
+GETOPT_OPTIONAL="ora-version:,ora-release:,ora-swlib-path:,ora-staging:,ora-db-name:"
 GETOPT_OPTIONAL="$GETOPT_OPTIONAL,help,validate"
 GETOPT_LONG="$GETOPT_MANDATORY,$GETOPT_OPTIONAL"
 GETOPT_SHORT="h"
@@ -149,6 +149,10 @@ shopt -s nocasematch
 # Mandatory options
 if [ "${ORA_SWLIB_BUCKET}" = "" ]; then
     echo "Please specify a GS bucket with --ora-swlib-bucket"
+    exit 2
+fi
+if [[ ! -s ${INVENTORY_FILE} ]]; then
+    echo "Please specify the inventory file using --inventory-file <file_name>"
     exit 2
 fi
 

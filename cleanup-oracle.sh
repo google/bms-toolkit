@@ -15,14 +15,14 @@
 
 
 
-GETOPT_MANDATORY="ora-version:,yes-i-am-sure"
-GETOPT_OPTIONAL="ora-role-separation:,inventory-file:,help"
+GETOPT_MANDATORY="ora-version:,inventory-file:,yes-i-am-sure"
+GETOPT_OPTIONAL="ora-role-separation:,help"
 GETOPT_LONG="${GETOPT_MANDATORY},${GETOPT_OPTIONAL}"
 GETOPT_SHORT="yh"
 
 YESIAMSURE=0
 VALIDATE=0
-INVENTORY_FILE=inventory
+INVENTORY_FILE="${INVENTORY_FILE:-./inventory_files/inventory}"
 
 ORA_VERSION="${ORA_VERSION}"
 ORA_VERSION_PARAM='^(19\.3\.0\.0\.0|18\.0\.0\.0\.0|12\.2\.0\.1\.0|12\.1\.0\.2\.0|11\.2\.0\.4\.0|ALL)$'
@@ -81,6 +81,11 @@ shopt -s nocasematch
 # Mandatory options
 if [ "${ORA_VERSION}" = "" ]; then
     echo "Please specify the oracle release with --ora-version"
+    exit 2
+fi
+
+if [[ ! -s ${INVENTORY_FILE} ]]; then
+    echo "Please specify the inventory file using --inventory-file <file_name>"
     exit 2
 fi
 

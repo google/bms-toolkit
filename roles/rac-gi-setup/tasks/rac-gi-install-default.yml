@@ -77,7 +77,7 @@
     shell: |
       udevadm info --query=all --name={% if item is search ('mapper') %}{{ item }}{% else %}{{ item }}1{% endif %} | grep "^S: " | grep oracleasm | awk '{ print "/dev/"$2 }'
     loop: "{{ asm_disks | json_query('[?diskgroup==`' + hostvars[groups['dbasm'].0]['dg_name'] + '`].disks[*].blk_device') | list | join() }}"
-    when: lookup('env', 'ORA_DISK_MGMT') == "UDEV"
+    when: asm_disk_management == "udev"
     become: True
     become_user: root
     register: symlink

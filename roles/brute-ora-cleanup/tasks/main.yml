@@ -109,7 +109,6 @@
       - "{{ asm_disks }}"
       - disks
     register: delete_asm_disks
-    #when: asm_disk_control == "asmlib"
     become: yes
     become_user: root
     ignore_errors: true

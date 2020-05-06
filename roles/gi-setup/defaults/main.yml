@@ -13,6 +13,4 @@
 # limitations under the License.
 
 ---
-  asm_diskstring: "{% if asm_disks | join(' ') is search('mapper') %}ORCL:*{% elif asm_disk_management == 'asmlib' and ansible_distribution == 'OracleLinux' %}ORCL:*{% else %}/dev/oracleasm/*{% endif %}"
-
   run_cluvfy: false

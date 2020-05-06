@@ -30,7 +30,7 @@ oracle.install.asm.diskGroup.AUSize=4
 
 oracle.install.asm.diskGroup.disks={{ symlink | json_query('results[*].stdout') | join(',') }}
 
-oracle.install.asm.diskGroup.diskDiscoveryString=/dev/oracleasm/*
+oracle.install.asm.diskGroup.diskDiscoveryString={{ asm_diskstring }}
 oracle.install.asm.monitorPassword={{ pass_asmmon }}
 oracle.install.asm.configureAFD=false
 oracle.install.crs.configureRHPS=false

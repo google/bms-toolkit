@@ -21,7 +21,7 @@
   oracle_home: "{{ oracle_root }}/oracle/product/{{ oracle_ver_dir }}/{{ home_name }}"
   grid_home: "{{ oracle_root }}/{{ oracle_ver_dir }}/grid"
 
-  asm_disk_control: "{% if asm_disk_management == 'asmlib' and ansible_distribution == 'OracleLinux' %}asmlib{% else %}udev{% endif %}"
+  path_udev: asmdisks
 
   oracle_users:
     - { name: "{{ oracle_user }}", comment: "", uid: 801, group: "{{ oracle_group }}" }
@@ -59,6 +59,8 @@
 
   extra_asm_groups:
     - { group: dba      ,       gid: 802 }
+
+  asm_diskstring: "{% if asm_disk_management == 'asmlib' %}ORCL:*{% else %}/dev/{{ path_udev }}/*{% endif %}"
 
   oracle_dirs:
     - { name: "{{ swlib_unzip_path }}", owner: "{{ oracle_user }}", group: "{{ oracle_group }}", mode: 775 }

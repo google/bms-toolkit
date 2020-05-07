@@ -193,6 +193,7 @@
       state: present
       label: gpt
     when: "'mapper' not in item.1.blk_device"
+    run_once: "{% if cluster_type == 'RAC' %}true{% endif %}"
     with_subelements:
       - "{{ asm_disks }}"
       - disks

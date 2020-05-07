@@ -13,92 +13,92 @@
 # limitations under the License.
 
 ---
-  - name: Check if software is already installed
-    shell: cat "{{ oracle_inventory }}/ContentsXML/inventory.xml" 2>&1 | ( grep -w {{ grid_home }} || true ) | wc -l
-    register: existing_dbhome
-    become: yes
-    become_user: root
-    ignore_errors: yes
-    changed_when: false
-    failed_when: false
-    tags: gi-setup
+- name: Check if software is already installed
+  shell: cat "{{ oracle_inventory }}/ContentsXML/inventory.xml" 2>&1 | ( grep -w {{ grid_home }} || true ) | wc -l
+  register: existing_dbhome
+  become: yes
+  become_user: root
+  ignore_errors: yes
+  changed_when: false
+  failed_when: false
+  tags: gi-setup
 
-  - name: OH Confirmation
-    debug:
-      msg: "Installing GRID_HOME - {{ grid_home }}"
-    when: existing_dbhome.stdout == "0"
-    tags: gi-setup
+- name: OH Confirmation
+  debug:
+    msg: "Installing GRID_HOME - {{ grid_home }}"
+  when: existing_dbhome.stdout == "0"
+  tags: gi-setup
 
-  - include_tasks: gi-install.yml
-    with_items:
-      - "{{ gi_software }}"
-    loop_control:
-      loop_var: osw
-    when: existing_dbhome.stdout == "0" and osw.version == oracle_ver
-    tags: gi-setup
+- include_tasks: gi-install.yml
+  with_items:
+    - "{{ gi_software }}"
+  loop_control:
+    loop_var: osw
+  when: existing_dbhome.stdout == "0" and osw.version == oracle_ver
+  tags: gi-setup
 
-  - name: configure HAS
-    command: "{{ grid_home }}/perl/bin/perl -I {{ grid_home }}/perl/lib -I {{ grid_home }}/crs/install {{ grid_home }}/crs/install/roothas.pl"
-    register: has_config
-    become: yes
-    become_user: root
-    failed_when: "('Successfully configured Oracle Restart' not in has_config.stdout ) and
-                  ('Successfully configured Oracle Grid Infrastructure' not in has_config.stdout ) and not
-                  ('Operation successful.' in has_config.stdout and 'CLSRSC-400: A system reboot is required' in has_config.stdout)"
-    when: existing_dbhome.stdout == "0"
-    tags: gi-setup,has-config
+- name: configure HAS
+  command: "{{ grid_home }}/perl/bin/perl -I {{ grid_home }}/perl/lib -I {{ grid_home }}/crs/install {{ grid_home }}/crs/install/roothas.pl"
+  register: has_config
+  become: yes
+  become_user: root
+  failed_when: "('Successfully configured Oracle Restart' not in has_config.stdout ) and
+                ('Successfully configured Oracle Grid Infrastructure' not in has_config.stdout ) and not
+                ('Operation successful.' in has_config.stdout and 'CLSRSC-400: A system reboot is required' in has_config.stdout)"
+  when: existing_dbhome.stdout == "0"
+  tags: gi-setup,has-config
 
-  - name: HAS config output
-    debug:
-      msg:
-        - "{{ has_config.cmd }}"
-        - "{{ has_config.stdout_lines }}"
-      verbosity: 1
-    when: existing_dbhome.stdout == "0"
-    tags: gi-setup,has-config
+- name: HAS config output
+  debug:
+    msg:
+      - "{{ has_config.cmd }}"
+      - "{{ has_config.stdout_lines }}"
+    verbosity: 1
+  when: existing_dbhome.stdout == "0"
+  tags: gi-setup,has-config
 
-  - name: Check ASM status
-    shell: "( {{ grid_home }}/bin/srvctl status asm ) || true"
-    register: asm_status
-    changed_when: False
-    become: yes
-    become_user: "{{ grid_user }}"
-    failed_when: asm_status.rc >= 2
-    tags: gi-setup,start-asm
+- name: Check ASM status
+  shell: "( {{ grid_home }}/bin/srvctl status asm ) || true"
+  register: asm_status
+  changed_when: False
+  become: yes
+  become_user: "{{ grid_user }}"
+  failed_when: asm_status.rc >= 2
+  tags: gi-setup,start-asm
 
-  - include_tasks: asm-create.yml
-    when: '"ASM is running" not in asm_status.stdout'
-    tags: gi-setup,start-asm
+- include_tasks: asm-create.yml
+  when: '"ASM is running" not in asm_status.stdout'
+  tags: gi-setup,start-asm
 
-  - name: Check resources
-    shell: "( {{ grid_home }}/bin/crsctl stat res -t ) || true"
-    register: crsctl_res
-    become: yes
-    become_user: "{{ grid_user }}"
-    changed_when: False
-    tags: gi-setup,crsctl
+- name: Check resources
+  shell: "( {{ grid_home }}/bin/crsctl stat res -t ) || true"
+  register: crsctl_res
+  become: yes
+  become_user: "{{ grid_user }}"
+  changed_when: False
+  tags: gi-setup,crsctl
 
-  - name: crsctl stat res -t output
-    debug:
-      msg:
-        - "{{ crsctl_res.cmd }}"
-        - "{{ crsctl_res.stdout_lines }}"
-      #verbosity: 1
-    tags: gi-setup,crsctl
+- name: crsctl stat res -t output
+  debug:
+    msg:
+      - "{{ crsctl_res.cmd }}"
+      - "{{ crsctl_res.stdout_lines }}"
+    #verbosity: 1
+  tags: gi-setup,crsctl
 
-  - name: Final GI permission adjustments
-    file:
-      path: "{{ item.name }}"
-      state: directory
-      owner: "{{ item.owner }}"
-      group: "{{ oracle_group }}"
-      mode: "{{ item.mode }}"
-      recurse: "{{ item.recurse }}"
-    with_items:
-      - {name: "{{ oracle_base }}/diag", owner: "{{ oracle_user }}", mode: 775, recurse: "no" }
-      - {name: "{{ oracle_base }}/diag/crs", owner: "{{ grid_user }}", mode: "g+w", recurse: "yes" }
-      - {name: "{{ oracle_base }}/diag/kfod", owner: "{{ grid_user }}", mode: "g+w", recurse: "yes" }
-      - {name: "{{ oracle_base }}/admin", owner: "{{ oracle_user }}", mode: "g+w", recurse: "yes" }
-    become: yes
-    become_user: root
-    tags: gi-setup
+- name: Final GI permission adjustments
+  file:
+    path: "{{ item.name }}"
+    state: directory
+    owner: "{{ item.owner }}"
+    group: "{{ oracle_group }}"
+    mode: "{{ item.mode }}"
+    recurse: "{{ item.recurse }}"
+  with_items:
+    - {name: "{{ oracle_base }}/diag", owner: "{{ oracle_user }}", mode: 775, recurse: "no" }
+    - {name: "{{ oracle_base }}/diag/crs", owner: "{{ grid_user }}", mode: "g+w", recurse: "yes" }
+    - {name: "{{ oracle_base }}/diag/kfod", owner: "{{ grid_user }}", mode: "g+w", recurse: "yes" }
+    - {name: "{{ oracle_base }}/admin", owner: "{{ oracle_user }}", mode: "g+w", recurse: "yes" }
+  become: yes
+  become_user: root
+  tags: gi-setup

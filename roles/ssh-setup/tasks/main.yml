@@ -13,52 +13,52 @@
 # limitations under the License.
 
 ---
-  - name: create .ssh dir if not there
-    file:
-      path: /home/{{ ssh_user }}/.ssh
-      state: directory
-      mode: '0700'
-      owner: "{{ ssh_user }}"
-      group: "{{ user_group }}"
-    become: true
-    become_user: "{{ ssh_user }}"
-    tags: ssh-key
+- name: create .ssh dir if not there
+  file:
+    path: /home/{{ ssh_user }}/.ssh
+    state: directory
+    mode: '0700'
+    owner: "{{ ssh_user }}"
+    group: "{{ user_group }}"
+  become: true
+  become_user: "{{ ssh_user }}"
+  tags: ssh-key
 
-  - name: generate ssh key on first node
-    openssh_keypair:
-      path: /home/{{ ssh_user }}/.ssh/id_rsa
-      owner: "{{ ssh_user }}"
-      group: "{{ user_group }}"
-    become: true
-    become_user: "{{ ssh_user }}"
-    register: ssh_key
-    tags: ssh-key
+- name: generate ssh key on first node
+  openssh_keypair:
+    path: /home/{{ ssh_user }}/.ssh/id_rsa
+    owner: "{{ ssh_user }}"
+    group: "{{ user_group }}"
+  become: true
+  become_user: "{{ ssh_user }}"
+  register: ssh_key
+  tags: ssh-key
 
-  - name: get key fingerprint
-    command: ssh-keyscan -tecdsa {{ inventory_hostname }},{{ inventory_hostname }}.{{ ansible_domain }}
-    become: true
-    become_user: "{{ ssh_user }}"
-    register: finger_key
-    tags: ssh-key
+- name: get key fingerprint
+  command: ssh-keyscan -tecdsa {{ inventory_hostname }},{{ inventory_hostname }}.{{ ansible_domain }}
+  become: true
+  become_user: "{{ ssh_user }}"
+  register: finger_key
+  tags: ssh-key
 
-  - name: add key fingerprint to known_hosts
-    delegate_to: "{{ item }}"
-    lineinfile:
-      name: ~/.ssh/known_hosts
-      create: yes
-      line: "{{ finger_key.stdout }}"
-      owner: "{{ ssh_user }}"
-      group: "{{ user_group }}"
-    become: true
-    become_user: "{{ ssh_user }}"
-    loop: "{{ ssh_nodes }}"
-    tags: ssh-key
+- name: add key fingerprint to known_hosts
+  delegate_to: "{{ item }}"
+  lineinfile:
+    name: ~/.ssh/known_hosts
+    create: yes
+    line: "{{ finger_key.stdout }}"
+    owner: "{{ ssh_user }}"
+    group: "{{ user_group }}"
+  become: true
+  become_user: "{{ ssh_user }}"
+  loop: "{{ ssh_nodes }}"
+  tags: ssh-key
 
-  - name: ssh key propagation to all nodes
-    delegate_to: "{{ item }}"
-    authorized_key:
-      key: "{{ ssh_key.public_key }}"
-      user: "{{ ssh_user }}"
-    become: true
-    loop: "{{ ssh_nodes }}"
-    tags: ssh-key
+- name: ssh key propagation to all nodes
+  delegate_to: "{{ item }}"
+  authorized_key:
+    key: "{{ ssh_key.public_key }}"
+    user: "{{ ssh_user }}"
+  become: true
+  loop: "{{ ssh_nodes }}"
+  tags: ssh-key

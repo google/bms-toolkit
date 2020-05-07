@@ -13,48 +13,48 @@
 # limitations under the License.
 
 ---
-  - name: Check if software is already installed
-    shell: cat "{{ oracle_inventory }}/ContentsXML/inventory.xml" 2>&1 | ( grep -w {{ oracle_home }} || true ) | wc -l
-    register: existing_dbhome
-    become: yes
-    become_user: root
-    ignore_errors: yes
-    changed_when: false
-    failed_when: false
-    tags: rdbms-setup
+- name: Check if software is already installed
+  shell: cat "{{ oracle_inventory }}/ContentsXML/inventory.xml" 2>&1 | ( grep -w {{ oracle_home }} || true ) | wc -l
+  register: existing_dbhome
+  become: yes
+  become_user: root
+  ignore_errors: yes
+  changed_when: false
+  failed_when: false
+  tags: rdbms-setup
 
-  - name: OH Confirmation
-    debug:
-      msg: "Installing ORACLE_HOME - {{ oracle_home }}"
-    when: existing_dbhome.stdout == "0"
-    tags: rdbms-setup
+- name: OH Confirmation
+  debug:
+    msg: "Installing ORACLE_HOME - {{ oracle_home }}"
+  when: existing_dbhome.stdout == "0"
+  tags: rdbms-setup
 
-  - name: Validate directories (needed for secondary home)
-    file:
-      path: "{{ item.name }}"
-      state: directory
-      owner: "{{ item.owner }}"
-      group: "{{ item.group }}"
-      mode: "{{ item.mode }}"
-    when: home_name in item.name
-    with_items: "{{ oracle_dirs }}"
-    tags: rdbms-setup,os-dirs
+- name: Validate directories (needed for secondary home)
+  file:
+    path: "{{ item.name }}"
+    state: directory
+    owner: "{{ item.owner }}"
+    group: "{{ item.group }}"
+    mode: "{{ item.mode }}"
+  when: home_name in item.name
+  with_items: "{{ oracle_dirs }}"
+  tags: rdbms-setup,os-dirs
 
-  - include_tasks: rdbms-install.yml
-    with_items:
-      - "{{ rdbms_software }}"
-    loop_control:
-      loop_var: osw
-    when: existing_dbhome.stdout == "0" and osw.version == oracle_ver and oracle_edition in osw.edition
-    tags: rdbms-setup
+- include_tasks: rdbms-install.yml
+  with_items:
+    - "{{ rdbms_software }}"
+  loop_control:
+    loop_var: osw
+  when: existing_dbhome.stdout == "0" and osw.version == oracle_ver and oracle_edition in osw.edition
+  tags: rdbms-setup
 
-  - name: Deploy sqlnet.ora
-    template:
-      src: sqlnet.ora.j2
-      dest: "{{ oracle_home }}/network/admin/sqlnet.ora"
-      owner: "{{ oracle_user }}"
-      group: "{{ oracle_group }}"
-      mode: '0640'
-    become: yes
-    become_user: "{{ oracle_user }}"
-    tags: rdbms-setup
+- name: Deploy sqlnet.ora
+  template:
+    src: sqlnet.ora.j2
+    dest: "{{ oracle_home }}/network/admin/sqlnet.ora"
+    owner: "{{ oracle_user }}"
+    group: "{{ oracle_group }}"
+    mode: '0640'
+  become: yes
+  become_user: "{{ oracle_user }}"
+  tags: rdbms-setup

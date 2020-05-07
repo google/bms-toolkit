@@ -13,23 +13,23 @@
 # limitations under the License.
 
 ---
-#  - name: rdbms_pre_patch | get SID for the OH
-#    shell: "grep {{ sw_home }} /etc/oratab | cut -d':' -f1"
-#    environment:
-#      ORACLE_HOME: "{{ sw_home }}"
-#    register: db_stop
-#    become: yes
-#    become_user: "{{ sw_user }}"
-#    tags: patch_rdbms,get_dbs
+#- name: rdbms_pre_patch | get SID for the OH
+#  shell: "grep {{ sw_home }} /etc/oratab | cut -d':' -f1"
+#  environment:
+#    ORACLE_HOME: "{{ sw_home }}"
+#  register: db_stop
+#  become: yes
+#  become_user: "{{ sw_user }}"
+#  tags: patch_rdbms,get_dbs
 
-  - name: rdbms_pre_patch | Stop home rdmbs
-    command: "{{ oracle_home }}/bin/srvctl stop database -db {{ db_name }}"
-    #command: "{{ oracle_home }}/bin/srvctl stop home -o {{ oracle_home }}
-    environment:
-      ORACLE_HOME: "{{ oracle_home }}"
-    register: stop_home_rdbms
-    failed_when: stop_home_rdbms.rc not in [0,2]
-    become: yes
-    become_user: "{{ oracle_user }}"
-#    with_indexed_items: "{{ db_stop.stdout.split('\n')}}"
-    tags: patch_rdbms,stop_db
+- name: rdbms_pre_patch | Stop home rdmbs
+  command: "{{ oracle_home }}/bin/srvctl stop database -db {{ db_name }}"
+  #command: "{{ oracle_home }}/bin/srvctl stop home -o {{ oracle_home }}
+  environment:
+    ORACLE_HOME: "{{ oracle_home }}"
+  register: stop_home_rdbms
+  failed_when: stop_home_rdbms.rc not in [0,2]
+  become: yes
+  become_user: "{{ oracle_user }}"
+#  with_indexed_items: "{{ db_stop.stdout.split('\n')}}"
+  tags: patch_rdbms,stop_db

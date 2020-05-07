@@ -13,6 +13,6 @@
 # limitations under the License.
 
 ---
-  db_script_files:
-    - archivelog_mode.sh
-    - db_modifications.sh
+db_script_files:
+  - archivelog_mode.sh
+  - db_modifications.sh

@@ -21,9 +21,7 @@
 - name: rdbms_post_patch | Upgrade database
   shell: |
     set -o pipefail
-    echo "
-    startup upgrade;
-    " | sqlplus / as sysdba
+    sqlplus -s / as sysdba <<< "startup upgrade"
   environment:
     ORACLE_HOME: "{{ oracle_home }}"
     ORACLE_SID: "{{ oracle_sid }}"
@@ -74,9 +72,7 @@
 - name: rdbms_post_patch | Upgrade PDB
   shell: |
     set -o pipefail
-    echo "
-    alter pluggable database all open upgrade;
-    " | sqlplus / as sysdba
+    sqlplus -s / as sysdba <<< "alter pluggable database all open upgrade;"
   environment:
     ORACLE_HOME: "{{ oracle_home }}"
     ORACLE_SID: "{{ oracle_sid }}"
@@ -97,7 +93,7 @@
     - patch.upgrade
     - oracle_ver != '11.2.0.4.0'
 
-#- name: DB post patch | Start database
+#- name: rdbms_post_patch | Start database
 #  #command: "{{ oracle_home }}/bin/srvctl start database -db {{ item.1 }}"
 #  command: "{{ oracle_home }}/bin/srvctl start database -db {{ db_name }}"
 #  environment:
@@ -113,9 +109,7 @@
 - name: rdbms_post_patch | Start PDB
   shell: |
     set -o pipefail
-    echo "
-    alter pluggable database all open;
-    " | sqlplus / as sysdba
+    sqlplus -s / as sysdba <<< "alter pluggable database all open;"
   environment:
     ORACLE_HOME: "{{ oracle_home }}"
     ORACLE_SID: "{{ oracle_sid }}"
@@ -145,9 +139,7 @@
 - name: rdbms_post_patch  | Recompile invalid objects
   shell: |
     set -o pipefail
-    echo "
-    @?/rdbms/admin/utlrp;
-    " | sqlplus / as sysdba
+    sqlplus -s / as sysdba <<< "@?/rdbms/admin/utlrp;"
   environment:
     ORACLE_HOME: "{{ oracle_home }}"
     ORACLE_SID: "{{ oracle_sid }}"
@@ -159,13 +151,13 @@
 - name: rdbms_post_patch | Patch registry
   shell: |
     set -o pipefail
-    echo "
+    sqlplus -s / as sysdba << EOF
     set pages 0 lines 200
     col action_time for a28
     col action for a10
     col status for a10
     select action_time, action, status, patch_id from dba_registry_sqlpatch order by action_time;
-    " | sqlplus -s / as sysdba
+    EOF
   environment:
     ORACLE_HOME: "{{ oracle_home }}"
     ORACLE_SID: "{{ oracle_sid }}"

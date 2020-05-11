@@ -54,7 +54,7 @@
     dest: "{{ oracle_home }}/network/admin/sqlnet.ora"
     owner: "{{ oracle_user }}"
     group: "{{ oracle_group }}"
-    mode: '0640'
+    mode: u=rw,g=r,o=
   become: yes
   become_user: "{{ oracle_user }}"
   tags: rdbms-setup

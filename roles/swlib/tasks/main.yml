@@ -16,7 +16,7 @@
   file:
     path: "{{ swlib_path }}"
     state: directory
-    mode: '0774'
+    mode: ug=rwx,o=r
     owner: "{{ ansible_ssh_user }}"
     group: dba
   when: swlib_mount_type != "nfs"

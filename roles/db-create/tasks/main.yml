@@ -87,7 +87,7 @@
     src: "{{ pwgen_file }}"
     dest: "{{ pwgen_path }}/{{ pwgen_file }}"
     owner: root
-    mode: "0755"
+    mode: u=rwx,go=rx
 
 - name: Generate command for password randomization (not 11.2)
   set_fact:

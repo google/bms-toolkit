@@ -19,7 +19,7 @@
     dest: "{{ swlib_unzip_path }}/{{ item }}"
     owner: "{{ oracle_user }}"
     group: "{{ oracle_group }}"
-    mode: u=rwx,g=r,o=r
+    mode: u=rwx,go=r
   with_items:
     - "{{ db_script_files }}"
   become: yes

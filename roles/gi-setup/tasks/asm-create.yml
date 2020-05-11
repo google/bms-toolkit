@@ -38,7 +38,7 @@
     set -o pipefail
     ${ORACLE_HOME}/bin/srvctl add asm -d '{{ asm_diskstring }}'
     ${ORACLE_HOME}/bin/srvctl start asm
-    echo "create spfile from pfile;" | sqlplus -s / as sysasm
+    sqlplus -s / as sysasm <<< "create spfile from pfile;"
     ${ORACLE_HOME}/bin/srvctl stop asm
     ${ORACLE_HOME}/bin/srvctl start asm
   environment:
@@ -60,15 +60,14 @@
 - name: asm-create | (asmlib) Create disk groups
   shell: |
     set -o pipefail
-    echo "
+    sqlplus -s / as sysasm << EOF
     CREATE DISKGROUP {{ item.diskgroup }} EXTERNAL REDUNDANCY
     {% for i in item.disks %}  DISK 'ORCL:{{ i.name }}'
     {% endfor %}
     ATTRIBUTE
        'compatible.asm'   = '{{ diskgroup_compatible_asm }}',
        'compatible.rdbms' = '{{ diskgroup_compatible_rdbms }}';
-    ;
-    " | sqlplus -s / as sysasm
+    EOF
   environment:
     ORACLE_HOME: "{{ grid_home }}"
     PATH: "{{ grid_home }}/bin:${PATH}"
@@ -87,15 +86,14 @@
 - name: asm-create | (udev) Create disk groups
   shell: |
     set -o pipefail
-    echo "
+    sqlplus -s / as sysasm << EOF
     CREATE DISKGROUP {{ item.diskgroup }} EXTERNAL REDUNDANCY
     {% for i in item.disks %}  DISK '/dev/{{ path_udev }}/{{ i.name }}'
     {% endfor %}
     ATTRIBUTE
        'compatible.asm'   = '{{ diskgroup_compatible_asm }}',
        'compatible.rdbms' = '{{ diskgroup_compatible_rdbms }}';
-    ;
-    " | sqlplus -s / as sysasm
+    EOF
   environment:
     ORACLE_HOME: "{{ grid_home }}"
     PATH: "{{ grid_home }}/bin:${PATH}"

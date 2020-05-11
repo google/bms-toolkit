@@ -16,10 +16,7 @@
 - name: rac-asm-create | Check what disk groups created
   shell: |
     set -o pipefail
-    echo "
-    select name from v\$asm_diskgroup;
-    ;
-    " | sqlplus -s / as sysasm
+    sqlplus -s / as sysasm <<< "select name from v\$asm_diskgroup;"
   environment:
     ORACLE_HOME: "{{ grid_home }}"
     PATH: "{{ grid_home }}/bin:${PATH}"
@@ -34,15 +31,14 @@
 - name: rac-asm-create | (asmlib) Create disk groups
   shell: |
     set -o pipefail
-    echo "
+    sqlplus -s / as sysasm << EOF
     CREATE DISKGROUP {{ item.diskgroup }} EXTERNAL REDUNDANCY
     {% for i in item.disks %}  DISK 'ORCL:{{ i.name }}'
     {% endfor %}
     ATTRIBUTE
        'compatible.asm'   = '{{ diskgroup_compatible_asm }}',
        'compatible.rdbms' = '{{ diskgroup_compatible_rdbms }}';
-    ;
-    " | sqlplus -s / as sysasm
+    EOF
   environment:
     ORACLE_HOME: "{{ grid_home }}"
     PATH: "{{ grid_home }}/bin:${PATH}"
@@ -63,15 +59,14 @@
 - name: rac-asm-create | (udev) Create disk groups
   shell: |
     set -o pipefail
-    echo "
+    sqlplus -s / as sysasm << EOF
     CREATE DISKGROUP {{ item.diskgroup }} EXTERNAL REDUNDANCY
     {% for i in item.disks %}  DISK '/dev/{{ path_udev }}/{{ i.name }}'
     {% endfor %}
     ATTRIBUTE
        'compatible.asm'   = '{{ diskgroup_compatible_asm }}',
        'compatible.rdbms' = '{{ diskgroup_compatible_rdbms }}';
-    ;
-    " | sqlplus -s / as sysasm
+    EOF
   environment:
     ORACLE_HOME: "{{ grid_home }}"
     PATH: "{{ grid_home }}/bin:${PATH}"

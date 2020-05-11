@@ -30,7 +30,7 @@
 - name: sql_patch | startup db
   shell: |
     set -o pipefail
-    echo "startup {{ startup_upgrade }};" | sqlplus -s / as sysdba
+    sqlplus -s / as sysdba <<< "startup {{ startup_upgrade }};"
   environment:
     ORACLE_HOME: "{{ oracle_home }}"
     ORACLE_SID: "{{ oracle_sid }}"
@@ -49,7 +49,7 @@
 - name: sql_patch | startup PDB
   shell: |
     set -o pipefail
-    echo "alter pluggable database all open {{ startup_upgrade }};" | sqlplus -s / as sysdba
+    sqlplus -s / as sysdba <<< "alter pluggable database all open {{ startup_upgrade }};"
   environment:
     ORACLE_HOME: "{{ oracle_home }}"
     ORACLE_SID: "{{ oracle_sid }}"
@@ -91,7 +91,7 @@
 - name: sql_patch | Run catbundle
   shell: |
     set -o pipefail
-    echo "@catbundle.sql psu apply" | sqlplus -s / as sysdba
+    sqlplus -s / as sysdba <<< "@catbundle.sql psu apply"
   args:
     chdir: "{{ oracle_home }}/rdbms/admin"
   environment:
@@ -115,7 +115,7 @@
 - name: sql_patch | recompile invalid objects
   shell: |
     set -o pipefail
-    echo "@?/rdbms/admin/utlrp;" | sqlplus -s / as sysdba
+    sqlplus -s / as sysdba <<< "@?/rdbms/admin/utlrp;"
   environment:
     ORACLE_HOME: "{{ oracle_home }}"
     ORACLE_SID: "{{ oracle_sid }}"
@@ -127,13 +127,13 @@
 - name: sql_patch | capture registry patches
   shell: |
     set -o pipefail
-    echo "
+    sqlplus -s / as sysdba << EOF
     set pages 0 lines 200
     col action_time for a28
     col action for a10
     col status for a10
     select action_time, action, status, patch_id from dba_registry_sqlpatch order by action_time;
-    " | sqlplus -s / as sysdba
+    EOF
   environment:
     ORACLE_HOME: "{{ oracle_home }}"
     ORACLE_SID: "{{ oracle_sid }}"
@@ -152,7 +152,7 @@
 - name: sql_patch | shutdown db
   shell: |
     set -o pipefail
-    echo "shutdown immediate" | sqlplus -s / as sysdba
+    sqlplus -s / as sysdba <<< "shutdown immediate"
   environment:
     ORACLE_HOME: "{{ oracle_home }}"
     ORACLE_SID: "{{ oracle_sid }}"

@@ -13,7 +13,7 @@
 # limitations under the License.
 
 ---
-- name: rdbms-install | set facts
+- name: rdbms-install | Set facts
   set_fact:
     install_unzip_path: "{{ oracle_home }}"
     runinstaller_loc: "{{ oracle_home }}"
@@ -35,7 +35,7 @@
     #verbosity: 1
   tags: rdbms-setup
 
-- name: rdbms-install | Unzipping
+- name: rdbms-install | Unzipping software
   unarchive:
     src: "{{ swlib_path }}/{{ item }}"
     dest: "{{ install_unzip_path }}"
@@ -86,7 +86,7 @@
     #verbosity: 1
   tags: rdbms-setup
 
-- name: rdbms-install | run root-script orainstRoot.sh
+- name: rdbms-install | Run script orainstRoot.sh
   command: "{{ oracle_base }}/../oraInventory/orainstRoot.sh"
   ignore_errors: yes
   when: "'skipped' not in install_db_software.stdout"
@@ -94,7 +94,7 @@
   become_user: root
   tags: rdbms-setup
 
-- name: rdbms-install | run root-script root.sh
+- name: rdbms-install | Run script root.sh
   command: "{{ oracle_home }}/root.sh"
   when: "'skipped' not in install_db_software.stdout"
   become: yes

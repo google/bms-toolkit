@@ -13,7 +13,7 @@
 # limitations under the License.
 
 ---
-- name: Copy database adjustment scripts to server
+- name: Copy database adjustment scripts to target server
   template:
     src: "{{ item }}.j2"
     dest: "{{ swlib_unzip_path }}/{{ item }}"
@@ -26,7 +26,7 @@
   become_user: "{{ oracle_user }}"
   tags: db-adjustments
 
-- name: Run database adjustment scripts on server
+- name: Run database adjustment scripts on target server
   shell: "{{ swlib_unzip_path }}/{{ item }}"
   environment:
     PATH: /usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin
@@ -44,7 +44,7 @@
     verbosity: 1
   tags: db-adjustments
 
-- name: Script cleanup on server
+- name: Script cleanup on target server
   file:
     path: "{{ swlib_unzip_path }}/{{ item }}"
     state: absent

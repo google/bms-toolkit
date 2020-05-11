@@ -13,7 +13,7 @@
 # limitations under the License.
 
 ---
-- name: Partition Oracle user data raw devices
+- name: Partition Oracle user mount devices
   parted:
     device: "{{ item.blk_device }}"
     number: 1
@@ -24,7 +24,7 @@
     - "{{ oracle_user_data_mounts }}"
   tags: ora-mounts
 
-- name: Add filesystem on Oracle user data raw devices
+- name: Add filesystem on Oracle user mount raw devices
   filesystem:
     fstype: "{{ item.fstype }}"
     dev: "{{ item.blk_device }}1"
@@ -33,7 +33,7 @@
     - "{{ oracle_user_data_mounts }}"
   tags: ora-mounts
 
-- name: Add filesystem on Oracle user data lv devices
+- name: Add filesystem on Oracle user mount LV devices
   filesystem:
     fstype: "{{ item.fstype }}"
     dev: "{{ item.blk_device }}"
@@ -42,7 +42,7 @@
     - "{{ oracle_user_data_mounts }}"
   tags: ora-mounts
 
-- name: Mount Oracle user data raw devices
+- name: Mount Oracle user mount raw devices
   mount:
     fstype: "{{ item.fstype }}"
     src: "{{ item.blk_device }}1"
@@ -54,7 +54,7 @@
     - "{{ oracle_user_data_mounts }}"
   tags: ora-mounts
 
-- name: Mount Oracle user data lv devices
+- name: Mount Oracle user mount LV devices
   mount:
     fstype: "{{ item.fstype }}"
     src: "{{ item.blk_device }}"

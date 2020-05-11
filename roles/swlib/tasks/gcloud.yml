@@ -13,7 +13,7 @@
 # limitations under the License.
 
 ---
-- name: add google cloud sdk repo
+- name: gcloud | Add Google Cloud SDK repo
   yum_repository:
     name: google-gcloud-sdk
     description: Google gcloud sdk
@@ -24,7 +24,7 @@
     gpgcheck: yes
   when: ansible_os_family == "RedHat"
 
-- name: install the latest version of gcloud sdk
+- name: gcloud | Install latest gcloud SDK package
   yum:
     name: google-cloud-sdk
     state: installed

@@ -19,7 +19,7 @@
   register: pmon_proc
   tags: db-create
 
-- name: Check if database is already created
+- name: Check if database is already in oratab
   shell: "set -o pipefail; ( grep -i {{ db_name }}: /etc/oratab || true ) | wc -l"
   changed_when: false
   register: check_oratab
@@ -34,14 +34,14 @@
     - "{{ check_oratab }}"
   tags: db-create
 
-- name: Adjust instance memory values
+- name: Adjust instance memory values (not 11.2 or 12.1)
   set_fact:
     sga_target_bytes: "{{ sga_target }}"
     pga_aggtar_bytes: "{{ pga_aggtar }}"
   when: oracle_ver not in ['12.1.0.2.0','11.2.0.4.0']
   tags: db-create
 
-- name: Adjust instance memory values for 12.1 and 11.2
+- name: Adjust instance memory values (11.2 and 12.1)
   set_fact:
     sga_target_bytes: "{{ sga_target | regex_replace('M$','') }}"
     pga_aggtar_bytes: "{{ pga_aggtar | regex_replace('M$','') }}"
@@ -89,21 +89,21 @@
     owner: root
     mode: "0755"
 
-- name: Generate command for password randomization
+- name: Generate command for password randomization (not 11.2)
   set_fact:
     pwd_gen_cmd: echo -e "$({{ pass_param }})\n$({{ pass_param }})\n$({{ pass_param }})"
   when: oracle_ver != "11.2.0.4.0"
   tags: db-create
 
-- name: 11.2 specific command for password randomization
+- name: Generate command for password randomization (11.2 only)
   set_fact:
     pwd_gen_cmd: echo -e "$({{ pass_param }})\n$({{ pass_param }})"
   when: oracle_ver == "11.2.0.4.0"
   tags: db-create
 
-- name: Create database using dbca
+- name: Create database using DBCA
   block:
-        - name: Run dbca
+        - name: Run DBCA
           shell: |
             set -o pipefail
             export PATH={{ oracle_home }}/bin:${PATH}
@@ -115,7 +115,7 @@
           become_user: "{{ oracle_user }}"
           tags: db-create
   rescue:
-    - name: Retrieve dbca logs
+    - name: Retrieve DBCA logs
       slurp:
         src: "{{ oracle_base }}/cfgtoollogs/dbca/{{ db_name }}/{{ db_name }}.log"
       register: dbcalog

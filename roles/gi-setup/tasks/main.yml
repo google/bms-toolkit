@@ -37,7 +37,7 @@
   when: existing_dbhome.stdout == "0" and osw.version == oracle_ver
   tags: gi-setup
 
-- name: configure HAS
+- name: Configure HAS
   command: "{{ grid_home }}/perl/bin/perl -I {{ grid_home }}/perl/lib -I {{ grid_home }}/crs/install {{ grid_home }}/crs/install/roothas.pl"
   register: has_config
   become: yes
@@ -70,7 +70,7 @@
   when: '"ASM is running" not in asm_status.stdout'
   tags: gi-setup,start-asm
 
-- name: Check resources
+- name: Check cluster resources
   shell: "( {{ grid_home }}/bin/crsctl stat res -t ) || true"
   register: crsctl_res
   become: yes

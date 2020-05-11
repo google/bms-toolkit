@@ -13,7 +13,7 @@
 # limitations under the License.
 
 ---
-- name: rac-asm-create | Check what disk groups created
+- name: rac-asm-create | Check available ASM disk groups
   shell: |
     set -o pipefail
     sqlplus -s / as sysasm <<< "select name from v\$asm_diskgroup;"

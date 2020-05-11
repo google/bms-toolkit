@@ -35,7 +35,7 @@
   become: yes
   become_user: root
 
-- name: Kill remaining processes
+- name: Kill and remaining Oracle processes
   shell: |
     ( kill -9 $(ps -ef|grep "ora_smon" |grep -v "grep"|awk '{print $2}') ) || true
     ( kill -9 $(ps -ef|grep "tnslsnr"  |grep -v "grep"|awk '{print $2}') ) || true
@@ -103,7 +103,7 @@
   become: yes
   become_user: root
 
-- name: (asmlib) Delete asmlib managed disk names
+- name: (asmlib) Delete asmlib managed disks
   command: "/usr/sbin/oracleasm deletedisk {{ item.1.name }}"
   with_subelements:
     - "{{ asm_disks }}"
@@ -198,7 +198,7 @@
   become: yes
   become_user: root
 
-- name: (udev) reload rules
+- name: (udev) Reload rules
   shell: ( /sbin/udevadm control --reload-rules && /sbin/udevadm trigger )
   become: yes
   become_user: root

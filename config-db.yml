@@ -18,13 +18,13 @@
   become_user: root
   become: true
   pre_tasks:
-  - name: Verify Ansible meets the version requirements
-    assert:
-     that: "ansible_version.full is version_compare('2.8', '>=')"
-     fail_msg: >-
-       You must update Ansible to at least 2.8 to use these playbooks
-     success_msg: >-
-       Ansible version is {{ ansible_version.full }} , continuing
+    - name: Verify that Ansible on control node meets the version requirements
+      assert:
+        that: "ansible_version.full is version_compare('2.8', '>=')"
+      fail_msg: >-
+        You must update Ansible to at least 2.8 to use these playbooks
+      success_msg: >-
+        Ansible version is {{ ansible_version.full }} , continuing
   tasks:
   - include_role:
       name: lsnr-create
@@ -65,14 +65,14 @@
 - hosts: all
   become: yes
   tasks:
-    - name: Fill oratab with instances | include vars
+    - name: Add instance to oratab | Get variables
       include_vars:
         dir: roles/common/defaults
-    - name: Fill oratab with instances | Get the running instance name
+    - name: Add instance to oratab | Get the running instance name
       shell: "set -o pipefail; ps -ef | (grep -i pmon_{{ db_name }} || true ) | ( grep -v grep || true ) | sed s'/^.*pmon_//g'"
       changed_when: false
       register: instance_name
-    - name: Fill oratab with instances | Add instance in /etc/oratab
+    - name: Add instance to oratab | Add entries to files
       blockinfile:
         path: /etc/oratab
         marker: "# {mark} ANSIBLE MANAGED BLOCK"

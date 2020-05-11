@@ -81,7 +81,7 @@
     - "{{ asm_groups }}"
   tags: os-groups
 
-- name: Add users
+- name: Add OS users
   user:
     name: "{{ item.name }}"
     comment: "{{ item.comment }}"
@@ -154,7 +154,7 @@
     - x /usr/tmp/.oracle
   tags: os-dirs
 
-- name: Uncomment line from /etc/systemd/logind.conf
+- name: Set RemoveIPC=no in /etc/systemd/logind.conf (MOS Doc ID 2081410.1)
   lineinfile:
     dest: /etc/systemd/logind.conf
     regexp: '^#\s*RemoveIPC.*$'
@@ -181,7 +181,7 @@
   become_user: "{{ grid_user }}"
   tags: os-users
 
-- name: (asmlib) | asmlib or udev?
+- name: (asmlib) | ASM device managment via asmlib or udev?
   debug:
     msg: "asm_disk_management is set to {{ asm_disk_management }}"
   tags: asm-disks
@@ -346,7 +346,7 @@
   become_user: root
   tags: asm-disks
 
-- name: (asmlib) Create Oracle ASM lv disks
+- name: (asmlib) Create Oracle ASM LV disks
   command: "/usr/sbin/oracleasm createdisk -v {{ item.1.name }} {{ item.1.blk_device }}{% if item.1.name is not search('mapper') %}1{% endif %}"
   with_subelements:
     - "{{ asm_disks }}"

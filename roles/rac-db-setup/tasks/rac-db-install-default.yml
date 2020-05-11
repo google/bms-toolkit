@@ -13,7 +13,7 @@
 # limitations under the License.
 
 ---
-- name: Check if software is already installed
+- name: rac-db-install | Check if software is already installed
   shell: cat "{{ oracle_inventory }}/ContentsXML/inventory.xml" 2>&1 | ( grep -w {{ oracle_home }} || true ) | wc -l
   register: existing_dbhome
   become: yes
@@ -23,13 +23,13 @@
   failed_when: false
   tags: rac-db
 
-- name: OH Confirmation
+- name: rac-db-install | OH Confirmation
   debug:
     msg: "Installing ORACLE_HOME - {{ oracle_home }}"
   when: existing_dbhome.stdout == "0"
   tags: rac-db
 
-- name: rac-db-install | set facts
+- name: rac-db-install | Set facts
   set_fact:
     install_unzip_path: "{% if oracle_ver_base in ('19.3','18.0') %}{{ oracle_home }}{% else %}{{ swlib_path }}{% endif %}"
     runinstaller_loc: "{% if oracle_ver_base in ('19.3','18.0') %}{{ oracle_home }}{% else %}{{ swlib_path }}/database{% endif %}"
@@ -43,7 +43,7 @@
       - "Using installer dir  : {{ runinstaller_loc }}"
   tags: rac-db
 
-- name: rac-db-install | create DB directories
+- name: rac-db-install | Create DB directories
   file:
     path: "{{ install_unzip_path }}"
     state: directory
@@ -55,7 +55,7 @@
   delegate_to: "{{ item }}"
   tags: rac-db,db-dirs
 
-- name: rac-db-install | Unzipping
+- name: rac-db-install | Unzipping software
   unarchive:
     src: "{{ swlib_path }}/{{ item }}"
     dest: "{{ install_unzip_path }}"
@@ -90,7 +90,7 @@
       - "{{ install_rac_db.stdout_lines }}"
   tags: rac-db,rac-db-install
 
-- name: rac-db-install | run root-script root.sh
+- name: rac-db-install | Run script root.sh
   command: "{{ oracle_home }}/root.sh"
   loop: "{{ lookup('inventory_hostnames', 'dbasm', wantlist=True) }}"
   delegate_to: "{{ item }}"

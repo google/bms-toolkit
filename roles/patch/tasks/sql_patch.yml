@@ -17,17 +17,17 @@
   debug:
     msg: "Running post patch operations for SID: {{ oracle_sid }}"
 
-- name: sql_patch | default upgrade mode
+- name: sql_patch | Set default upgrade mode
   set_fact:
     startup_upgrade: ""
   when: not patch.upgrade|bool
 
-- name: sql_patch | determine if upgrade mode is required
+- name: sql_patch | Determine if upgrade mode is required
   set_fact:
     startup_upgrade: "upgrade"
   when: patch.upgrade|bool
 
-- name: sql_patch | startup db
+- name: sql_patch | Start DB
   shell: |
     set -o pipefail
     sqlplus -s / as sysdba <<< "startup {{ startup_upgrade }};"
@@ -40,13 +40,13 @@
   become_user: "{{ oracle_user }}"
   tags: patch_rdbms,upgrade_db
 
-- name: sql_patch | startup db results
+- name: sql_patch | DB Startup output
   debug:
     msg: "{{ startup_db }}"
     verbosity: 1
   tags: patch_rdbms,upgrade_db
 
-- name: sql_patch | startup PDB
+- name: sql_patch | Start all PDBs
   shell: |
     set -o pipefail
     sqlplus -s / as sysdba <<< "alter pluggable database all open {{ startup_upgrade }};"
@@ -61,7 +61,7 @@
   when: oracle_ver != '11.2.0.4.0'
   tags: patch_rdbms,start_pdb
 
-- name: sql_patch | startup PDB results
+- name: sql_patch | Start PDBs output
   debug:
     msg: "{{ startup_pdb }}"
     verbosity: 1
@@ -112,7 +112,7 @@
   when: oracle_ver == '11.2.0.4.0'
   tags: patch_rdbms,catbundle
 
-- name: sql_patch | recompile invalid objects
+- name: sql_patch | Re-compile invalid objects
   shell: |
     set -o pipefail
     sqlplus -s / as sysdba <<< "@?/rdbms/admin/utlrp;"
@@ -124,7 +124,7 @@
   become_user: "{{ oracle_user }}"
   tags: patch_rdbms,utlrp
 
-- name: sql_patch | capture registry patches
+- name: sql_patch | Capture registry patches
   shell: |
     set -o pipefail
     sqlplus -s / as sysdba << EOF
@@ -144,12 +144,12 @@
   become_user: "{{ oracle_user }}"
   tags: patch_rdbms
 
-- name: sql_patch | registry patch results
+- name: sql_patch | Registry patch results
   debug:
     msg: "{{ patch_registry }}"
   when: oracle_ver != '11.2.0.4.0'
 
-- name: sql_patch | shutdown db
+- name: sql_patch | Shutdown DB
   shell: |
     set -o pipefail
     sqlplus -s / as sysdba <<< "shutdown immediate"
@@ -162,7 +162,7 @@
   become_user: "{{ oracle_user }}"
   tags: patch_rdbms,upgrade_db
 
-- name: sql_patch | shutdown db results
+- name: sql_patch | Shutdown DB results
   debug:
     msg: "{{ shutdown_db }}"
     verbosity: 1

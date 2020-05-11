@@ -13,7 +13,7 @@
 # limitations under the License.
 
 ---
-- name: Copy scripts to server
+- name: Copy validation scripts to server
   template:
     src: "{{ item }}.j2"
     dest: "{{ scripts_dir }}/{{ item }}"
@@ -26,7 +26,7 @@
   become_user: "{{ oracle_user }}"
   tags: validation-scripts
 
-#- name: Run scripts
+#- name: Run validation scripts
 #  shell: |
 #    {{ scripts_dir }}/{{ item }} {{ oracle_sid }}
 #  with_items:
@@ -36,7 +36,7 @@
 #  become_user: "{{ oracle_user }}"
 #  tags: validation-scripts,run-validation-scripts
 
-#- name: Script execution results
+#- name: Validation script execution results
 #  debug:
 #    msg: "{{ script_output.results }}"
 #    verbosity: 1

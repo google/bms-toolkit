@@ -22,7 +22,7 @@
 #  become_user: "{{ sw_user }}"
 #  tags: patch_rdbms,get_dbs
 
-- name: rdbms_pre_patch | Stop home rdmbs
+- name: rdbms_pre_patch | Stop database
   command: "{{ oracle_home }}/bin/srvctl stop database -db {{ db_name }}"
   #command: "{{ oracle_home }}/bin/srvctl stop home -o {{ oracle_home }}
   environment:

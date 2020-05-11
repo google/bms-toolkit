@@ -16,7 +16,7 @@
 - hosts: all
   gather_facts: false
   pre_tasks:
-    - name: Verify Ansible meets the version requirements
+    - name: Verify that Ansible on control node meets the version requirements
       assert:
         that: "ansible_version.full is version_compare('2.8', '>=')"
         fail_msg: >-
@@ -28,10 +28,11 @@
 
   tasks:
 
-    - name: Collect facts
+    - name: Collect facts from target
       setup:
  
-    - fail:
+    - name: Platform verification
+      fail:
         msg: The system may not be provisioned on VM by default. Change allow_install_on_vm to true to test
       when:
         - ansible_system_vendor == "Google"
@@ -39,12 +40,12 @@
         - ansible_virtualization_role == "guest"
         - allow_install_on_vm == false
 
-    - name: Test that we can connect to the instance
+    - name: Test privilege escalation on target
       raw: sudo -u root whoami
       register: rawrc
       changed_when: False
 
-    - name: fail if we cannot sudo to root
+    - name: Fail if unable to sudo to root on target
       assert:
         that: "rawrc.stdout_lines[0] == 'root'"
         fail_msg: >-
@@ -58,11 +59,11 @@
       failed_when: false
       register: check_python
 
-    - name: Install Python via raw if not installed
+    - name: Install Python if required
       raw: sudo yum -y install python3
       when: check_python.rc != 0
 
-    - name: Test that we have an usable python on the instance
+    - name: Test connectivity to target instance via ping
       ping:
       register: pingrc
 

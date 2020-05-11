@@ -27,7 +27,7 @@
   become_user: "{{ oracle_user }}"
   tags: create_rsp
 
-- name: 12.2 bug solution - MOS (Doc ID 2401455.1)
+- name: 12.2 bug resolution - MOS (Doc ID 2401455.1)
   copy:
     src: "{{ oracle_root }}/oraInventory/oraInst.loc"
     dest: "{{ grid_home }}/oraInst.loc"

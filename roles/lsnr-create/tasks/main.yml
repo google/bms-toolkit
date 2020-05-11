@@ -27,7 +27,7 @@
   register: lsnr_port_check
   tags: lsnr-create
 
-- name: Check if listener is already created
+- name: Check if listener has already been created
   shell: "set -o pipefail; ps -ef | ( grep [t]ns ||true ) | ( grep -w {{ listener_name }} || true ) | wc -l"
   become: yes
   changed_when: false

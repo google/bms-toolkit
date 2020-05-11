@@ -13,7 +13,7 @@
 # limitations under the License.
 
 ---
-- name: start_all_dbs | Capture all databases
+- name: start_all_dbs | List databases
   command: "{{ grid_home }}/bin/srvctl config database"
   environment:
     ORACLE_HOME: "{{ grid_home }}"
@@ -21,7 +21,7 @@
   become: yes
   become_user: "{{ grid_user }}"
 
-- name: start_all_dbs | Starting databases found
+- name: start_all_dbs | Starting listed databases
   command: "{{ grid_home }}/bin/srvctl start database -d {{ item[0] }}"
   environment:
     ORACLE_HOME: "{{ grid_home }}"

@@ -24,13 +24,13 @@
   become_user: "{{ sw_user }}"
   tags: opatch_prereq
 
-- name: opatch_apply | prerequisite output
+- name: opatch_apply | Prerequisite check output
   debug:
     msg: "{{ opatch_prereq }}"
     verbosity: 1
   when: patch.prereq_check
 
-- name: opatch_apply | Run opatch analyze
+- name: opatch_apply | Run OPatch analyze
   command: "{{ sw_home }}/OPatch/{{ patch.method }} -analyze {{ silent }}"
   register: opatch_analyze
   args:
@@ -41,7 +41,7 @@
   become_user: "{{ sw_user }}"
   tags: opatch_analyze
 
-- name: opatch_apply | analyze output
+- name: opatch_apply | OPatch analyze output
   debug:
     msg: "{{ opatch_analyze }}"
     verbosity: 1
@@ -52,7 +52,7 @@
     response_command: "{{ '-ocmrf {{ swlib_unzip_path }}/ocm.rsp' if patch.ocm else '' }}"
   tags: set_ocm
 
-- name: opatch_apply | opatch apply
+- name: opatch_apply | Run opatch apply
   command: "{{ sw_home }}/OPatch/{{ patch.method }} {{ silent }} {{ response_command }}"
   when: patch.release == oracle_rel
   args:
@@ -69,7 +69,7 @@
     #verbosity: 1
   tags: opatch_apply
 
-- name: opatch_apply | 12.1 bug solution - group of oracle binary set incorrectly by opatch - MOS (Doc ID 1084186.1)
+- name: opatch_apply | 12.1 bug resolution - group of oracle binary set incorrectly by opatch - MOS (Doc ID 1084186.1)
   shell: |
     set -o pipefail
     setasmgidwrap o={{ oracle_home }}/bin/oracle
@@ -85,19 +85,19 @@
   become_user: "{{ grid_user }}"
   tags: opatch_apply
 
-- name: opatch_apply | 12.1 bug solution results
+- name: opatch_apply | 12.1 bug resolution results
   debug:
     msg: "{{ setasmgidwrap_output }}"
     verbosity: 1
   tags: opatch_apply
 
-- name: opatch_apply | pause for 90 seconds due to delayed startup after opatch on 12c
+- name: opatch_apply | Pause for 90 seconds due to delayed startup after opatch on 12c
   wait_for:
     timeout: 90
   delegate_to: localhost
   when: oracle_ver in ['12.1.0.2.0','12.2.0.1.0'] and home_type == 'GRID'
 
-- name: opatch_apply | shutdown db (for datapatch after GI or opatchauto patches)
+- name: opatch_apply | Shutdown DB (for datapatch after GI or opatchauto patches)
   shell: |
     set -o pipefail
     srvctl stop database -d {{ db_name }} -o immediate
@@ -111,7 +111,7 @@
   become_user: "{{ oracle_user }}"
   tags: patch_grid,shutdown_db
 
-- name: opatch_apply | shutdown db (for datapatch after GI or opatchauto patches) results
+- name: opatch_apply | Shutdown DB (for datapatch after GI or opatchauto patches) results
   debug:
     msg: "{{ shutdown_db }}"
     verbosity: 1
@@ -122,7 +122,7 @@
   include_tasks: sql_patch.yml
   tags: patch_rdbms,opatch_apply
 
-- name: opatch_apply | startup db (after GI or opatchauto patches)
+- name: opatch_apply | Restart DB (after GI or opatchauto patches)
   shell: |
     set -o pipefail
     srvctl start database -d {{ db_name }}
@@ -136,7 +136,7 @@
   become_user: "{{ oracle_user }}"
   tags: patch_grid,startup_db
 
-- name: opatch_apply | startup db (after GI or opatchauto patches) results
+- name: opatch_apply | Restart DB (after GI or opatchauto patches) results
   debug:
     msg: "{{ startup_db }}"
     verbosity: 1

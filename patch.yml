@@ -18,7 +18,7 @@
   remote_user: "{{ oracle_user }}"
   become_user: root
   pre_tasks:
-    - name: Verify Ansible meets the version requirements
+    - name: Verify that Ansible on control node meets the version requirements
       assert:
         that: "ansible_version.full is version_compare('2.8', '>=')"
         fail_msg: >-

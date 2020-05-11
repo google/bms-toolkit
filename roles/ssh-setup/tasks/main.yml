@@ -13,7 +13,7 @@
 # limitations under the License.
 
 ---
-- name: create .ssh dir if not there
+- name: Create .ssh dir if already present
   file:
     path: /home/{{ ssh_user }}/.ssh
     state: directory
@@ -24,7 +24,7 @@
   become_user: "{{ ssh_user }}"
   tags: ssh-key
 
-- name: generate ssh key on first node
+- name: Generate ssh key on first node
   openssh_keypair:
     path: /home/{{ ssh_user }}/.ssh/id_rsa
     owner: "{{ ssh_user }}"
@@ -34,14 +34,14 @@
   register: ssh_key
   tags: ssh-key
 
-- name: get key fingerprint
+- name: Get key fingerprint
   command: ssh-keyscan -tecdsa {{ inventory_hostname }},{{ inventory_hostname }}.{{ ansible_domain }}
   become: true
   become_user: "{{ ssh_user }}"
   register: finger_key
   tags: ssh-key
 
-- name: add key fingerprint to known_hosts
+- name: Add key fingerprint to known_hosts file
   delegate_to: "{{ item }}"
   lineinfile:
     name: ~/.ssh/known_hosts
@@ -54,7 +54,7 @@
   loop: "{{ ssh_nodes }}"
   tags: ssh-key
 
-- name: ssh key propagation to all nodes
+- name: Key propagation to all nodes
   delegate_to: "{{ item }}"
   authorized_key:
     key: "{{ ssh_key.public_key }}"

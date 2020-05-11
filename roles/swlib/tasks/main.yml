@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-- name: create swlib folder
+- name: swlib | Create swlib folder
   file:
     path: "{{ swlib_path }}"
     state: directory
@@ -21,7 +21,7 @@
     group: dba
   when: swlib_mount_type != "nfs"
 
-- name: swlib | nfs mount
+- name: swlib | NFS mount
   include_tasks: nfs.yml
   when: swlib_mount_type == "nfs"
 

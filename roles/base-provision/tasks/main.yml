@@ -13,7 +13,7 @@
 # limitations under the License.
 
 ---
-- name: Validate OS and version
+- name: Validate OS family and version
   assert:
     that:
       - "ansible_os_family == '{{ os_family_supported }}'"
@@ -29,20 +29,20 @@
   shell: pidof -x /usr/bin/yum /bin/yum | xargs -t -r -n 1 kill -INT
   tags: os_packages
 
-- name: Remove Chrony package
+- name: Remove chrony package
   package:
-    name:  chrony
+    name: chrony
     state: absent
     lock_timeout: 180
   tags: ntp
 
-- name: Remove Chrony rpmsave
+- name: Remove chrony rpmsave
   file:
     path: /etc/chrony.conf.rpmsave
     state: absent
   tags: ntp
 
-- name: Install base OS packages
+- name: Install required base OS packages
   package:
     name: "{{ packages }}"
     state: present

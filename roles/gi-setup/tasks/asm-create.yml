@@ -13,7 +13,7 @@
 # limitations under the License.
 
 ---
-- name: asm-create | write pfile
+- name: asm-create | Create ASM initialization file
   template:
     src: init.ora.j2
     dest: "{{ grid_home }}/dbs/init{{ asm_sid }}.ora"
@@ -21,7 +21,7 @@
   become_user: "{{ grid_user }}"
   tags: gi-setup,start-asm
 
-- name: Change asm lv permissions
+- name: asm-create | Change ASM LV permissions
   file:
     path: "{{ item.1.blk_device }}"
     state: link
@@ -33,7 +33,7 @@
     - "{{ asm_disks }}"
     - disks
 
-- name: asm-create | start asm instance
+- name: asm-create | Start ASM instance
   shell: |
     set -o pipefail
     ${ORACLE_HOME}/bin/srvctl add asm -d '{{ asm_diskstring }}'
@@ -51,7 +51,7 @@
   become_user: "{{ grid_user }}"
   tags: gi-setup,start-asm
 
-- name: asm-create | start asm ouput
+- name: asm-create | Start ASM ouput
   debug:
     msg: "{{ start_asm }}"
     verbosity: 1
@@ -109,7 +109,7 @@
   become_user: "{{ grid_user }}"
   tags: gi-setup,start-asm
 
-- name: asm-create | debug asm disk group creation
+- name: asm-create | Debug ASM disk group creation
   debug:
     msg: "{{ create_dg }}"
     verbosity: 1

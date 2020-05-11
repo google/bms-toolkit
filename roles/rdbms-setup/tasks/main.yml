@@ -29,7 +29,7 @@
   when: existing_dbhome.stdout == "0"
   tags: rdbms-setup
 
-- name: Validate directories (needed for secondary home)
+- name: Validate directories (required for secondary home)
   file:
     path: "{{ item.name }}"
     state: directory
@@ -48,7 +48,7 @@
   when: existing_dbhome.stdout == "0" and osw.version == oracle_ver and oracle_edition in osw.edition
   tags: rdbms-setup
 
-- name: Deploy sqlnet.ora
+- name: Create sqlnet.ora file
   template:
     src: sqlnet.ora.j2
     dest: "{{ oracle_home }}/network/admin/sqlnet.ora"

@@ -12,20 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-- name: gcs | gcloud install
+- name: gcsfuse | gcloud install
   include_tasks: gcloud.yml
 
-- name: gcs | Install gcsfuse dependencies
+- name: gcsfuse | Install gcsfuse dependencies
   yum: name=fuse
   become: yes
 
-- name: gcs | Install gcsfuse
+- name: gcsfuse | Install gcsfuse
   yum:
     name: "https://github.com/GoogleCloudPlatform/gcsfuse/releases/download/v{{ gcsfuse_version }}/gcsfuse-{{ gcsfuse_version }}-1.x86_64.rpm"
     lock_timeout: 180
   become: yes
 
-- name: gcs | Copy service account key with owner and permissions
+- name: gcsfuse | Copy service account key with owner and permissions
   copy:
     src: "{{ swlib_gcs_service_account_file }}"
     dest: /root/gcp-swlib-credentials.json
@@ -34,7 +34,7 @@
     mode: '0777'
   when: swlib_gcs_service_account_file != ""
 
-- name: gcs | Mount gcs-swlib-storage with service_account
+- name: gcsfuse | Mount gcs-swlib-storage using service_account
   mount:
     path: "{{ swlib_path }}"
     src: "{{ swlib_mount_src }}"
@@ -43,7 +43,7 @@
     state: mounted
   when: swlib_gcs_service_account_file is defined
 
-- name: gcs | Mount gcs-swlib-storage with instance service_account
+- name: gcsfuse | Mount gcs-swlib-storage with instance service_account
   mount:
     path: "{{ swlib_path }}"
     src: "{{ swlib_mount_src }}"

@@ -18,7 +18,7 @@
     msg:
       - "Running post patch operations for SID: {{ oracle_sid }}"
 
-- name: rdbms_post_patch | Upgrade database
+- name: rdbms_post_patch | Start database in upgrade mode
   shell: |
     set -o pipefail
     sqlplus -s / as sysdba <<< "startup upgrade"
@@ -33,7 +33,7 @@
     - patch.upgrade
   tags: patch_rdbms,upgrade_db
 
-- name: rdbms_post_patch | upgrade output
+- name: rdbms_post_patch | Startup upgrade output
   debug:
     msg:
       - "{{ upgrade_db }}"
@@ -69,7 +69,7 @@
     msg:
       - "{{ start_db }}"
 
-- name: rdbms_post_patch | Upgrade PDB
+- name: rdbms_post_patch | Open PDBs in upgrade mode
   shell: |
     set -o pipefail
     sqlplus -s / as sysdba <<< "alter pluggable database all open upgrade;"
@@ -85,7 +85,7 @@
     - oracle_ver != '11.2.0.4.0'
   tags: patch_rdbms,start_pdb
 
-- name: rdbms_post_patch | upgrade pdb output
+- name: rdbms_post_patch | PDB open output
   debug:
     msg:
       - "{{ upgrade_pdb }}"
@@ -106,7 +106,7 @@
 #    - not patch.upgrade
 #  tags: patch_rdbms,start_db
 
-- name: rdbms_post_patch | Start PDB
+- name: rdbms_post_patch | Open PDBs
   shell: |
     set -o pipefail
     sqlplus -s / as sysdba <<< "alter pluggable database all open;"

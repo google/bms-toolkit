@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-- name: copy gi archives from gcs to BM instance
+- name: gcscopy | Copy GI software from GCS to target instance
   shell: |
     set -o pipefail
     {% for i in item.files %}
@@ -40,7 +40,7 @@
   when: item.version == oracle_ver and patching_type is not defined
   delegate_to: 127.0.0.1
 
-- name: verifying gi zip file integrity
+- name: gcscopy | Verify GI software zipfile integrity
   shell: |
     set -o pipefail
     {% for i in item.files %}
@@ -55,7 +55,7 @@
   when: item.version == oracle_ver and patching_type is not defined
   failed_when: shell_result.stderr != ""
 
-- name: copy gi patch archives from gcs to BM instance
+- name: gcscopy | Copy GI patch software from GCS to target instance
   shell: |
     set -o pipefail
     ssh -i {{ ansible_ssh_private_key_file }} {{ ansible_ssh_extra_args }} {{ ansible_ssh_user }}@{{ ansible_ssh_host }} \
@@ -80,7 +80,7 @@
   when: item.release == oracle_rel and patching_type == "gi_patching"
   delegate_to: 127.0.0.1
 
-- name: verifying gi patch archive integrity
+- name: gcscopy | Verify GI patch software zipfile integrity
   shell: |
     set -o pipefail
     {% for i in item.patchfile %}
@@ -95,7 +95,7 @@
   failed_when: shell_result.stderr != ""
 
 
-- name: copy gi opatches archives from gcs to BM instance
+- name: gcscopy | Copy GI OPatch update files from GCS to target instance
   shell: |
     set -o pipefail
     ssh -i {{ ansible_ssh_private_key_file }} {{ ansible_ssh_extra_args }} {{ ansible_ssh_user }}@{{ ansible_ssh_host }} \
@@ -120,7 +120,7 @@
   when: item.release == oracle_ver and patching_type is defined
   delegate_to: 127.0.0.1
 
-- name: verifying opatch zip file integrity
+- name: gcscopy | Verify GI OPatch update zipfile integrity
   shell: |
     set -o pipefail
     unzip -t {{ swlib_path }}/{{ item.patchfile }} > /dev/null
@@ -133,7 +133,7 @@
   failed_when: shell_result.stderr != ""
 
 
-- name: copy rdbms archives from gcs to BM instance
+- name: gcscopy | Copy RDBMS software from GCS to target instance
   shell: |
     set -o pipefail
     {% for i in item.files %}
@@ -160,7 +160,7 @@
   when: item.version == oracle_ver and patching_type is not defined
   delegate_to: 127.0.0.1
 
-- name: verifying rdbms archives integrity
+- name: gcscopy | Verify RDBMS software zipfile integrity
   shell: |
     set -o pipefail
     {% for i in item.files %}
@@ -175,7 +175,7 @@
   failed_when: shell_result.stderr != ""
 
 
-- name: copy rdbms patch archives from gcs to BM instance
+- name: gcscopy | Copy RDBMS OPatch update files from GCS to target instance
   shell: |
     set -o pipefail
     ssh -i {{ ansible_ssh_private_key_file }} {{ ansible_ssh_extra_args }} {{ ansible_ssh_user }}@{{ ansible_ssh_host }} \
@@ -200,7 +200,7 @@
   when: item.release == oracle_rel and patching_type == "db_patching"
   delegate_to: 127.0.0.1
 
-- name: verifying rdbms patch file integrity
+- name: gcscopy | Verify RDBMS OPatch update zipfile integrity
   shell: |
     set -o pipefail
     {% for i in item.patchfile %}

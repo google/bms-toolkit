@@ -13,43 +13,43 @@
 # limitations under the License.
 
 ---
-  - name: Copy database adjustment scripts to server
-    template:
-      src: "{{ item }}.j2"
-      dest: "{{ swlib_unzip_path }}/{{ item }}"
-      owner: "{{ oracle_user }}"
-      group: "{{ oracle_group }}"
-      mode: u=rwx,g=r,o=r
-    with_items:
-      - "{{ db_script_files }}"
-    become: yes
-    become_user: "{{ oracle_user }}"
-    tags: db-adjustments
+- name: Copy database adjustment scripts to server
+  template:
+    src: "{{ item }}.j2"
+    dest: "{{ swlib_unzip_path }}/{{ item }}"
+    owner: "{{ oracle_user }}"
+    group: "{{ oracle_group }}"
+    mode: u=rwx,g=r,o=r
+  with_items:
+    - "{{ db_script_files }}"
+  become: yes
+  become_user: "{{ oracle_user }}"
+  tags: db-adjustments
 
-  - name: Run database adjustment scripts on server
-    shell: "{{ swlib_unzip_path }}/{{ item }}"
-    environment:
-      PATH: /usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin
-    with_items:
-      - "{{ db_script_files }}"
-    register: scripts_output
-    ignore_errors: yes
-    become: yes
-    become_user: "{{ oracle_user }}"
-    tags: db-adjustments
+- name: Run database adjustment scripts on server
+  shell: "{{ swlib_unzip_path }}/{{ item }}"
+  environment:
+    PATH: /usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin
+  with_items:
+    - "{{ db_script_files }}"
+  register: scripts_output
+  ignore_errors: yes
+  become: yes
+  become_user: "{{ oracle_user }}"
+  tags: db-adjustments
 
-  - name: Database adjustment scripts output
-    debug:
-      msg: "{{ scripts_output }}"
-      verbosity: 1
-    tags: db-adjustments
+- name: Database adjustment scripts output
+  debug:
+    msg: "{{ scripts_output }}"
+    verbosity: 1
+  tags: db-adjustments
 
-  - name: Script cleanup on server
-    file:
-      path: "{{ swlib_unzip_path }}/{{ item }}"
-      state: absent
-    with_items:
-      - "{{ db_script_files }}"
-    become: yes
-    become_user: "{{ oracle_user }}"
-    tags: db-adjustments
+- name: Script cleanup on server
+  file:
+    path: "{{ swlib_unzip_path }}/{{ item }}"
+    state: absent
+  with_items:
+    - "{{ db_script_files }}"
+  become: yes
+  become_user: "{{ oracle_user }}"
+  tags: db-adjustments

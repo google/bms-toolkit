@@ -13,238 +13,238 @@
 # limitations under the License.
 
 ---
-  # Variables used by more than one role
+# Variables used by more than one role
 
-  oracle_ver_dir: "{{ oracle_ver [:6] }}"
-  oracle_inventory: "{{ oracle_root }}/oraInventory"
-  oracle_base: "{{ oracle_root }}/oracle"
-  oracle_home: "{{ oracle_root }}/oracle/product/{{ oracle_ver_dir }}/{{ home_name }}"
-  grid_home: "{{ oracle_root }}/{{ oracle_ver_dir }}/grid"
+oracle_ver_dir: "{{ oracle_ver [:6] }}"
+oracle_inventory: "{{ oracle_root }}/oraInventory"
+oracle_base: "{{ oracle_root }}/oracle"
+oracle_home: "{{ oracle_root }}/oracle/product/{{ oracle_ver_dir }}/{{ home_name }}"
+grid_home: "{{ oracle_root }}/{{ oracle_ver_dir }}/grid"
 
-  path_udev: asmdisks
+path_udev: asmdisks
 
-  oracle_users:
-    - { name: "{{ oracle_user }}", comment: "", uid: 801, group: "{{ oracle_group }}" }
-    - { name: "{{ grid_user }}", comment: "", uid: 802, group: "{{ oracle_group }}" }
+oracle_users:
+  - { name: "{{ oracle_user }}", comment: "", uid: 801, group: "{{ oracle_group }}" }
+  - { name: "{{ grid_user }}", comment: "", uid: 802, group: "{{ oracle_group }}" }
 
-  #
-  # Groups for the oracle user
-  # oracle_groups          : used in roles/ora-host/tasks/main.yml and roles/brute-ora-cleanup/tasks/main.yml
-  #                          to create and drop the groups
-  # extra_oracle_groups    : used in roles/ora-host/tasks/main.yml to be assigned to the user
-  #
-  oracle_groups:
-    - { group: oinstall ,       gid: 801 }
-    - { group: dba      ,       gid: 802 }
-    - { group: oper     ,       gid: 803 }
-    - { group: backupdba,       gid: 804 }
-    - { group: dgdba    ,       gid: 805 }
-    - { group: kmdba    ,       gid: 806 }
-    - { group: racdba   ,       gid: 810 }
+#
+# Groups for the oracle user
+# oracle_groups          : used in roles/ora-host/tasks/main.yml and roles/brute-ora-cleanup/tasks/main.yml
+#                          to create and drop the groups
+# extra_oracle_groups    : used in roles/ora-host/tasks/main.yml to be assigned to the user
+#
+oracle_groups:
+  - { group: oinstall ,       gid: 801 }
+  - { group: dba      ,       gid: 802 }
+  - { group: oper     ,       gid: 803 }
+  - { group: backupdba,       gid: 804 }
+  - { group: dgdba    ,       gid: 805 }
+  - { group: kmdba    ,       gid: 806 }
+  - { group: racdba   ,       gid: 810 }
 
-  extra_oracle_groups:
-    - { group: asmdba   ,       gid: 807 }
-    - { group: asmadmin ,       gid: 809 }
+extra_oracle_groups:
+  - { group: asmdba   ,       gid: 807 }
+  - { group: asmadmin ,       gid: 809 }
 
-  #
-  # Groups for the grid user
-  # asm_groups          : used in roles/ora-host/tasks/main.yml and roles/brute-ora-cleanup/tasks/main.yml
-  #                       to create and drop the groups
-  # extra_asm_groups    : used in roles/ora-host/tasks/main.yml to be assigned to the user
-  #
-  asm_groups:
-    - { group: asmdba   ,       gid: 807 }
-    - { group: asmoper  ,       gid: 808 }
-    - { group: asmadmin ,       gid: 809 }
+#
+# Groups for the grid user
+# asm_groups          : used in roles/ora-host/tasks/main.yml and roles/brute-ora-cleanup/tasks/main.yml
+#                       to create and drop the groups
+# extra_asm_groups    : used in roles/ora-host/tasks/main.yml to be assigned to the user
+#
+asm_groups:
+  - { group: asmdba   ,       gid: 807 }
+  - { group: asmoper  ,       gid: 808 }
+  - { group: asmadmin ,       gid: 809 }
 
-  extra_asm_groups:
-    - { group: dba      ,       gid: 802 }
+extra_asm_groups:
+  - { group: dba      ,       gid: 802 }
 
-  asm_diskstring: "{% if asm_disk_management == 'asmlib' %}ORCL:*{% else %}/dev/{{ path_udev }}/*{% endif %}"
+asm_diskstring: "{% if asm_disk_management == 'asmlib' %}ORCL:*{% else %}/dev/{{ path_udev }}/*{% endif %}"
 
-  oracle_dirs:
-    - { name: "{{ swlib_unzip_path }}", owner: "{{ oracle_user }}", group: "{{ oracle_group }}", mode: 775 }
-    - { name: "{{ oracle_base }}", owner: "{{ oracle_user }}", group: "{{ oracle_group }}", mode: 775 }
-    - { name: "{{ oracle_inventory }}", owner: "{{ grid_user }}", group: "{{ oracle_group }}", mode: 775 }
-    - { name: "{{ oracle_home }}", owner: "{{ oracle_user }}", group: "{{ oracle_group }}", mode: 775 }
-    - { name: "/home/oracle/.ansible/tmp", owner: "{{ oracle_user }}", group: "{{ oracle_group }}", mode: 775 }
-    - { name: "{{ grid_home }}", owner: "{{ grid_user }}", group: "{{ oracle_group }}", mode: 775 }
-    - { name: "/home/grid/.ansible/tmp", owner: "{{ oracle_user }}", group: "{{ oracle_group }}", mode: 775 }
+oracle_dirs:
+  - { name: "{{ swlib_unzip_path }}", owner: "{{ oracle_user }}", group: "{{ oracle_group }}", mode: 775 }
+  - { name: "{{ oracle_base }}", owner: "{{ oracle_user }}", group: "{{ oracle_group }}", mode: 775 }
+  - { name: "{{ oracle_inventory }}", owner: "{{ grid_user }}", group: "{{ oracle_group }}", mode: 775 }
+  - { name: "{{ oracle_home }}", owner: "{{ oracle_user }}", group: "{{ oracle_group }}", mode: 775 }
+  - { name: "/home/oracle/.ansible/tmp", owner: "{{ oracle_user }}", group: "{{ oracle_group }}", mode: 775 }
+  - { name: "{{ grid_home }}", owner: "{{ grid_user }}", group: "{{ oracle_group }}", mode: 775 }
+  - { name: "/home/grid/.ansible/tmp", owner: "{{ oracle_user }}", group: "{{ oracle_group }}", mode: 775 }
 
-  pwgen_file: pwgen.sh
-  pwgen_path: /usr/local/bin
-  pass_param: "{{pwgen_path}}/{{pwgen_file}} 16"
+pwgen_file: pwgen.sh
+pwgen_path: /usr/local/bin
+pass_param: "{{pwgen_path}}/{{pwgen_file}} 16"
 
-  diskgroup_compatible_asm: "{{ oracle_ver }}"
-  diskgroup_compatible_rdbms: "{{ lookup('env','COMPATIBLE_RDBMS')|default('11.2.0.4.0',true) }}"
+diskgroup_compatible_asm: "{{ oracle_ver }}"
+diskgroup_compatible_rdbms: "{{ lookup('env','COMPATIBLE_RDBMS')|default('11.2.0.4.0',true) }}"
 
-  gi_software:
-    - name: 19c_gi
-      version: 19.3.0.0.0
-      files:
-        - "V982068-01.zip"
-      sha256sum:
-        - "D668002664D9399CF61EB03C0D1E3687121FC890B1DDD50B35DCBE13C5307D2E"
-    - name: 18c_gi
-      version: 18.0.0.0.0
-      files:
-        - "V978971-01.zip"
-      sha256sum:
-        - "122C1A780FE0C399818064021E3D797ED4C6B3BB68CEB2E102430FA370054CD1"
-    - name: 12201_gi
-      version: 12.2.0.1.0
-      files:
-        - "V840012-01.zip"
-      sha256sum:
-        - "E8BF36092F7600411A63AAA79CD4F816FB96BB3CFFA66746832416DD2FF11B15"
-    - name: 12102_gi
-      version: 12.1.0.2.0
-      files:
-        - "V46096-01_1of2.zip"
-        - "V46096-01_2of2.zip"
-      sha256sum:
-        - "09B4B51A60D6913B82E3353EEF179969AD0968FF8ACFB37CA891F04DF67B93F0"
-        - "C59B8ADA602048AF62AD8F3621F476BE225A782A8CE7BC55B2825E58157AC070"
-    - name: 11204_gi
-      version: 11.2.0.4.0
-      files:
-        - "p13390677_112040_Linux-x86-64_3of7.zip"
-      sha256sum:
-        - "09C08AD3E1EE03DB1707F01C6221C7E3E75EC295316D0046CC5D82A65C7B928C"
+gi_software:
+  - name: 19c_gi
+    version: 19.3.0.0.0
+    files:
+      - "V982068-01.zip"
+    sha256sum:
+      - "D668002664D9399CF61EB03C0D1E3687121FC890B1DDD50B35DCBE13C5307D2E"
+  - name: 18c_gi
+    version: 18.0.0.0.0
+    files:
+      - "V978971-01.zip"
+    sha256sum:
+      - "122C1A780FE0C399818064021E3D797ED4C6B3BB68CEB2E102430FA370054CD1"
+  - name: 12201_gi
+    version: 12.2.0.1.0
+    files:
+      - "V840012-01.zip"
+    sha256sum:
+      - "E8BF36092F7600411A63AAA79CD4F816FB96BB3CFFA66746832416DD2FF11B15"
+  - name: 12102_gi
+    version: 12.1.0.2.0
+    files:
+      - "V46096-01_1of2.zip"
+      - "V46096-01_2of2.zip"
+    sha256sum:
+      - "09B4B51A60D6913B82E3353EEF179969AD0968FF8ACFB37CA891F04DF67B93F0"
+      - "C59B8ADA602048AF62AD8F3621F476BE225A782A8CE7BC55B2825E58157AC070"
+  - name: 11204_gi
+    version: 11.2.0.4.0
+    files:
+      - "p13390677_112040_Linux-x86-64_3of7.zip"
+    sha256sum:
+      - "09C08AD3E1EE03DB1707F01C6221C7E3E75EC295316D0046CC5D82A65C7B928C"
 
-  rdbms_software:
-    - name: 19c_base
-      version: 19.3.0.0.0
-      edition:
-        - EE
-        - SE2
-      files:
-        - "V982063-01.zip"
-      sha256sum:
-        - "BA8329C757133DA313ED3B6D7F86C5AC42CD9970A28BF2E6233F3235233AA8D8"
-    - name: 18c_base
-      version: 18.0.0.0.0
-      edition:
-        - EE
-        - SE2
-      files:
-        - "V978967-01.zip"
-      sha256sum:
-        - "C96A4FD768787AF98272008833FE10B172691CF84E42816B138C12D4DE63AB96"
-    - name: 12201_base
-      version: 12.2.0.1.0
-      edition:
-        - EE
-        - SE2
-      files:
-        - "V839960-01.zip"
-      sha256sum:
-        - "96ED97D21F15C1AC0CCE3749DA6C3DAC7059BB60672D76B008103FC754D22DDE"
-    - name: 12102_base
-      version: 12.1.0.2.0
-      edition: EE
-      files:
-        - "V46095-01_1of2.zip"
-        - "V46095-01_2of2.zip"
-      sha256sum:
-        - "31FDC2AF41687B4E547A3A18F796424D8C1AF36406D2160F65B0AF6A9CD47355"
-        - "03DA14F5E875304B28F0F3BB02AF0EC33227885B99C9865DF70749D1E220ACCD"
-    - name: 12102_base
-      version: 12.1.0.2.0
-      edition: SE2
-      files:
-        - "V77388-01_1of2.zip"
-        - "V77388-01_2of2.zip"
-      sha256sum:
-        - "73873369753230F5A0921F95ACEADB591388CB06ED72A7F3AEA7BCBCEA2403BC"
-        - "2492E1BE1E3E3531DA83D0843C09C08E435AC8CEFD9A00C0DF56BE4F15CEEBF3"
-    - name: 11204_base
-      version: 11.2.0.4.0
-      edition:
-        - EE
-        - SE
-      files:
-        - "p13390677_112040_Linux-x86-64_1of7.zip"
-        - "p13390677_112040_Linux-x86-64_2of7.zip"
-      sha256sum:
-        - "0B399A6593804C04B4BD65F61E73575341A49F8A273ACABA0DCDA2DFEC4979E0"
-        - "73E04957EE0BF6F3B3E6CFCF659BDF647800FE52A377FB8521BA7E3105CCC8DD"
+rdbms_software:
+  - name: 19c_base
+    version: 19.3.0.0.0
+    edition:
+      - EE
+      - SE2
+    files:
+      - "V982063-01.zip"
+    sha256sum:
+      - "BA8329C757133DA313ED3B6D7F86C5AC42CD9970A28BF2E6233F3235233AA8D8"
+  - name: 18c_base
+    version: 18.0.0.0.0
+    edition:
+      - EE
+      - SE2
+    files:
+      - "V978967-01.zip"
+    sha256sum:
+      - "C96A4FD768787AF98272008833FE10B172691CF84E42816B138C12D4DE63AB96"
+  - name: 12201_base
+    version: 12.2.0.1.0
+    edition:
+      - EE
+      - SE2
+    files:
+      - "V839960-01.zip"
+    sha256sum:
+      - "96ED97D21F15C1AC0CCE3749DA6C3DAC7059BB60672D76B008103FC754D22DDE"
+  - name: 12102_base
+    version: 12.1.0.2.0
+    edition: EE
+    files:
+      - "V46095-01_1of2.zip"
+      - "V46095-01_2of2.zip"
+    sha256sum:
+      - "31FDC2AF41687B4E547A3A18F796424D8C1AF36406D2160F65B0AF6A9CD47355"
+      - "03DA14F5E875304B28F0F3BB02AF0EC33227885B99C9865DF70749D1E220ACCD"
+  - name: 12102_base
+    version: 12.1.0.2.0
+    edition: SE2
+    files:
+      - "V77388-01_1of2.zip"
+      - "V77388-01_2of2.zip"
+    sha256sum:
+      - "73873369753230F5A0921F95ACEADB591388CB06ED72A7F3AEA7BCBCEA2403BC"
+      - "2492E1BE1E3E3531DA83D0843C09C08E435AC8CEFD9A00C0DF56BE4F15CEEBF3"
+  - name: 11204_base
+    version: 11.2.0.4.0
+    edition:
+      - EE
+      - SE
+    files:
+      - "p13390677_112040_Linux-x86-64_1of7.zip"
+      - "p13390677_112040_Linux-x86-64_2of7.zip"
+    sha256sum:
+      - "0B399A6593804C04B4BD65F61E73575341A49F8A273ACABA0DCDA2DFEC4979E0"
+      - "73E04957EE0BF6F3B3E6CFCF659BDF647800FE52A377FB8521BA7E3105CCC8DD"
 
-  opatch_patches:
-    - { category: "OPatch", release: "11.2.0.4.0", patchnum: "6880880", patchfile: "p6880880_112000_Linux-x86-64.zip" }
-    - { category: "OPatch", release: "12.1.0.2.0", patchnum: "6880880", patchfile: "p6880880_121010_Linux-x86-64.zip" }
-    - { category: "OPatch", release: "12.2.0.1.0", patchnum: "6880880", patchfile: "p6880880_122010_Linux-x86-64.zip" }
-    - { category: "OPatch", release: "18.0.0.0.0", patchnum: "6880880", patchfile: "p6880880_180000_Linux-x86-64.zip" }
-    - { category: "OPatch", release: "19.3.0.0.0", patchnum: "6880880", patchfile: "p6880880_190000_Linux-x86-64.zip" }
+opatch_patches:
+  - { category: "OPatch", release: "11.2.0.4.0", patchnum: "6880880", patchfile: "p6880880_112000_Linux-x86-64.zip" }
+  - { category: "OPatch", release: "12.1.0.2.0", patchnum: "6880880", patchfile: "p6880880_121010_Linux-x86-64.zip" }
+  - { category: "OPatch", release: "12.2.0.1.0", patchnum: "6880880", patchfile: "p6880880_122010_Linux-x86-64.zip" }
+  - { category: "OPatch", release: "18.0.0.0.0", patchnum: "6880880", patchfile: "p6880880_180000_Linux-x86-64.zip" }
+  - { category: "OPatch", release: "19.3.0.0.0", patchnum: "6880880", patchfile: "p6880880_190000_Linux-x86-64.zip" }
 
-  gi_interim_patches:
-    - category: "HAS_interim_patch"
-      version: 12.2.0.1.0
-      patchnum: "25078431"
-      patchutil: "gridsetup"
-      files:
-        - "p25078431_122010_Linux-x86-64.zip"
-      sha256sum:
-        - "FA056EBD0FE0AD134F2B5C53F0DDF6F6A5DC73C7AE40DAEF18D0629850149525"
-    - category: "HAS_interim_patch"
-      version: 11.2.0.4.0
-      patchnum: "18370031"
-      patchutil: "opatch"
-      files:
-        - "p18370031_112040_Linux-x86-64.zip"
-      sha256sum:
-        - "D8506DF94D0E646084F1708BEA9948E996B26CF0C33289ACAB0F614518329F98"
+gi_interim_patches:
+  - category: "HAS_interim_patch"
+    version: 12.2.0.1.0
+    patchnum: "25078431"
+    patchutil: "gridsetup"
+    files:
+      - "p25078431_122010_Linux-x86-64.zip"
+    sha256sum:
+      - "FA056EBD0FE0AD134F2B5C53F0DDF6F6A5DC73C7AE40DAEF18D0629850149525"
+  - category: "HAS_interim_patch"
+    version: 11.2.0.4.0
+    patchnum: "18370031"
+    patchutil: "opatch"
+    files:
+      - "p18370031_112040_Linux-x86-64.zip"
+    sha256sum:
+      - "D8506DF94D0E646084F1708BEA9948E996B26CF0C33289ACAB0F614518329F98"
 
-  gi_patches:
+gi_patches:
 # 11.2.0.4 PSU
-    - { category: "PSU", base: "11.2.0.4.0", release: "11.2.0.4.190416", patchnum: "29255947", patchfile: "p29255947_112040_Linux-x86-64.zip", patch_subdir: "", prereq_check: FALSE, method: "opatch auto", ocm: TRUE, upgrade: FALSE }
-    - { category: "PSU", base: "11.2.0.4.0", release: "11.2.0.4.190716", patchnum: "29698727", patchfile: "p29698727_112040_Linux-x86-64.zip", patch_subdir: "", prereq_check: FALSE, method: "opatch auto", ocm: TRUE, upgrade: FALSE }
-    - { category: "PSU", base: "11.2.0.4.0", release: "11.2.0.4.191015", patchnum: "30070097", patchfile: "p30070097_112040_Linux-x86-64.zip", patch_subdir: "", prereq_check: FALSE, method: "opatch auto", ocm: TRUE, upgrade: FALSE }
-    - { category: "PSU", base: "11.2.0.4.0", release: "11.2.0.4.200114", patchnum: "30501155", patchfile: "p30501155_112040_Linux-x86-64.zip", patch_subdir: "", prereq_check: FALSE, method: "opatch auto", ocm: TRUE, upgrade: FALSE }
+  - { category: "PSU", base: "11.2.0.4.0", release: "11.2.0.4.190416", patchnum: "29255947", patchfile: "p29255947_112040_Linux-x86-64.zip", patch_subdir: "", prereq_check: FALSE, method: "opatch auto", ocm: TRUE, upgrade: FALSE }
+  - { category: "PSU", base: "11.2.0.4.0", release: "11.2.0.4.190716", patchnum: "29698727", patchfile: "p29698727_112040_Linux-x86-64.zip", patch_subdir: "", prereq_check: FALSE, method: "opatch auto", ocm: TRUE, upgrade: FALSE }
+  - { category: "PSU", base: "11.2.0.4.0", release: "11.2.0.4.191015", patchnum: "30070097", patchfile: "p30070097_112040_Linux-x86-64.zip", patch_subdir: "", prereq_check: FALSE, method: "opatch auto", ocm: TRUE, upgrade: FALSE }
+  - { category: "PSU", base: "11.2.0.4.0", release: "11.2.0.4.200114", patchnum: "30501155", patchfile: "p30501155_112040_Linux-x86-64.zip", patch_subdir: "", prereq_check: FALSE, method: "opatch auto", ocm: TRUE, upgrade: FALSE }
 # 12.1.0.2 PSU
 #    - { category: "PSU", base: "12.1.0.2.0", release: "12.1.0.2.190416", patchnum: "29176115", patchfile: "p29176115_121020_Linux-x86-64.zip", patch_subdir: "", prereq_check: FALSE, method: "opatchauto apply", ocm: FALSE, upgrade: FALSE }
-    - { category: "PSU", base: "12.1.0.2.0", release: "12.1.0.2.190416", patchnum: "29252164", patchfile: "p29252164_121020_Linux-x86-64.zip", patch_subdir: "/29176115", prereq_check: FALSE, method: "opatchauto apply", ocm: FALSE, upgrade: FALSE }
-    - { category: "PSU", base: "12.1.0.2.0", release: "12.1.0.2.190716", patchnum: "29699244", patchfile: "p29699244_121020_Linux-x86-64.zip", patch_subdir: "/29698592", prereq_check: FALSE, method: "opatchauto apply", ocm: FALSE, upgrade: FALSE }
-    - { category: "PSU", base: "12.1.0.2.0", release: "12.1.0.2.191015", patchnum: "30133443", patchfile: "p30133443_121020_Linux-x86-64.zip", patch_subdir: "/30070257", prereq_check: FALSE, method: "opatchauto apply", ocm: FALSE, upgrade: FALSE }
-    - { category: "PSU", base: "12.1.0.2.0", release: "12.1.0.2.200114", patchnum: "30463691", patchfile: "p30463691_121020_Linux-x86-64.zip", patch_subdir: "/30464119", prereq_check: FALSE, method: "opatchauto apply", ocm: FALSE, upgrade: FALSE }
+  - { category: "PSU", base: "12.1.0.2.0", release: "12.1.0.2.190416", patchnum: "29252164", patchfile: "p29252164_121020_Linux-x86-64.zip", patch_subdir: "/29176115", prereq_check: FALSE, method: "opatchauto apply", ocm: FALSE, upgrade: FALSE }
+  - { category: "PSU", base: "12.1.0.2.0", release: "12.1.0.2.190716", patchnum: "29699244", patchfile: "p29699244_121020_Linux-x86-64.zip", patch_subdir: "/29698592", prereq_check: FALSE, method: "opatchauto apply", ocm: FALSE, upgrade: FALSE }
+  - { category: "PSU", base: "12.1.0.2.0", release: "12.1.0.2.191015", patchnum: "30133443", patchfile: "p30133443_121020_Linux-x86-64.zip", patch_subdir: "/30070257", prereq_check: FALSE, method: "opatchauto apply", ocm: FALSE, upgrade: FALSE }
+  - { category: "PSU", base: "12.1.0.2.0", release: "12.1.0.2.200114", patchnum: "30463691", patchfile: "p30463691_121020_Linux-x86-64.zip", patch_subdir: "/30464119", prereq_check: FALSE, method: "opatchauto apply", ocm: FALSE, upgrade: FALSE }
 # 12.2.0.1 OJVM + GI RU patch but GI RU used from it
-    - { category: "RU", base: "12.2.0.1.0", release: "12.2.0.1.190416", patchnum: "29252072", patchfile: "p29252072_122010_Linux-x86-64.zip", patch_subdir: "/29301687", prereq_check: FALSE, method: "opatchauto apply", ocm: FALSE, upgrade: FALSE }
-    - { category: "RU", base: "12.2.0.1.0", release: "12.2.0.1.190716", patchnum: "29699173", patchfile: "p29699173_122010_Linux-x86-64.zip", patch_subdir: "/29708720", prereq_check: FALSE, method: "opatchauto apply", ocm: FALSE, upgrade: FALSE }
-    - { category: "RU", base: "12.2.0.1.0", release: "12.2.0.1.191015", patchnum: "30133386", patchfile: "p30133386_122010_Linux-x86-64.zip", patch_subdir: "/30116802", prereq_check: FALSE, method: "opatchauto apply", ocm: FALSE, upgrade: FALSE }
-    - { category: "RU", base: "12.2.0.1.0", release: "12.2.0.1.200114", patchnum: "30463673", patchfile: "p30463673_122010_Linux-x86-64.zip", patch_subdir: "/30501932", prereq_check: FALSE, method: "opatchauto apply", ocm: FALSE, upgrade: FALSE }
+  - { category: "RU", base: "12.2.0.1.0", release: "12.2.0.1.190416", patchnum: "29252072", patchfile: "p29252072_122010_Linux-x86-64.zip", patch_subdir: "/29301687", prereq_check: FALSE, method: "opatchauto apply", ocm: FALSE, upgrade: FALSE }
+  - { category: "RU", base: "12.2.0.1.0", release: "12.2.0.1.190716", patchnum: "29699173", patchfile: "p29699173_122010_Linux-x86-64.zip", patch_subdir: "/29708720", prereq_check: FALSE, method: "opatchauto apply", ocm: FALSE, upgrade: FALSE }
+  - { category: "RU", base: "12.2.0.1.0", release: "12.2.0.1.191015", patchnum: "30133386", patchfile: "p30133386_122010_Linux-x86-64.zip", patch_subdir: "/30116802", prereq_check: FALSE, method: "opatchauto apply", ocm: FALSE, upgrade: FALSE }
+  - { category: "RU", base: "12.2.0.1.0", release: "12.2.0.1.200114", patchnum: "30463673", patchfile: "p30463673_122010_Linux-x86-64.zip", patch_subdir: "/30501932", prereq_check: FALSE, method: "opatchauto apply", ocm: FALSE, upgrade: FALSE }
 # 18c OJVM + GI RU patch but GI RU used from it
-    - { category: "RU", base: "18.0.0.0.0", release: "18.6.0.0.190416", patchnum: "29251992", patchfile: "p29251992_180000_Linux-x86-64.zip", patch_subdir: "/29301682", prereq_check: FALSE, method: "opatchauto apply", ocm: FALSE, upgrade: FALSE }
-    - { category: "RU", base: "18.0.0.0.0", release: "18.7.0.0.190716", patchnum: "29699160", patchfile: "p29699160_180000_Linux-x86-64.zip", patch_subdir: "/29708703", prereq_check: FALSE, method: "opatchauto apply", ocm: FALSE, upgrade: FALSE }
-    - { category: "RU", base: "18.0.0.0.0", release: "18.8.0.0.191015", patchnum: "30133246", patchfile: "p30133246_180000_Linux-x86-64.zip", patch_subdir: "/30116795", prereq_check: FALSE, method: "opatchauto apply", ocm: FALSE, upgrade: FALSE }
-    - { category: "RU", base: "18.0.0.0.0", release: "18.9.0.0.200114", patchnum: "30463635", patchfile: "p30463635_180000_Linux-x86-64.zip", patch_subdir: "/30480702", prereq_check: FALSE, method: "opatchauto apply", ocm: FALSE, upgrade: FALSE }
+  - { category: "RU", base: "18.0.0.0.0", release: "18.6.0.0.190416", patchnum: "29251992", patchfile: "p29251992_180000_Linux-x86-64.zip", patch_subdir: "/29301682", prereq_check: FALSE, method: "opatchauto apply", ocm: FALSE, upgrade: FALSE }
+  - { category: "RU", base: "18.0.0.0.0", release: "18.7.0.0.190716", patchnum: "29699160", patchfile: "p29699160_180000_Linux-x86-64.zip", patch_subdir: "/29708703", prereq_check: FALSE, method: "opatchauto apply", ocm: FALSE, upgrade: FALSE }
+  - { category: "RU", base: "18.0.0.0.0", release: "18.8.0.0.191015", patchnum: "30133246", patchfile: "p30133246_180000_Linux-x86-64.zip", patch_subdir: "/30116795", prereq_check: FALSE, method: "opatchauto apply", ocm: FALSE, upgrade: FALSE }
+  - { category: "RU", base: "18.0.0.0.0", release: "18.9.0.0.200114", patchnum: "30463635", patchfile: "p30463635_180000_Linux-x86-64.zip", patch_subdir: "/30480702", prereq_check: FALSE, method: "opatchauto apply", ocm: FALSE, upgrade: FALSE }
 # 19c OJVM + GI RU patch but GI RU used from it
-    - { category: "RU", base: "19.3.0.0.0", release: "19.3.1.0.0", patchnum: "29800658", patchfile: "p29800658_190000_Linux-x86-64.zip", patch_subdir: "", prereq_check: FALSE, method: "opatchauto apply", ocm: FALSE, upgrade: FALSE }
-    - { category: "RU", base: "19.3.0.0.0", release: "19.4.0.0.190716", patchnum: "29699097", patchfile: "p29699097_190000_Linux-x86-64.zip", patch_subdir: "/29708769", prereq_check: FALSE, method: "opatchauto apply", ocm: FALSE, upgrade: FALSE }
-    - { category: "RU", base: "19.3.0.0.0", release: "19.5.0.0.191015", patchnum: "30133178", patchfile: "p30133178_190000_Linux-x86-64.zip", patch_subdir: "/30116789", prereq_check: FALSE, method: "opatchauto apply", ocm: FALSE, upgrade: FALSE }
-    - { category: "RU", base: "19.3.0.0.0", release: "19.6.0.0.200114", patchnum: "30463609", patchfile: "p30463609_190000_Linux-x86-64.zip", patch_subdir: "/30501910", prereq_check: FALSE, method: "opatchauto apply", ocm: FALSE, upgrade: FALSE }
+  - { category: "RU", base: "19.3.0.0.0", release: "19.3.1.0.0", patchnum: "29800658", patchfile: "p29800658_190000_Linux-x86-64.zip", patch_subdir: "", prereq_check: FALSE, method: "opatchauto apply", ocm: FALSE, upgrade: FALSE }
+  - { category: "RU", base: "19.3.0.0.0", release: "19.4.0.0.190716", patchnum: "29699097", patchfile: "p29699097_190000_Linux-x86-64.zip", patch_subdir: "/29708769", prereq_check: FALSE, method: "opatchauto apply", ocm: FALSE, upgrade: FALSE }
+  - { category: "RU", base: "19.3.0.0.0", release: "19.5.0.0.191015", patchnum: "30133178", patchfile: "p30133178_190000_Linux-x86-64.zip", patch_subdir: "/30116789", prereq_check: FALSE, method: "opatchauto apply", ocm: FALSE, upgrade: FALSE }
+  - { category: "RU", base: "19.3.0.0.0", release: "19.6.0.0.200114", patchnum: "30463609", patchfile: "p30463609_190000_Linux-x86-64.zip", patch_subdir: "/30501910", prereq_check: FALSE, method: "opatchauto apply", ocm: FALSE, upgrade: FALSE }
 
-  rdbms_patches:
+rdbms_patches:
 #    - { category: "PSU_Combo", release: "11.2.0.4.0", patchnum: "29252186", patchfile: "p29252186_112040_Linux-x86-64.zip", patch_subdir: "", method: "", ocm: TRUE, upgrade: FALSE }
-    - { category: "PSU_Combo", base: "11.2.0.4.0", release: "11.2.0.4.190115", patchnum: "28729262", patchfile: "p28729262_112040_Linux-x86-64.zip", patch_subdir: "", prereq_check: FALSE, method: "opatch apply", ocm: TRUE, upgrade: FALSE }
+  - { category: "PSU_Combo", base: "11.2.0.4.0", release: "11.2.0.4.190115", patchnum: "28729262", patchfile: "p28729262_112040_Linux-x86-64.zip", patch_subdir: "", prereq_check: FALSE, method: "opatch apply", ocm: TRUE, upgrade: FALSE }
 #    - { category: "PSU_Combo", release: "12.1.0.2.0", patchnum: "29252171", patchfile: "p29252171_121020_Linux-x86-64.zip", patch_subdir: "/29176139/29141038", prereq_check: FALSE, method: "opatch apply", ocm: FALSE, upgrade: FALSE }
 #    - { category: "PSU_Combo", base: "12.1.0.2.0", release: "12.1.0.2.190416", patchnum: "29252171", patchfile: "p29252171_121020_Linux-x86-64.zip", patch_subdir: "/29251241", prereq_check: FALSE, method: "opatch apply", ocm: FALSE, upgrade: TRUE }
-    - { category: "PSU_Combo", base: "12.1.0.2.0", release: "12.1.0.2.190416", patchnum: "29252164", patchfile: "p29252164_121020_Linux-x86-64.zip", patch_subdir: "/29251241", prereq_check: FALSE, method: "opatch apply", ocm: FALSE, upgrade: TRUE }
-    - { category: "PSU_Combo", base: "12.1.0.2.0", release: "12.1.0.2.190716", patchnum: "29699244", patchfile: "p29699244_121020_Linux-x86-64.zip", patch_subdir: "/29774383", prereq_check: FALSE, method: "opatch apply", ocm: FALSE, upgrade: TRUE }
-    - { category: "PSU_Combo", base: "12.1.0.2.0", release: "12.1.0.2.191015", patchnum: "30133443", patchfile: "p30133443_121020_Linux-x86-64.zip", patch_subdir: "/30128197", prereq_check: FALSE, method: "opatch apply", ocm: FALSE, upgrade: TRUE }
-    - { category: "PSU_Combo", base: "12.1.0.2.0", release: "12.1.0.2.200114", patchnum: "30463691", patchfile: "p30463691_121020_Linux-x86-64.zip", patch_subdir: "/30502041", prereq_check: FALSE, method: "opatch apply", ocm: FALSE, upgrade: TRUE }
+  - { category: "PSU_Combo", base: "12.1.0.2.0", release: "12.1.0.2.190416", patchnum: "29252164", patchfile: "p29252164_121020_Linux-x86-64.zip", patch_subdir: "/29251241", prereq_check: FALSE, method: "opatch apply", ocm: FALSE, upgrade: TRUE }
+  - { category: "PSU_Combo", base: "12.1.0.2.0", release: "12.1.0.2.190716", patchnum: "29699244", patchfile: "p29699244_121020_Linux-x86-64.zip", patch_subdir: "/29774383", prereq_check: FALSE, method: "opatch apply", ocm: FALSE, upgrade: TRUE }
+  - { category: "PSU_Combo", base: "12.1.0.2.0", release: "12.1.0.2.191015", patchnum: "30133443", patchfile: "p30133443_121020_Linux-x86-64.zip", patch_subdir: "/30128197", prereq_check: FALSE, method: "opatch apply", ocm: FALSE, upgrade: TRUE }
+  - { category: "PSU_Combo", base: "12.1.0.2.0", release: "12.1.0.2.200114", patchnum: "30463691", patchfile: "p30463691_121020_Linux-x86-64.zip", patch_subdir: "/30502041", prereq_check: FALSE, method: "opatch apply", ocm: FALSE, upgrade: TRUE }
 # 12.2.0.1 OJVM packages from Combo
-    - { category: "RU_Combo", base: "12.2.0.1.0", release: "12.2.0.1.190416", patchnum: "29252072", patchfile: "p29252072_122010_Linux-x86-64.zip", patch_subdir: "/29249637", prereq_check: TRUE, method: "opatch apply", ocm: FALSE, upgrade: TRUE }
-    - { category: "RU_Combo", base: "12.2.0.1.0", release: "12.2.0.1.190716", patchnum: "29699173", patchfile: "p29699173_122010_Linux-x86-64.zip", patch_subdir: "/29774415", prereq_check: TRUE, method: "opatch apply", ocm: FALSE, upgrade: TRUE }
-    - { category: "RU_Combo", base: "12.2.0.1.0", release: "12.2.0.1.191015", patchnum: "30133386", patchfile: "p30133386_122010_Linux-x86-64.zip", patch_subdir: "/30133625", prereq_check: TRUE, method: "opatch apply", ocm: FALSE, upgrade: TRUE }
-    - { category: "RU_Combo", base: "12.2.0.1.0", release: "12.2.0.1.200114", patchnum: "30463673", patchfile: "p30463673_122010_Linux-x86-64.zip", patch_subdir: "/30502018", prereq_check: TRUE, method: "opatch apply", ocm: FALSE, upgrade: TRUE }
+  - { category: "RU_Combo", base: "12.2.0.1.0", release: "12.2.0.1.190416", patchnum: "29252072", patchfile: "p29252072_122010_Linux-x86-64.zip", patch_subdir: "/29249637", prereq_check: TRUE, method: "opatch apply", ocm: FALSE, upgrade: TRUE }
+  - { category: "RU_Combo", base: "12.2.0.1.0", release: "12.2.0.1.190716", patchnum: "29699173", patchfile: "p29699173_122010_Linux-x86-64.zip", patch_subdir: "/29774415", prereq_check: TRUE, method: "opatch apply", ocm: FALSE, upgrade: TRUE }
+  - { category: "RU_Combo", base: "12.2.0.1.0", release: "12.2.0.1.191015", patchnum: "30133386", patchfile: "p30133386_122010_Linux-x86-64.zip", patch_subdir: "/30133625", prereq_check: TRUE, method: "opatch apply", ocm: FALSE, upgrade: TRUE }
+  - { category: "RU_Combo", base: "12.2.0.1.0", release: "12.2.0.1.200114", patchnum: "30463673", patchfile: "p30463673_122010_Linux-x86-64.zip", patch_subdir: "/30502018", prereq_check: TRUE, method: "opatch apply", ocm: FALSE, upgrade: TRUE }
 # 18c OJVM packages from Combo
-    - { category: "RU_Combo", base: "18.0.0.0.0", release: "18.6.0.0.190416", patchnum: "29251992", patchfile: "p29251992_180000_Linux-x86-64.zip", patch_subdir: "/29249584", prereq_check: TRUE, method: "opatch apply", ocm: FALSE, upgrade: TRUE }
-    - { category: "RU_Combo", base: "18.0.0.0.0", release: "18.7.0.0.190716", patchnum: "29699160", patchfile: "p29699160_180000_Linux-x86-64.zip", patch_subdir: "/29774410", prereq_check: TRUE, method: "opatch apply", ocm: FALSE, upgrade: TRUE }
-    - { category: "RU_Combo", base: "18.0.0.0.0", release: "18.8.0.0.191015", patchnum: "30133246", patchfile: "p30133246_180000_Linux-x86-64.zip", patch_subdir: "/30133603", prereq_check: TRUE, method: "opatch apply", ocm: FALSE, upgrade: TRUE }
-    - { category: "RU_Combo", base: "18.0.0.0.0", release: "18.9.0.0.200114", patchnum: "30463635", patchfile: "p30463635_180000_Linux-x86-64.zip", patch_subdir: "/30501926", prereq_check: TRUE, method: "opatch apply", ocm: FALSE, upgrade: TRUE }
+  - { category: "RU_Combo", base: "18.0.0.0.0", release: "18.6.0.0.190416", patchnum: "29251992", patchfile: "p29251992_180000_Linux-x86-64.zip", patch_subdir: "/29249584", prereq_check: TRUE, method: "opatch apply", ocm: FALSE, upgrade: TRUE }
+  - { category: "RU_Combo", base: "18.0.0.0.0", release: "18.7.0.0.190716", patchnum: "29699160", patchfile: "p29699160_180000_Linux-x86-64.zip", patch_subdir: "/29774410", prereq_check: TRUE, method: "opatch apply", ocm: FALSE, upgrade: TRUE }
+  - { category: "RU_Combo", base: "18.0.0.0.0", release: "18.8.0.0.191015", patchnum: "30133246", patchfile: "p30133246_180000_Linux-x86-64.zip", patch_subdir: "/30133603", prereq_check: TRUE, method: "opatch apply", ocm: FALSE, upgrade: TRUE }
+  - { category: "RU_Combo", base: "18.0.0.0.0", release: "18.9.0.0.200114", patchnum: "30463635", patchfile: "p30463635_180000_Linux-x86-64.zip", patch_subdir: "/30501926", prereq_check: TRUE, method: "opatch apply", ocm: FALSE, upgrade: TRUE }
 # 19c OJVM packages from Combo
-    - { category: "RU_Combo", base: "19.3.0.0.0", release: "19.3.1.0.0", patchnum: "29859737", patchfile: "p29859737_190000_Linux-x86-64.zip", patch_subdir: "/29799057", prereq_check: TRUE, method: "opatch apply", ocm: FALSE, upgrade: FALSE }
-    - { category: "RU_Combo", base: "19.3.0.0.0", release: "19.3.1.0.0", patchnum: "29859737", patchfile: "p29859737_190000_Linux-x86-64.zip", patch_subdir: "/29548437", prereq_check: TRUE, method: "opatch apply", ocm: FALSE, upgrade: TRUE }
-    - { category: "RU_Combo", base: "19.3.0.0.0", release: "19.4.0.0.190716", patchnum: "29699079", patchfile: "p29699079_190000_Linux-x86-64.zip", patch_subdir: "/29774421", prereq_check: TRUE, method: "opatch apply", ocm: FALSE, upgrade: TRUE }
-    - { category: "RU_Combo", base: "19.3.0.0.0", release: "19.5.0.0.191015", patchnum: "30133124", patchfile: "p30133124_190000_Linux-x86-64.zip", patch_subdir: "/30128191", prereq_check: TRUE, method: "opatch apply", ocm: FALSE, upgrade: TRUE }
-    - { category: "RU_Combo", base: "19.3.0.0.0", release: "19.6.0.0.200114", patchnum: "30463609", patchfile: "p30463609_190000_Linux-x86-64.zip", patch_subdir: "/30484981", prereq_check: TRUE, method: "opatch apply", ocm: FALSE, upgrade: TRUE }
+  - { category: "RU_Combo", base: "19.3.0.0.0", release: "19.3.1.0.0", patchnum: "29859737", patchfile: "p29859737_190000_Linux-x86-64.zip", patch_subdir: "/29799057", prereq_check: TRUE, method: "opatch apply", ocm: FALSE, upgrade: FALSE }
+  - { category: "RU_Combo", base: "19.3.0.0.0", release: "19.3.1.0.0", patchnum: "29859737", patchfile: "p29859737_190000_Linux-x86-64.zip", patch_subdir: "/29548437", prereq_check: TRUE, method: "opatch apply", ocm: FALSE, upgrade: TRUE }
+  - { category: "RU_Combo", base: "19.3.0.0.0", release: "19.4.0.0.190716", patchnum: "29699079", patchfile: "p29699079_190000_Linux-x86-64.zip", patch_subdir: "/29774421", prereq_check: TRUE, method: "opatch apply", ocm: FALSE, upgrade: TRUE }
+  - { category: "RU_Combo", base: "19.3.0.0.0", release: "19.5.0.0.191015", patchnum: "30133124", patchfile: "p30133124_190000_Linux-x86-64.zip", patch_subdir: "/30128191", prereq_check: TRUE, method: "opatch apply", ocm: FALSE, upgrade: TRUE }
+  - { category: "RU_Combo", base: "19.3.0.0.0", release: "19.6.0.0.200114", patchnum: "30463609", patchfile: "p30463609_190000_Linux-x86-64.zip", patch_subdir: "/30484981", prereq_check: TRUE, method: "opatch apply", ocm: FALSE, upgrade: TRUE }

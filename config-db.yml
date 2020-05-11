@@ -13,69 +13,69 @@
 # limitations under the License.
 
 ---
-  - hosts: all
-    remote_user: "{{ oracle_user }}"
-    become_user: root
-    become: true
-    pre_tasks:
-    - name: Verify Ansible meets the version requirements
-      assert:
-       that: "ansible_version.full is version_compare('2.8', '>=')"
-       fail_msg: >-
-         You must update Ansible to at least 2.8 to use these playbooks
-       success_msg: >-
-         Ansible version is {{ ansible_version.full }} , continuing
-    tasks:
+- hosts: all
+  remote_user: "{{ oracle_user }}"
+  become_user: root
+  become: true
+  pre_tasks:
+  - name: Verify Ansible meets the version requirements
+    assert:
+     that: "ansible_version.full is version_compare('2.8', '>=')"
+     fail_msg: >-
+       You must update Ansible to at least 2.8 to use these playbooks
+     success_msg: >-
+       Ansible version is {{ ansible_version.full }} , continuing
+  tasks:
+  - include_role:
+      name: lsnr-create
+    when: create_listener|bool
+  - include_role:
+      name: "{{ role_item }}"
+    loop:
+      - db-create
+      - db-adjustements
+      - db-backups
+      - validation-scripts
+    loop_control:
+      loop_var: role_item
+    when:
+     - create_db|bool
+     - cluster_type == "NONE"
+  tags: lsnr-create,db-create,db-adjustments,db-backups,validation-scripts
+
+- hosts: dbasm[0]
+  #gather_facts: false
+  tasks:
     - include_role:
-       name: lsnr-create
-      when: create_listener|bool
+        name: db-create
+        tasks_from: rac-db-create.yml
     - include_role:
         name: "{{ role_item }}"
       loop:
-        - db-create
         - db-adjustements
         - db-backups
         - validation-scripts
       loop_control:
-       loop_var: role_item
+        loop_var: role_item
       when:
-       - create_db|bool
-       - cluster_type == "NONE"
-    tags: lsnr-create,db-create,db-adjustments,db-backups,validation-scripts
+        - create_db|bool
+        - cluster_type == "RAC"
+      tags: rac-db-create,rac-db-adjustments,rac-db-backups,rac-validation-scripts
 
-  - hosts: dbasm[0]
-    #gather_facts: false
-    tasks:
-      - include_role:
-          name: db-create
-          tasks_from: rac-db-create.yml
-      - include_role:
-          name: "{{ role_item }}"
-        loop:
-          - db-adjustements
-          - db-backups
-          - validation-scripts
-        loop_control:
-         loop_var: role_item
-        when:
-          - create_db|bool
-          - cluster_type == "RAC"
-        tags: rac-db-create,rac-db-adjustments,rac-db-backups,rac-validation-scripts
-
-  - hosts: all
-    become: yes
-    tasks:
-      - name: Fill oratab with instances | include vars
-        include_vars:
-          dir: roles/common/defaults
-      - name: Fill oratab with instances | Get the running instance name
-        shell: "set -o pipefail; ps -ef | (grep -i pmon_{{ db_name }} || true ) | ( grep -v grep || true ) | sed s'/^.*pmon_//g'"
-        changed_when: false
-        register: instance_name
-      - name: Fill oratab with instances | Add instance in /etc/oratab
-        blockinfile:
-          path: /etc/oratab
-          marker: "# {mark} ANSIBLE MANAGED BLOCK"
-          block: |
-            {{ instance_name.stdout }}:{{ oracle_home }}:N   # Line managed by ansible
-    tags: rac-db-create
+- hosts: all
+  become: yes
+  tasks:
+    - name: Fill oratab with instances | include vars
+      include_vars:
+        dir: roles/common/defaults
+    - name: Fill oratab with instances | Get the running instance name
+      shell: "set -o pipefail; ps -ef | (grep -i pmon_{{ db_name }} || true ) | ( grep -v grep || true ) | sed s'/^.*pmon_//g'"
+      changed_when: false
+      register: instance_name
+    - name: Fill oratab with instances | Add instance in /etc/oratab
+      blockinfile:
+        path: /etc/oratab
+        marker: "# {mark} ANSIBLE MANAGED BLOCK"
+        block: |
+          {{ instance_name.stdout }}:{{ oracle_home }}:N   # Line managed by ansible
+  tags: rac-db-create

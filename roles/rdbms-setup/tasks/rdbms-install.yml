@@ -13,101 +13,101 @@
 # limitations under the License.
 
 ---
-  - name: rdbms-install | set facts
-    set_fact:
-      install_unzip_path: "{{ oracle_home }}"
-      runinstaller_loc: "{{ oracle_home }}"
-    tags: rdbms-setup
+- name: rdbms-install | set facts
+  set_fact:
+    install_unzip_path: "{{ oracle_home }}"
+    runinstaller_loc: "{{ oracle_home }}"
+  tags: rdbms-setup
 
-  - name: rdbms-install | Version specific adjustments
-    set_fact:
-      install_unzip_path: "{{ swlib_unzip_path }}"
-      runinstaller_loc: "{{ swlib_unzip_path }}/database"
-    when: oracle_ver in ['12.2.0.1.0','12.1.0.2.0','11.2.0.4.0']
-    tags: rdbms-setup
+- name: rdbms-install | Version specific adjustments
+  set_fact:
+    install_unzip_path: "{{ swlib_unzip_path }}"
+    runinstaller_loc: "{{ swlib_unzip_path }}/database"
+  when: oracle_ver in ['12.2.0.1.0','12.1.0.2.0','11.2.0.4.0']
+  tags: rdbms-setup
 
-  - name: rdbms-install | Installer confirmations
-    debug:
-      msg:
-        - "Installing from file : {{ osw.files }}"
-        - "Unzipping into dir   : {{ install_unzip_path }}"
-        - "Using installer dir  : {{ runinstaller_loc }}"
-      #verbosity: 1
-    tags: rdbms-setup
+- name: rdbms-install | Installer confirmations
+  debug:
+    msg:
+      - "Installing from file : {{ osw.files }}"
+      - "Unzipping into dir   : {{ install_unzip_path }}"
+      - "Using installer dir  : {{ runinstaller_loc }}"
+    #verbosity: 1
+  tags: rdbms-setup
 
-  - name: rdbms-install | Unzipping
-    unarchive:
-      src: "{{ swlib_path }}/{{ item }}"
-      dest: "{{ install_unzip_path }}"
-      remote_src: yes
-    with_items:
-      - "{{ osw.files }}"
-    become: yes
-    become_user: "{{ oracle_user }}"
-    tags: rdbms-setup,sw_unzip
+- name: rdbms-install | Unzipping
+  unarchive:
+    src: "{{ swlib_path }}/{{ item }}"
+    dest: "{{ install_unzip_path }}"
+    remote_src: yes
+  with_items:
+    - "{{ osw.files }}"
+  become: yes
+  become_user: "{{ oracle_user }}"
+  tags: rdbms-setup,sw_unzip
 
-  - name: rdbms-install | Create RDBMS response file script
-    template:
-      src: db_install.rsp.sh.j2
-      dest: "{{ swlib_unzip_path }}/db_install.rsp.sh"
-    become: yes
-    become_user: "{{ oracle_user }}"
-    tags: rdbms-setup
+- name: rdbms-install | Create RDBMS response file script
+  template:
+    src: db_install.rsp.sh.j2
+    dest: "{{ swlib_unzip_path }}/db_install.rsp.sh"
+  become: yes
+  become_user: "{{ oracle_user }}"
+  tags: rdbms-setup
 
-  - name: rdbms-install | Run RDBMS response file script
-    command: "sh {{ swlib_unzip_path }}/db_install.rsp.sh"
-    args:
-    become: yes
-    become_user: "{{ oracle_user }}"
-    tags: rdbms-setup
+- name: rdbms-install | Run RDBMS response file script
+  command: "sh {{ swlib_unzip_path }}/db_install.rsp.sh"
+  args:
+  become: yes
+  become_user: "{{ oracle_user }}"
+  tags: rdbms-setup
 
-  - name: rdbms-install | Script cleanup
-    file:
-      path: "{{ swlib_unzip_path }}/db_install.rsp.sh"
-      state: absent
-    become: yes
-    become_user: "{{ oracle_user }}"
-    tags: rdbms-setup
+- name: rdbms-install | Script cleanup
+  file:
+    path: "{{ swlib_unzip_path }}/db_install.rsp.sh"
+    state: absent
+  become: yes
+  become_user: "{{ oracle_user }}"
+  tags: rdbms-setup
 
-  - name: rdbms-install | Run runInstaller
-    command: "{{ runinstaller_loc }}/runInstaller -silent {{ prereq_option }} -waitforcompletion -responseFile {{ swlib_unzip_path }}/db_install.rsp"
-    register: install_db_software
-    failed_when: "('Successfully Setup Software' not in install_db_software.stdout) or
-                  (install_db_software.rc not in [0,6])"
-    become: yes
-    become_user: "{{ oracle_user }}"
-    tags: rdbms-setup
+- name: rdbms-install | Run runInstaller
+  command: "{{ runinstaller_loc }}/runInstaller -silent {{ prereq_option }} -waitforcompletion -responseFile {{ swlib_unzip_path }}/db_install.rsp"
+  register: install_db_software
+  failed_when: "('Successfully Setup Software' not in install_db_software.stdout) or
+                (install_db_software.rc not in [0,6])"
+  become: yes
+  become_user: "{{ oracle_user }}"
+  tags: rdbms-setup
 
-  - name: rdbms-install | runInstaller output
-    debug:
-      msg:
-        - "{{ install_db_software.cmd }}"
-        - "{{ install_db_software.stdout_lines }}"
-      #verbosity: 1
-    tags: rdbms-setup
+- name: rdbms-install | runInstaller output
+  debug:
+    msg:
+      - "{{ install_db_software.cmd }}"
+      - "{{ install_db_software.stdout_lines }}"
+    #verbosity: 1
+  tags: rdbms-setup
 
-  - name: rdbms-install | run root-script orainstRoot.sh
-    command: "{{ oracle_base }}/../oraInventory/orainstRoot.sh"
-    ignore_errors: yes
-    when: "'skipped' not in install_db_software.stdout"
-    become: yes
-    become_user: root
-    tags: rdbms-setup
+- name: rdbms-install | run root-script orainstRoot.sh
+  command: "{{ oracle_base }}/../oraInventory/orainstRoot.sh"
+  ignore_errors: yes
+  when: "'skipped' not in install_db_software.stdout"
+  become: yes
+  become_user: root
+  tags: rdbms-setup
 
-  - name: rdbms-install | run root-script root.sh
-    command: "{{ oracle_home }}/root.sh"
-    when: "'skipped' not in install_db_software.stdout"
-    become: yes
-    become_user: root
-    tags: rdbms-setup
+- name: rdbms-install | run root-script root.sh
+  command: "{{ oracle_home }}/root.sh"
+  when: "'skipped' not in install_db_software.stdout"
+  become: yes
+  become_user: root
+  tags: rdbms-setup
 
-  - name: rdbms-install | Complete plugin configuration
-    command: "{{ runinstaller_loc }}/runInstaller -executeConfigTools -silent {{ prereq_option }} -responseFile {{ swlib_unzip_path }}/db_install.rsp"
-    ignore_errors: yes
-    register: install_db_plugins
-    when: oracle_ver not in ['12.1.0.2.0','11.2.0.4.0']
-    failed_when: "(install_db_plugins.rc not in [0,6]) and
-                  ('The Installer has detected that there are no config tools to execute for the specified Oracle home' not in install_db_plugins.stdout)"
-    become: yes
-    become_user: "{{ oracle_user }}"
-    tags: rdbms-setup
+- name: rdbms-install | Complete plugin configuration
+  command: "{{ runinstaller_loc }}/runInstaller -executeConfigTools -silent {{ prereq_option }} -responseFile {{ swlib_unzip_path }}/db_install.rsp"
+  ignore_errors: yes
+  register: install_db_plugins
+  when: oracle_ver not in ['12.1.0.2.0','11.2.0.4.0']
+  failed_when: "(install_db_plugins.rc not in [0,6]) and
+                ('The Installer has detected that there are no config tools to execute for the specified Oracle home' not in install_db_plugins.stdout)"
+  become: yes
+  become_user: "{{ oracle_user }}"
+  tags: rdbms-setup

@@ -13,114 +13,114 @@
 # limitations under the License.
 
 ---
-  - name: Validate OS and version
-    assert:
-      that:
-        - "ansible_os_family == '{{ os_family_supported }}'"
-        - "ansible_distribution_version is version_compare('{{ os_min_supported_version }}', '>=')"
-    tags: oscheck
+- name: Validate OS and version
+  assert:
+    that:
+      - "ansible_os_family == '{{ os_family_supported }}'"
+      - "ansible_distribution_version is version_compare('{{ os_min_supported_version }}', '>=')"
+  tags: oscheck
 
-  - name: Validate architecture
-    assert:
-      that: "ansible_userspace_architecture == 'x86_64'"
-    tags: oscheck
+- name: Validate architecture
+  assert:
+    that: "ansible_userspace_architecture == 'x86_64'"
+  tags: oscheck
 
-  - name: Ensure yum is not running, send Ctrl-C if it is
-    shell: pidof -x /usr/bin/yum /bin/yum | xargs -t -r -n 1 kill -INT
-    tags: os_packages
+- name: Ensure yum is not running, send Ctrl-C if it is
+  shell: pidof -x /usr/bin/yum /bin/yum | xargs -t -r -n 1 kill -INT
+  tags: os_packages
 
-  - name: Remove Chrony package
-    package:
-      name:  chrony
-      state: absent
-      lock_timeout: 180
-    tags: ntp
+- name: Remove Chrony package
+  package:
+    name:  chrony
+    state: absent
+    lock_timeout: 180
+  tags: ntp
 
-  - name: Remove Chrony rpmsave
-    file:
-      path: /etc/chrony.conf.rpmsave
-      state: absent
-    tags: ntp
+- name: Remove Chrony rpmsave
+  file:
+    path: /etc/chrony.conf.rpmsave
+    state: absent
+  tags: ntp
 
-  - name: Install base OS packages
-    package:
-      name: "{{ packages }}"
-      state: present
-      lock_timeout: 180
-    tags: os_packages
+- name: Install base OS packages
+  package:
+    name: "{{ packages }}"
+    state: present
+    lock_timeout: 180
+  tags: os_packages
 
-  - name: Make sure ntp is running
-    service:
-      name: ntpd
-      state: started
-      enabled: yes
-    tags: ntp
+- name: Make sure ntp is running
+  service:
+    name: ntpd
+    state: started
+    enabled: yes
+  tags: ntp
 
-  - name: Add ntp preferred server
-    blockinfile:
-      path: /etc/ntp.conf
-      marker: "# {mark} ANSIBLE MANAGED BLOCK"
-      insertafter: '^server '
-      block: "server {{ ntp_preferred }} prefer iburst"
-      state: "{{ (ntp_preferred != \"\" ) | ternary('present', 'absent') }}"
-    notify: restart ntpd
+- name: Add ntp preferred server
+  blockinfile:
+    path: /etc/ntp.conf
+    marker: "# {mark} ANSIBLE MANAGED BLOCK"
+    insertafter: '^server '
+    block: "server {{ ntp_preferred }} prefer iburst"
+    state: "{{ (ntp_preferred != \"\" ) | ternary('present', 'absent') }}"
+  notify: restart ntpd
 
-  - name: Generate /etc/hosts
-    blockinfile:
-      path: /etc/hosts
-      marker: "# {mark} ANSIBLE MANAGED BLOCK"
-      block: |
-        {% for host in groups['all'] %}
-        {% if cluster_domain is defined %}
-        {{ hostvars[host]['ansible_ssh_host'] }}    {{ host }}.{{ cluster_domain }}  {{ host }}
-        {% else %}
-        {{ hostvars[host]['ansible_ssh_host'] }}    {{ host }}
-        {% endif %}
-        {% endfor %}
-        {% for host in groups['all'] %}
-        {% if hostvars[host]['vip_ip'] is defined %}
-        {% if cluster_domain is defined %}
-        {{ hostvars[host]['vip_ip'] }}    {{ hostvars[host]['vip_name']}}.{{ cluster_domain }}  {{ vip_name }}
-        {% else %}
-        {{ hostvars[host]['vip_ip'] }}    {{ hostvars[host]['vip_name']}}
-        {% endif %}
-        {% endif %}
-        {% endfor %}
-        {% for host in groups['all'] %}
-        {% if loop.first %}
-        {% if scan_name is defined %}
-        {% for h in hostvars[host] %}
-        {% if 'scan_ip' in h %}
-        {% if cluster_domain is defined %}
-        {{ hostvars[host][h] }}    {{ scan_name }}.{{ cluster_domain }}  {{ scan_name }}
-        {% else %}
-        {{ hostvars[host][h] }}    {{ scan_name }}
-        {% endif %}
-        {% endif %}
-        {% endfor %}
-        {% endif %}
-        {% endif %}
-        {% endfor %}
-    tags: etchosts
+- name: Generate /etc/hosts
+  blockinfile:
+    path: /etc/hosts
+    marker: "# {mark} ANSIBLE MANAGED BLOCK"
+    block: |
+      {% for host in groups['all'] %}
+      {% if cluster_domain is defined %}
+      {{ hostvars[host]['ansible_ssh_host'] }}    {{ host }}.{{ cluster_domain }}  {{ host }}
+      {% else %}
+      {{ hostvars[host]['ansible_ssh_host'] }}    {{ host }}
+      {% endif %}
+      {% endfor %}
+      {% for host in groups['all'] %}
+      {% if hostvars[host]['vip_ip'] is defined %}
+      {% if cluster_domain is defined %}
+      {{ hostvars[host]['vip_ip'] }}    {{ hostvars[host]['vip_name'] }}.{{ cluster_domain }}  {{ vip_name }}
+      {% else %}
+      {{ hostvars[host]['vip_ip'] }}    {{ hostvars[host]['vip_name'] }}
+      {% endif %}
+      {% endif %}
+      {% endfor %}
+      {% for host in groups['all'] %}
+      {% if loop.first %}
+      {% if scan_name is defined %}
+      {% for h in hostvars[host] %}
+      {% if 'scan_ip' in h %}
+      {% if cluster_domain is defined %}
+      {{ hostvars[host][h] }}    {{ scan_name }}.{{ cluster_domain }}  {{ scan_name }}
+      {% else %}
+      {{ hostvars[host][h] }}    {{ scan_name }}
+      {% endif %}
+      {% endif %}
+      {% endfor %}
+      {% endif %}
+      {% endif %}
+      {% endfor %}
+  tags: etchosts
 
-  # cleanup /etc/hosts to solve a listener related issue, ora listener binds to hostname's IP.
-  - name: Remove all 127.0.0.1 lines from /etc/hosts
-    lineinfile: dest=/etc/hosts regexp='^127\.0\.0\.1' state=absent
-    tags: etchosts
+# cleanup /etc/hosts to solve a listener related issue, ora listener binds to hostname's IP.
+- name: Remove all 127.0.0.1 lines from /etc/hosts
+  lineinfile: dest=/etc/hosts regexp='^127\.0\.0\.1' state=absent
+  tags: etchosts
 
-  - name: Add fqdn to /etc/hosts if needed
-    lineinfile: dest=/etc/hosts regexp='.*{{ ansible_fqdn }}$' line="{{ etc_hosts_ip }} {{ ansible_hostname }} {{ ansible_fqdn }}" state=present
-    tags: etchosts
+- name: Add fqdn to /etc/hosts if needed
+  lineinfile: dest=/etc/hosts regexp='.*{{ ansible_fqdn }}$' line="{{ etc_hosts_ip }} {{ ansible_hostname }} {{ ansible_fqdn }}" state=present
+  tags: etchosts
 
-  - name: Add localhost to /etc/hosts if needed
-    lineinfile: dest=/etc/hosts regexp='^127\.0\.0\.1' line="127.0.0.1 localhost localhost.localdomain" state=present
-    tags: etchosts
+- name: Add localhost to /etc/hosts if needed
+  lineinfile: dest=/etc/hosts regexp='^127\.0\.0\.1' line="127.0.0.1 localhost localhost.localdomain" state=present
+  tags: etchosts
 
-  - name: prep host | create swap on GCE
-    include_tasks: swap.yml
-    when:
-      - ansible_system_vendor == "Google"
-      - ansible_virtualization_type == "kvm"
-      - ansible_virtualization_role == "guest"
-      - swap_blk_device is defined
-      - swap_blk_device|length > 0
+- name: prep host | create swap on GCE
+  include_tasks: swap.yml
+  when:
+    - ansible_system_vendor == "Google"
+    - ansible_virtualization_type == "kvm"
+    - ansible_virtualization_role == "guest"
+    - swap_blk_device is defined
+    - swap_blk_device|length > 0

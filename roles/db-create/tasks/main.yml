@@ -13,119 +13,119 @@
 # limitations under the License.
 
 ---
-  - name: Test whether pmon process by same name already exists
-    shell: "set -o pipefail; ps -ef | ( grep pmon || true ) | ( grep -i {{ db_name }} || true ) | ( grep -v grep || true ) | wc -l"
-    changed_when: false
-    register: pmon_proc
-    tags: db-create
+- name: Test whether pmon process by same name already exists
+  shell: "set -o pipefail; ps -ef | ( grep pmon || true ) | ( grep -i {{ db_name }} || true ) | ( grep -v grep || true ) | wc -l"
+  changed_when: false
+  register: pmon_proc
+  tags: db-create
 
-  - name: Check if database is already created
-    shell: "set -o pipefail; ( grep -i {{ db_name }}: /etc/oratab || true ) | wc -l"
-    changed_when: false
-    register: check_oratab
-    tags: db-create
+- name: Check if database is already created
+  shell: "set -o pipefail; ( grep -i {{ db_name }}: /etc/oratab || true ) | wc -l"
+  changed_when: false
+  register: check_oratab
+  tags: db-create
 
-  - name: Database exists check results
-    debug:
-      msg: "{{ item }}"
-      verbosity: 1
-    with_items:
-      - "{{ pmon_proc }}"
-      - "{{ check_oratab }}"
-    tags: db-create
+- name: Database exists check results
+  debug:
+    msg: "{{ item }}"
+    verbosity: 1
+  with_items:
+    - "{{ pmon_proc }}"
+    - "{{ check_oratab }}"
+  tags: db-create
 
-  - name: Adjust instance memory values
-    set_fact:
-      sga_target_bytes: "{{ sga_target }}"
-      pga_aggtar_bytes: "{{ pga_aggtar }}"
-    when: oracle_ver not in ['12.1.0.2.0','11.2.0.4.0']
-    tags: db-create
+- name: Adjust instance memory values
+  set_fact:
+    sga_target_bytes: "{{ sga_target }}"
+    pga_aggtar_bytes: "{{ pga_aggtar }}"
+  when: oracle_ver not in ['12.1.0.2.0','11.2.0.4.0']
+  tags: db-create
 
-  - name: Adjust instance memory values for 12.1 and 11.2
-    set_fact:
-      sga_target_bytes: "{{ sga_target | regex_replace('M$','') }}"
-      pga_aggtar_bytes: "{{ pga_aggtar | regex_replace('M$','') }}"
-    when: oracle_ver in ['12.1.0.2.0','11.2.0.4.0']
-    tags: db-create
+- name: Adjust instance memory values for 12.1 and 11.2
+  set_fact:
+    sga_target_bytes: "{{ sga_target | regex_replace('M$','') }}"
+    pga_aggtar_bytes: "{{ pga_aggtar | regex_replace('M$','') }}"
+  when: oracle_ver in ['12.1.0.2.0','11.2.0.4.0']
+  tags: db-create
 
-  - name: Create DBCA response file script
-    template:
-      src: dbca.rsp.sh.j2
-      dest: "{{ swlib_unzip_path }}/dbca_{{ db_name }}.rsp.sh"
-      owner: "{{ oracle_user }}"
-      group: "{{ oracle_group }}"
-    when: pmon_proc.stdout == "0" and check_oratab.stdout == "0"
-    become: yes
-    become_user: "{{ oracle_user }}"
-    tags: db-create
+- name: Create DBCA response file script
+  template:
+    src: dbca.rsp.sh.j2
+    dest: "{{ swlib_unzip_path }}/dbca_{{ db_name }}.rsp.sh"
+    owner: "{{ oracle_user }}"
+    group: "{{ oracle_group }}"
+  when: pmon_proc.stdout == "0" and check_oratab.stdout == "0"
+  become: yes
+  become_user: "{{ oracle_user }}"
+  tags: db-create
 
-  - name: Run DBCA response file script
-    command: "sh {{ swlib_unzip_path }}/dbca_{{ db_name }}.rsp.sh"
-    register: rspout
-    when: pmon_proc.stdout == "0" and check_oratab.stdout == "0"
-    become: yes
-    become_user: "{{ oracle_user }}"
-    tags: db-create
+- name: Run DBCA response file script
+  command: "sh {{ swlib_unzip_path }}/dbca_{{ db_name }}.rsp.sh"
+  register: rspout
+  when: pmon_proc.stdout == "0" and check_oratab.stdout == "0"
+  become: yes
+  become_user: "{{ oracle_user }}"
+  tags: db-create
 
-  - name: Script cleanup
-    file:
-      path: "{{ swlib_unzip_path }}/dbca_{{ db_name }}.rsp.sh"
-      state: absent
-    become: yes
-    become_user: "{{ oracle_user }}"
-    tags: db-create
+- name: Script cleanup
+  file:
+    path: "{{ swlib_unzip_path }}/dbca_{{ db_name }}.rsp.sh"
+    state: absent
+  become: yes
+  become_user: "{{ oracle_user }}"
+  tags: db-create
 
-  - name: DBCA response file differences to template
-    debug:
-      msg: "{{ rspout.stdout_lines }}"
-      verbosity: 1
-    when: pmon_proc.stdout == "0" and check_oratab.stdout == "0"
-    tags: db-create
+- name: DBCA response file differences to template
+  debug:
+    msg: "{{ rspout.stdout_lines }}"
+    verbosity: 1
+  when: pmon_proc.stdout == "0" and check_oratab.stdout == "0"
+  tags: db-create
 
-  - name: Copy to instance the pwgen.sh script
-    copy:
-      src: "{{pwgen_file}}"
-      dest: "{{pwgen_path}}/{{pwgen_file}}"
-      owner: root
-      mode: "0755"
+- name: Copy to instance the pwgen.sh script
+  copy:
+    src: "{{ pwgen_file }}"
+    dest: "{{ pwgen_path }}/{{ pwgen_file }}"
+    owner: root
+    mode: "0755"
 
-  - name: Generate command for password randomization
-    set_fact:
-      pwd_gen_cmd: echo -e "$({{pass_param}})\n$({{pass_param}})\n$({{pass_param}})"
-    when: oracle_ver != "11.2.0.4.0"
-    tags: db-create
+- name: Generate command for password randomization
+  set_fact:
+    pwd_gen_cmd: echo -e "$({{ pass_param }})\n$({{ pass_param }})\n$({{ pass_param }})"
+  when: oracle_ver != "11.2.0.4.0"
+  tags: db-create
 
-  - name: 11.2 specific command for password randomization
-    set_fact:
-      pwd_gen_cmd: echo -e "$({{pass_param}})\n$({{pass_param}})"
-    when: oracle_ver == "11.2.0.4.0"
-    tags: db-create
+- name: 11.2 specific command for password randomization
+  set_fact:
+    pwd_gen_cmd: echo -e "$({{ pass_param }})\n$({{ pass_param }})"
+  when: oracle_ver == "11.2.0.4.0"
+  tags: db-create
 
-  - name: Create database using dbca
-    block:
-          - name: Run dbca
-            shell: |
-              set -o pipefail
-              export PATH={{ oracle_home }}/bin:${PATH}
-              {{ pwd_gen_cmd }} | dbca -silent -createDatabase -redoLogFileSize {{ redologsize }} -responseFile {{ swlib_unzip_path }}/dbca_{{ db_name }}.rsp
-            register: dbca_output
-            failed_when: "'Completing Database Creation' not in dbca_output.stdout or '100% complete' not in dbca_output.stdout"
-            when: pmon_proc.stdout == "0" and check_oratab.stdout == "0"
-            become: yes
-            become_user: "{{ oracle_user }}"
-            tags: db-create
-    rescue:
-      - name: Retrieve dbca logs
-        slurp:
-          src: "{{ oracle_base }}/cfgtoollogs/dbca/{{ db_name }}/{{ db_name }}.log"
-        register: dbcalog
-      - debug: msg="{{ dbcalog['content'] | b64decode}}"
+- name: Create database using dbca
+  block:
+        - name: Run dbca
+          shell: |
+            set -o pipefail
+            export PATH={{ oracle_home }}/bin:${PATH}
+            {{ pwd_gen_cmd }} | dbca -silent -createDatabase -redoLogFileSize {{ redologsize }} -responseFile {{ swlib_unzip_path }}/dbca_{{ db_name }}.rsp
+          register: dbca_output
+          failed_when: "'Completing Database Creation' not in dbca_output.stdout or '100% complete' not in dbca_output.stdout"
+          when: pmon_proc.stdout == "0" and check_oratab.stdout == "0"
+          become: yes
+          become_user: "{{ oracle_user }}"
+          tags: db-create
+  rescue:
+    - name: Retrieve dbca logs
+      slurp:
+        src: "{{ oracle_base }}/cfgtoollogs/dbca/{{ db_name }}/{{ db_name }}.log"
+      register: dbcalog
+    - debug: msg="{{ dbcalog['content'] | b64decode }}"
 
-  - name: DBCA output
-    debug:
-      msg:
-        - "{{ dbca_output.cmd }}"
-        - "{{ dbca_output.stdout_lines }}"
-      #verbosity: 1
-    when: pmon_proc.stdout == "0" and check_oratab.stdout == "0"
-    tags: db-create
+- name: DBCA output
+  debug:
+    msg:
+      - "{{ dbca_output.cmd }}"
+      - "{{ dbca_output.stdout_lines }}"
+    #verbosity: 1
+  when: pmon_proc.stdout == "0" and check_oratab.stdout == "0"
+  tags: db-create

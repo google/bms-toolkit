@@ -13,7 +13,7 @@
 # limitations under the License.
 
 ---
-  script_list:
-   - asm_disks.sh
-   - crs_check.sh
-   - cluvfy_checks.sh
+script_list:
+  - asm_disks.sh
+  - crs_check.sh
+  - cluvfy_checks.sh

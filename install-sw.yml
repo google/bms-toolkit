@@ -15,8 +15,8 @@
 ---
 - hosts: all
   remote_user: "{{ grid_user }}"
+  become: yes
   become_user: root
-  become: true
   pre_tasks:
     - name: Verify that Ansible on control node meets the version requirements
       assert:
@@ -34,8 +34,8 @@
 
 - hosts: all
   remote_user: "{{ oracle_user }}"
+  become: yes
   become_user: root
-  become: true
   pre_tasks:
     - name: Verify that Ansible on control node meets the version requirements
       assert:
@@ -70,8 +70,8 @@
 
 - hosts: dbasm[0]
   remote_user: "{{ grid_user }}"
+  become: yes
   become_user: root
-  become: true
   tasks:
     - name: rac-gi-install | defaults from common
       include_vars:
@@ -109,8 +109,8 @@
 
 - hosts: dbasm[0]
   remote_user: "{{ oracle_user }}"
+  become: yes
   become_user: root
-  become: true
   tasks:
     - name: rac-db-install | defaults from common
       include_vars:

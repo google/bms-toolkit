@@ -14,7 +14,8 @@
 
 ---
 - hosts: all
-  become: true
+  become: yes
+  become_user: root
   pre_tasks:
     - name: Verify that Ansible on control node meets the version requirements
       assert:

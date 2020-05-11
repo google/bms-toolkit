@@ -16,7 +16,8 @@
 # tasks file for roles/nfs-mount
 
 - name: nfs_backups | Install NFS mount utility
-  become: true
+  become: yes
+  become_user: root
   yum:
     name: nfs-utils
     state: present
@@ -24,6 +25,8 @@
   when: ansible_os_family == "RedHat"
 
 - name: nfs_backups | Ensure rpcbind is running as configured.
+  become: yes
+  become_user: root
   service:
     name: rpcbind
     state: started
@@ -39,7 +42,8 @@
     group: backupdba
 
 - name: nfs_backups | Mount NFS share (backup)
-  become: true
+  become: yes
+  become_user: root
   mount:
     fstype: nfs
     name: "{{ backup_dest }}"

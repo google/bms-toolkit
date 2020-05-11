@@ -44,14 +44,14 @@
   tags: gi-setup
 
 - name: gi-install | Unzipping GI software
+  become: yes
+  become_user: "{{ grid_user }}"
   unarchive:
     src: "{{ swlib_path }}/{{ item }}"
     dest: "{{ install_unzip_path }}"
     remote_src: yes
   with_items:
     - "{{ osw.files }}"
-  become: yes
-  become_user: "{{ grid_user }}"
   tags: gi-setup,sw-unzip
 
 - name: gi-install | Find the cvuqdisk RPM
@@ -62,25 +62,25 @@
   tags: gi-setup,cvuqdisk
 
 - name: gi-install | Install the cvuqdisk RPM
+  become: yes
+  become_user: root
   yum:
     name: "{{ r.files | map(attribute='path') | list }}"
     state: present
   register: cvuqdisk_res
   environment:
     CVUQDISK_GRP: "oinstall"
-  become: yes
-  become_user: root
   tags: gi-setup,cvuqdisk
 
 - name: gi-install | Run cluvfy utility
+  become: yes
+  become_user: "{{ grid_user }}"
   command: "{{ cluvfy_command }}"
   when: run_cluvfy|bool
   register: cluvfy_res
   failed_when: cluvfy_res.rc != 0 and oracle_ver != '11.2.0.4.0'  # Exclude 11gR2 due to elfutils & pdksh bug, MOS Doc ID 1962046.1
   ignore_errors: yes
   no_log: True
-  become: yes
-  become_user: "{{ grid_user }}"
   tags: gi-setup,cluvfy
 
 - name: gi-install | cluvfy results
@@ -91,35 +91,35 @@
   tags: gi-setup,cluvfy
 
 - name: gi-install | Create GI response file script
+  become: yes
+  become_user: "{{ grid_user }}"
   template:
     src: grid_install.rsp.sh.j2
     dest: "{{ swlib_unzip_path }}/grid_install.rsp.sh"
-  become: yes
-  become_user: "{{ grid_user }}"
   tags: gi-setup
 
 - name: gi-install | Run GI response file script
-  command: "sh {{ swlib_unzip_path }}/grid_install.rsp.sh"
-  args:
   become: yes
   become_user: "{{ grid_user }}"
+  command: "sh {{ swlib_unzip_path }}/grid_install.rsp.sh"
+  args:
   tags: gi-setup
 
 - name: gi-install | Script cleanup
+  become: yes
+  become_user: "{{ grid_user }}"
   file:
     path: "{{ swlib_unzip_path }}/grid_install.rsp.sh"
     state: absent
-  become: yes
-  become_user: "{{ grid_user }}"
   tags: gi-setup
 
 - name: gi-install | Run installer
+  become: yes
+  become_user: "{{ grid_user }}"
   command: "{{ installer_command }} -silent -responseFile {{ swlib_unzip_path }}/grid_install.rsp"
   register: install_grid_software
   failed_when: "('Successfully Setup Software' not in install_grid_software.stdout) or
                 (install_grid_software.rc not in [0,6])"
-  become: yes
-  become_user: "{{ grid_user }}"
   tags: gi-setup
 
 - name: gi-install | Installer output
@@ -131,6 +131,8 @@
   tags: gi-setup
 
 - name: gi-install | Update OPatch
+  become: yes
+  become_user: "{{ grid_user }}"
   unarchive:
     src: "{{ swlib_path }}/{{ item.patchfile }}"
     dest: "{{ grid_home }}"
@@ -138,20 +140,20 @@
   with_items:
     - "{{ opatch_patches }}"
   when: item.release == osw.version and item.category == "OPatch" and patching_type is defined
-  become: yes
-  become_user: "{{ grid_user }}"
   tags: gi-setup,opatch
 
 - name: gi-install | Create OCM response file (if neccessary)
+  become: yes
+  become_user: "{{ grid_user }}"
   script: expect_rsp.sh {{ oracle_base }} {{ grid_home }} {{ swlib_unzip_path }}
   with_items:
     - "{{ gi_interim_patches }}"
   when: item.version == osw.version and item.category == "HAS_interim_patch"
-  become: yes
-  become_user: "{{ grid_user }}"
   tags: gi-setup,patch
 
 - name: gi-install | 12.2 bug resolution - MOS (Doc ID 2401455.1)
+  become: yes
+  become_user: root
   copy:
     src: "{{ oracle_root }}/oraInventory/oraInst.loc"
     dest: "{{ grid_home }}/oraInst.loc"
@@ -160,10 +162,10 @@
     group: "{{ oracle_group }}"
     mode: u=rw,g=r,o=
   when: oracle_ver == '12.2.0.1.0'
-  become: yes
-  become_user: root
 
 - name: gi-install | Create patch directories
+  become: yes
+  become_user: "{{ grid_user }}"
   file:
     path: "{{ swlib_unzip_path }}/{{ item.files.0 | replace('.zip','') }}"
     state: directory
@@ -173,11 +175,11 @@
   with_items:
     - "{{ gi_interim_patches }}"
   when: item.version == osw.version and item.category == "HAS_interim_patch"
-  become: yes
-  become_user: "{{ grid_user }}"
   tags: gi-setup,patch
 
 - name: gi-install | Unzip other pre-HAS critical interim patches
+  become: yes
+  become_user: "{{ grid_user }}"
   unarchive:
     src: "{{ swlib_path }}/{{ item.files.0 }}"
     dest: "{{ swlib_unzip_path }}/{{ item.files.0 | replace('.zip','') }}"
@@ -185,11 +187,11 @@
   with_items:
     - "{{ gi_interim_patches }}"
   when: item.version == osw.version and item.category == "HAS_interim_patch"
-  become: yes
-  become_user: "{{ grid_user }}"
   tags: gi-setup,patch
 
 - name: gi-install | Install pre-HAS critical interim patches
+  become: yes
+  become_user: "{{ grid_user }}"
   shell: |
     export PATH={{ grid_home }}/OPatch:${PATH}
     if [ "{{ item.patchutil }}" = "opatch" ]; then
@@ -208,8 +210,6 @@
   register: patch_output
   failed_when: "('OPatch succeeded' not in patch_output.stdout) and
                 ('Successfully applied the patch' not in patch_output.stdout)"
-  become: yes
-  become_user: "{{ grid_user }}"
   tags: gi-setup,patch
 
 - name: gi-install | OPatch ouptut
@@ -223,32 +223,34 @@
   tags: gi-setup,patch
 
 - name: gi-install | OCM response file cleanup
+  become: yes
+  become_user: "{{ grid_user }}"
   file:
     path: "{{ swlib_unzip_path }}/ocm.rsp"
     state: absent
   with_items:
     - "{{ gi_interim_patches }}"
   when: item.version == osw.version and item.category == "HAS_interim_patch"
-  become: yes
-  become_user: "{{ grid_user }}"
   tags: gi-setup,patch
 
 - name: gi-install | Run script orainstRoot.sh
+  become: yes
+  become_user: root
   command: "{{ oracle_root }}/oraInventory/orainstRoot.sh"
   ignore_errors: yes
   when: "'skipped' not in install_grid_software.stdout"
-  become: yes
-  become_user: root
   tags: gi-setup,root-scripts
 
 - name: gi-install | Run script root.sh
-  command: "{{ grid_home }}/root.sh"
-  when: "'skipped' not in install_grid_software.stdout"
   become: yes
   become_user: root
+  command: "{{ grid_home }}/root.sh"
+  when: "'skipped' not in install_grid_software.stdout"
   tags: gi-setup,root-scripts
 
 - name: gi-install | Complete plugin configuration
+  become: yes
+  become_user: "{{ grid_user }}"
   command: "{{ installer_command }} -executeConfigTools -silent -responseFile {{ swlib_unzip_path }}/grid_install.rsp"
   register: install_grid_plugins
   when: oracle_ver not in ['12.1.0.2.0','11.2.0.4.0']
@@ -256,6 +258,4 @@
                     (install_grid_plugins.rc not in [0,6]) )
                 and
                 ('The Installer has detected that there are no config tools to execute for the specified Oracle home' not in install_grid_plugins.stdout)"
-  become: yes
-  become_user: "{{ grid_user }}"
   tags: gi-setup

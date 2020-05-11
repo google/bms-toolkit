@@ -15,8 +15,8 @@
 ---
 - hosts: all
   remote_user: "{{ oracle_user }}"
+  become: yes
   become_user: root
-  become: true
   pre_tasks:
     - name: Verify that Ansible on control node meets the version requirements
       assert:
@@ -64,6 +64,7 @@
 
 - hosts: all
   become: yes
+  become_user: root
   tasks:
     - name: Add instance to oratab | Get variables
       include_vars:

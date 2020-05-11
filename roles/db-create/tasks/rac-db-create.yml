@@ -87,6 +87,8 @@
   tags: rac-db-create
 
 - name: rac-db-create | Adjust directories
+  become: yes
+  become_user: root
   file:
     path: "{{ item.1 }}"
     state: directory
@@ -95,35 +97,35 @@
     group: "{{ oracle_group }}"
   delegate_to: "{{ item.0 }}"
   loop: "{{ query('inventory_hostnames', 'dbasm')|product(change_dirs)|list }}"
-  become: true
-  become_user: root
   tags: rac-db-create
 
 - name: rac-db-create | Adjust local DBCA directory
+  become: yes
+  become_user: root
   file:
     path: "{{ oracle_base }}/cfgtoollogs/dbca"
     state: directory
     mode: g+w
     owner: "{{ oracle_user }}"
     group: "{{ oracle_group }}"
-  become: true
-  become_user: root
   tags: rac-db-create
 
 - name: rac-db-create | Create DBCA response file
+  become: yes
+  become_user: "{{ oracle_user }}"
   template:
     src: rac-dbca.rsp{% if oracle_ver == '11.2.0.4.0' %}.{{ oracle_ver }}{% endif %}.sh.j2
     dest: "{{ swlib_unzip_path }}/dbca_{{ db_name }}.rsp.sh"
     owner: "{{ oracle_user }}"
     group: "{{ oracle_group }}"
   when: pmon_proc.stdout == "0" and check_oratab.stdout == "0"
-  become: yes
-  become_user: "{{ oracle_user }}"
   tags: rac-db-create
 
 - name: rac-db-create | Run DBCA response file script
   block:
     - name: rac-db-create | Run DBCA
+      become: yes
+      become_user: "{{ oracle_user }}"
       shell: |
           set -o pipefail
           export PATH={{ oracle_home }}/bin:${PATH}:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin
@@ -131,8 +133,6 @@
       register: dbca_output
       failed_when: "'Completing Database Creation' not in dbca_output.stdout or '100% complete' not in dbca_output.stdout"
       when: pmon_proc.stdout == "0" and check_oratab.stdout == "0"
-      become: yes
-      become_user: "{{ oracle_user }}"
       tags: rac-db-create
   rescue:
     - name: rac-db-create | Retrieve DBCA logs

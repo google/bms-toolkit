@@ -20,16 +20,18 @@
     state: enabled
 
 - name: Test whether port is free
-  shell: "set -o pipefail; netstat -lnpt | ( grep {{ listener_port }} || true ) | wc -l"
   become: yes
+  become_user: root
+  shell: "set -o pipefail; netstat -lnpt | ( grep {{ listener_port }} || true ) | wc -l"
   changed_when: false
   when: create_listener
   register: lsnr_port_check
   tags: lsnr-create
 
 - name: Check if listener has already been created
-  shell: "set -o pipefail; ps -ef | ( grep [t]ns ||true ) | ( grep -w {{ listener_name }} || true ) | wc -l"
   become: yes
+  become_user: root
+  shell: "set -o pipefail; ps -ef | ( grep [t]ns ||true ) | ( grep -w {{ listener_name }} || true ) | wc -l"
   changed_when: false
   when: create_listener
   register: lsnr_name_check
@@ -46,6 +48,8 @@
   tags: lsnr-create
 
 - name: Create listener
+  become: yes
+  become_user: "{{ grid_user }}"
   shell: |
     export PATH={{ grid_home }}/bin:${PATH}
     srvctl add listener -l {{ listener_name }} -p {{ listener_port }} -o {{ grid_home }}
@@ -54,8 +58,6 @@
     srvctl status listener -l {{ listener_name }}
   register: lsnr_output
   when: create_listener and lsnr_port_check.stdout == "0" and lsnr_name_check.stdout == "0"
-  become: yes
-  become_user: "{{ grid_user }}"
   tags: lsnr-create
 
 - name: Listener creation output

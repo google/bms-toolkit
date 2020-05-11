@@ -14,8 +14,8 @@
 
 ---
 - hosts: all
-   remote_user: vagrant
-   become: yes
+  remote_user: vagrant
+  become: yes
   become_user: root
   pre_tasks:
     - name: Verify that Ansible on control node meets the version requirements

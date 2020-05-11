@@ -16,6 +16,7 @@
 - name: OPatch Restart patch
   hosts: all
   remote_user: "{{ oracle_user }}"
+  become: yes
   become_user: root
   pre_tasks:
     - name: Verify that Ansible on control node meets the version requirements

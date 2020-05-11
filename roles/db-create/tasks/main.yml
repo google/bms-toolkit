@@ -49,30 +49,30 @@
   tags: db-create
 
 - name: Create DBCA response file script
+  become: yes
+  become_user: "{{ oracle_user }}"
   template:
     src: dbca.rsp.sh.j2
     dest: "{{ swlib_unzip_path }}/dbca_{{ db_name }}.rsp.sh"
     owner: "{{ oracle_user }}"
     group: "{{ oracle_group }}"
   when: pmon_proc.stdout == "0" and check_oratab.stdout == "0"
-  become: yes
-  become_user: "{{ oracle_user }}"
   tags: db-create
 
 - name: Run DBCA response file script
+  become: yes
+  become_user: "{{ oracle_user }}"
   command: "sh {{ swlib_unzip_path }}/dbca_{{ db_name }}.rsp.sh"
   register: rspout
   when: pmon_proc.stdout == "0" and check_oratab.stdout == "0"
-  become: yes
-  become_user: "{{ oracle_user }}"
   tags: db-create
 
 - name: Script cleanup
+  become: yes
+  become_user: "{{ oracle_user }}"
   file:
     path: "{{ swlib_unzip_path }}/dbca_{{ db_name }}.rsp.sh"
     state: absent
-  become: yes
-  become_user: "{{ oracle_user }}"
   tags: db-create
 
 - name: DBCA response file differences to template
@@ -104,6 +104,8 @@
 - name: Create database using DBCA
   block:
         - name: Run DBCA
+          become: yes
+          become_user: "{{ oracle_user }}"
           shell: |
             set -o pipefail
             export PATH={{ oracle_home }}/bin:${PATH}
@@ -111,8 +113,6 @@
           register: dbca_output
           failed_when: "'Completing Database Creation' not in dbca_output.stdout or '100% complete' not in dbca_output.stdout"
           when: pmon_proc.stdout == "0" and check_oratab.stdout == "0"
-          become: yes
-          become_user: "{{ oracle_user }}"
           tags: db-create
   rescue:
     - name: Retrieve DBCA logs

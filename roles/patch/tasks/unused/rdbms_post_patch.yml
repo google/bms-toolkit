@@ -19,6 +19,8 @@
       - "Running post patch operations for SID: {{ oracle_sid }}"
 
 - name: rdbms_post_patch | Start database in upgrade mode
+  become: yes
+  become_user: "{{ oracle_user }}"
   shell: |
     set -o pipefail
     sqlplus -s / as sysdba <<< "startup upgrade"
@@ -27,8 +29,6 @@
     ORACLE_SID: "{{ oracle_sid }}"
     PATH: "{{ oracle_home }}/bin:$PATH"
   register: upgrade_db
-  become: yes
-  become_user: "{{ oracle_user }}"
   when:
     - patch.upgrade
   tags: patch_rdbms,upgrade_db
@@ -42,24 +42,24 @@
   tags: patch_rdbms,upgrade_db
 
 - name: rdbms_post_patch | Start home
+  become: yes
+  become_user: "{{ oracle_user }}"
   shell: |
     {{ oracle_home }}/bin/srvctl start home -o {{ oracle_home }} -s {{ swlib_unzip_path }}/db_state.out
   environment:
     ORACLE_HOME: "{{ oracle_home }}"
   register: start_home
   failed_when: start_home.rc not in [0,2]
-  become: yes
-  become_user: "{{ oracle_user }}"
   tags: patch_rdbms,start_home
 
 - name: rdbms_post_patch | Start database
+  become: yes
+  become_user: "{{ oracle_user }}"
   command: "{{ oracle_home }}/bin/srvctl start database -db {{ db_name }}"
   environment:
     ORACLE_HOME: "{{ oracle_home }}"
   register: start_db
   failed_when: start_db.rc not in [0,2]
-  become: yes
-  become_user: "{{ oracle_user }}"
   when:
     - not patch.upgrade
   tags: patch_rdbms,start_db
@@ -70,6 +70,8 @@
       - "{{ start_db }}"
 
 - name: rdbms_post_patch | Open PDBs in upgrade mode
+  become: yes
+  become_user: "{{ oracle_user }}"
   shell: |
     set -o pipefail
     sqlplus -s / as sysdba <<< "alter pluggable database all open upgrade;"
@@ -78,8 +80,6 @@
     ORACLE_SID: "{{ oracle_sid }}"
     PATH: "{{ oracle_home }}/bin:$PATH"
   register: upgrade_pdb
-  become: yes
-  become_user: "{{ oracle_user }}"
   when:
     - patch.upgrade
     - oracle_ver != '11.2.0.4.0'
@@ -94,19 +94,21 @@
     - oracle_ver != '11.2.0.4.0'
 
 #- name: rdbms_post_patch | Start database
+#  become: yes
+#  become_user: "{{ oracle_user }}"
 #  #command: "{{ oracle_home }}/bin/srvctl start database -db {{ item.1 }}"
 #  command: "{{ oracle_home }}/bin/srvctl start database -db {{ db_name }}"
 #  environment:
 #    ORACLE_HOME: "{{ oracle_home }}"
 #  register: start_db
 #  failed_when: start_db.rc not in [0,2]
-#  become: yes
-#  become_user: "{{ oracle_user }}"
 #  when: 
 #    - not patch.upgrade
 #  tags: patch_rdbms,start_db
 
 - name: rdbms_post_patch | Open PDBs
+  become: yes
+  become_user: "{{ oracle_user }}"
   shell: |
     set -o pipefail
     sqlplus -s / as sysdba <<< "alter pluggable database all open;"
@@ -114,11 +116,11 @@
     ORACLE_HOME: "{{ oracle_home }}"
     ORACLE_SID: "{{ oracle_sid }}"
     PATH: "{{ oracle_home }}/bin:$PATH"
-  become: yes
-  become_user: "{{ oracle_user }}"
   tags: patch_rdbms,start_pdb
 
 - name: rdbms_post_patch | Run datapatch
+  become: yes
+  become_user: "{{ oracle_user }}"
   shell: |
     {{ oracle_home }}/OPatch/datapatch -verbose
   environment:
@@ -127,8 +129,6 @@
     PATH: "{{ oracle_home }}/bin:$PATH"
   register: datapatch
   failed_when: "datapatch.rc != 0"
-  become: yes
-  become_user: "{{ oracle_user }}"
   tags: patch_rdbms,datapatch
 
 - name: rdbms_post_patch | datapatch output
@@ -137,6 +137,8 @@
       - "{{ datapatch }}"
 
 - name: rdbms_post_patch  | Recompile invalid objects
+  become: yes
+  become_user: "{{ oracle_user }}"
   shell: |
     set -o pipefail
     sqlplus -s / as sysdba <<< "@?/rdbms/admin/utlrp;"
@@ -144,11 +146,11 @@
     ORACLE_HOME: "{{ oracle_home }}"
     ORACLE_SID: "{{ oracle_sid }}"
     PATH: "{{ oracle_home }}/bin:$PATH"
-  become: yes
-  become_user: "{{ oracle_user }}"
   tags: patch_rdbms,utlrp
 
 - name: rdbms_post_patch | Patch registry
+  become: yes
+  become_user: "{{ oracle_user }}"
   shell: |
     set -o pipefail
     sqlplus -s / as sysdba << EOF
@@ -163,8 +165,6 @@
     ORACLE_SID: "{{ oracle_sid }}"
     PATH: "{{ oracle_home }}/bin:$PATH"
   register: patch_registry
-  become: yes
-  become_user: "{{ oracle_user }}"
   tags: patch_rdbms
 
 - name: rdbms_post_patch | Patch registry

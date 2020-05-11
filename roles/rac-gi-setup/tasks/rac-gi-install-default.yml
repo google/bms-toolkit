@@ -30,18 +30,21 @@
   tags: rac-gi
 
 - name: rac-gi-install | Create GI directories
+  become: yes
+  become_user: root
   file:
     path: "{{ install_unzip_path }}"
     state: directory
     owner: "{{ grid_user }}"
     group: "{{ oracle_group }}"
     mode: ug=rwx,o=
-  become: yes
   loop: "{{ lookup('inventory_hostnames', 'dbasm', wantlist=True) }}"
   delegate_to: "{{ item }}"
   tags: rac-gi,gi-dirs
 
 - name: rac-gi-install | Unzipping HA interim patches
+  become: yes
+  become_user: "{{ grid_user }}"
   unarchive:
     src: "{{ swlib_path }}/{{ item.files | join() }}"
     dest: "{{ swlib_path }}"
@@ -49,8 +52,6 @@
   with_items:
     - "{{ gi_interim_patches }}"
   when: item.version == oracle_ver and item.category == "HAS_interim_patch"
-  become: yes
-  become_user: "{{ grid_user }}"
   tags: rac-gi,sw-unzip
 
 - name: rac-gi-install | Set variable for HA interim patch
@@ -62,25 +63,25 @@
   tags: rac-gi,has-patch
 
 - name: rac-gi-install | Unzipping software
+  become: yes
+  become_user: "{{ grid_user }}"
   unarchive:
     src: "{{ swlib_path }}/{{ item }}"
     dest: "{{ install_unzip_path }}"
     remote_src: yes
   with_items:
     - "{{ osw_files }}"
-  become: yes
-  become_user: "{{ grid_user }}"
   tags: rac-gi,sw-unzip
 
 - name: rac-gi-install | Get symlinks for devices
+  become: yes
+  become_user: root
   #if mapper in disk name - info taken from whole disk,
   #otherwise from first partition
   shell: |
     udevadm info --query=all --name={% if item is search ('mapper') %}{{ item }}{% else %}{{ item }}1{% endif %} | grep "^S: " | grep {{ path_udev }} | awk '{ print "/dev/"$2 }'
   loop: "{{ asm_disks | json_query('[?diskgroup==`' + hostvars[groups['dbasm'].0]['dg_name'] + '`].disks[*].blk_device') | list | join() }}"
   when: asm_disk_management == "udev"
-  become: True
-  become_user: root
   register: symlink
 
 - name: rac-gi-install | Generate random password
@@ -108,20 +109,20 @@
   tags: rac-gi
 
 - name: rac-gi-install | Create GI response file
+  become: yes
+  become_user: "{{ grid_user }}"
   template:
     src: gridsetup.rsp.{{ oracle_ver }}.j2
     dest: "{{ install_unzip_path }}/gridsetup.rsp"
-  become: yes
-  become_user: "{{ grid_user }}"
   tags: rac-gi,rac-gi-response
 
 - name: rac-gi-install | Run installer
+  become: yes
+  become_user: "{{ grid_user }}"
   command: "{{ installer_command }} -silent -responseFile {{ install_unzip_path }}/gridsetup.rsp {{ has_patch | default('') }} -ignorePrereqFailure"
   register: install_rac_gi
   failed_when: "('Successfully Setup Software' not in install_rac_gi.stdout) or
                 (install_rac_gi.rc not in [0,6,250])"
-  become: yes
-  become_user: "{{ grid_user }}"
   tags: rac-gi,rac-gi-install
 
 - name: rac-gi-install | Installer output
@@ -132,30 +133,30 @@
   tags: rac-gi,rac-gi-install
 
 - name: rac-gi-install | Run script orainstRoot.sh
+  become: yes
+  become_user: root
   command: "{{ oracle_root }}/oraInventory/orainstRoot.sh"
   ignore_errors: yes
   loop: "{{ lookup('inventory_hostnames', 'dbasm', wantlist=True) }}"
   delegate_to: "{{ item }}"
   when: "'skipped' not in install_rac_gi.stdout"
-  become: yes
-  become_user: root
   tags: rac-gi,root-scripts
 
 - name: rac-gi-install | Run script root.sh
+  become: yes
+  become_user: root
   command: "{{ grid_home }}/root.sh"
   loop: "{{ lookup('inventory_hostnames', 'dbasm', wantlist=True) }}"
   delegate_to: "{{ item }}"
   when: "'skipped' not in install_rac_gi.stdout"
-  become: yes
-  become_user: root
   tags: rac-gi,root-scripts
 
 - name: rac-gi-install | Complete plugin configuration
+  become: yes
+  become_user: "{{ grid_user }}"
   command: "{{ installer_command }} -executeConfigTools -silent -responseFile {{ install_unzip_path }}/gridsetup.rsp"
   register: gi_plugins
   ignore_errors: yes
-  become: yes
-  become_user: "{{ grid_user }}"
   tags: rac-gi
 
 - include_tasks: rac-asm-create.yml

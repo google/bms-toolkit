@@ -14,35 +14,37 @@
 
 ---
 - name: Create .ssh dir if already present
+  become: yes
+  become_user: "{{ ssh_user }}"
   file:
     path: /home/{{ ssh_user }}/.ssh
     state: directory
     mode: u=wrx,go=
     owner: "{{ ssh_user }}"
     group: "{{ user_group }}"
-  become: true
-  become_user: "{{ ssh_user }}"
   tags: ssh-key
 
 - name: Generate ssh key on first node
+  become: yes
+  become_user: "{{ ssh_user }}"
   openssh_keypair:
     path: /home/{{ ssh_user }}/.ssh/id_rsa
     mode: u=rw,go=
     owner: "{{ ssh_user }}"
     group: "{{ user_group }}"
-  become: true
-  become_user: "{{ ssh_user }}"
   register: ssh_key
   tags: ssh-key
 
 - name: Get key fingerprint
-  command: ssh-keyscan -tecdsa {{ inventory_hostname }},{{ inventory_hostname }}.{{ ansible_domain }}
-  become: true
+  become: yes
   become_user: "{{ ssh_user }}"
+  command: ssh-keyscan -tecdsa {{ inventory_hostname }},{{ inventory_hostname }}.{{ ansible_domain }}
   register: finger_key
   tags: ssh-key
 
 - name: Add key fingerprint to known_hosts file
+  become: yes
+  become_user: "{{ ssh_user }}"
   delegate_to: "{{ item }}"
   lineinfile:
     name: ~/.ssh/known_hosts
@@ -50,16 +52,15 @@
     line: "{{ finger_key.stdout }}"
     owner: "{{ ssh_user }}"
     group: "{{ user_group }}"
-  become: true
-  become_user: "{{ ssh_user }}"
   loop: "{{ ssh_nodes }}"
   tags: ssh-key
 
 - name: Key propagation to all nodes
+  become: yes
+  become_user: root
   delegate_to: "{{ item }}"
   authorized_key:
     key: "{{ ssh_key.public_key }}"
     user: "{{ ssh_user }}"
-  become: true
   loop: "{{ ssh_nodes }}"
   tags: ssh-key

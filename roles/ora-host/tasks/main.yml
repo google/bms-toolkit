@@ -142,12 +142,13 @@
   tags: os-dirs
 
 - name: tmp file configuration
+  become: yes
+  become_user: root
   blockinfile:
     block: "{{ item }}"
     dest: "/usr/lib/tmpfiles.d/tmp.conf"
     marker: "# {mark} Oracle Temp Settings {{ item }}:"
     backup: no
-  become: yes
   with_items:
     - x /var/tmp/.oracle
     - x /tmp/.oracle
@@ -161,24 +162,24 @@
     line: 'RemoveIPC=no'
 
 - name: Append database variables to bash_profile
+  become: yes
+  become_user: "{{ oracle_user }}"
   blockinfile:
     block: "{{ lookup('template', 'bash_profile_rdbms.j2') }}"
     dest: "/home/{{ oracle_user }}/.bash_profile"
     marker: "# {mark} Oracle RDBMS Settings:"
     backup: yes
-  become: yes
-  become_user: "{{ oracle_user }}"
   tags: os-users
 
 - name: Append GI variables to bash_profile
+  become: yes
+  become_user: "{{ grid_user }}"
   blockinfile:
     block: "{{ lookup('template', 'bash_profile_gi.j2') }}"
     dest: "/home/{{ grid_user }}/.bash_profile"
     marker: "# {mark} Oracle Grid Infrastructure Settings:"
     backup: yes
   when: role_separaion|bool
-  become: yes
-  become_user: "{{ grid_user }}"
   tags: os-users
 
 - name: (asmlib) | ASM device managment via asmlib or udev?
@@ -215,12 +216,13 @@
   tags: asm-disks
 
 - name: (udev) Add ASM disk rules on virtualbox
+  become: yes
+  become_user: root
   blockinfile:
     block: "KERNEL==\"sd?1\", SUBSYSTEM==\"block\", PROGRAM==\"/usr/lib/udev/scsi_id -g -u -d /dev/$parent\", RESULT==\"1{{ hostvars[inventory_hostname]['ansible_device_links']['ids']['%s' | format( item.1.blk_device | regex_replace('/dev/') )][0] | regex_replace('ata-','ATA_') }}\", SYMLINK+=\"{{ path_udev }}/{{ item.1.name }}\", OWNER=\"{{ grid_user }}\", GROUP=\"{{ grid_group }}\", MODE=\"0660\""
     dest: "/etc/udev/rules.d/99-oracle-asmdevices.rules"
     marker: "# {mark} ASM disk udev rules for {{ item.1.name }}:"
     create: yes
-  become: yes
   register: udevRules
   when:
     - ansible_virtualization_type == "virtualbox"
@@ -232,12 +234,13 @@
   tags: asm-disks
 
 - name: (udev) Add ASM disk rules on baremetal (not mpath)
+  become: yes
+  become_user: root
   blockinfile:
     block: "KERNEL==\"sd?1\", SUBSYSTEM==\"block\", PROGRAM==\"/usr/lib/udev/scsi_id -g -u -d /dev/$parent\", RESULT==\"{{ hostvars[inventory_hostname]['ansible_device_links']['ids']['%s' | format( item.1.blk_device | regex_replace('/dev/') )][0] | regex_replace('scsi-') }}\", SYMLINK+=\"{{ path_udev }}/{{ item.1.name }}\", OWNER=\"{{ grid_user }}\", GROUP=\"{{ grid_group }}\", MODE=\"0660\""
     dest: "/etc/udev/rules.d/99-oracle-asmdevices.rules"
     marker: "# {mark} ASM disk udev rules for {{ item.1.name }}:"
     create: yes
-  become: yes
   register: udevRules
   when:
     - ansible_virtualization_type == "kvm"
@@ -250,8 +253,9 @@
   tags: asm-disks
 
 - name: (udev) Add ASM mpath disk rules on BM (udevadm info)
-  shell: udevadm info --query=all --name={{ item.1.blk_device }} | grep DM_UUID | awk -F'=' '{print $2}'
   become: yes
+  become_user: root
+  shell: udevadm info --query=all --name={{ item.1.blk_device }} | grep DM_UUID | awk -F'=' '{print $2}'
   register: udevadm_result
   when:
     - "'mapper' in item.1.blk_device"
@@ -277,12 +281,13 @@
   tags: udev_mpath
 
 - name: (udev) Add ASM mpath disk rules on BM (udev rules file)
+  become: yes
+  become_user: root
   blockinfile:
     block: "ACTION==\"add|change\", ENV{DM_UUID}==\"{{ item }}\", SYMLINK+=\"{{ path_udev }}/{{ uuid_result[item] | json_query ('[*].name') | list | join(', ') }}\", GROUP=\"{{ grid_group }}\", OWNER=\"{{ grid_user }}\", MODE=\"0660\""
     path: "/etc/udev/rules.d/99-oracle-asmdevices.rules"
     marker: "# {mark} ASM disk udev rules for {{ uuid_result[item] | json_query ('[*].blk_device') | list | join(', ') }}"
     create: yes
-  become: yes
   register: udevRules
   when:
     - uuid_result is defined
@@ -291,12 +296,13 @@
   tags: udev_mpath
 
 - name: (udev) Add ASM disk rules on GCE
+  become: yes
+  become_user: root
   blockinfile:
     block: "KERNEL==\"sd?1\", SUBSYSTEM==\"block\", PROGRAM==\"/usr/lib/udev/scsi_id -g -u -d /dev/$parent\", RESULT==\"{{ hostvars[inventory_hostname]['ansible_device_links']['ids']['%s' | format( item.1.blk_device | regex_replace('/dev/') )][1] | regex_replace('scsi-') }}\", SYMLINK+=\"{{ path_udev }}/{{ item.1.name }}\", OWNER=\"{{ grid_user }}\", GROUP=\"{{ grid_group }}\", MODE=\"0660\""
     dest: "/etc/udev/rules.d/99-oracle-asmdevices.rules"
     marker: "# {mark} ASM disk udev rules for {{ item.1.name }}:"
     create: yes
-  become: yes
   register: udevRules
   when:
     - ansible_system_vendor == "Google"
@@ -310,8 +316,9 @@
   tags: asm-disks
 
 - name: (udev) reload rules
-  shell: ( /sbin/udevadm control --reload-rules && /sbin/udevadm trigger )
   become: yes
+  become_user: root
+  shell: ( /sbin/udevadm control --reload-rules && /sbin/udevadm trigger )
   tags: asm-disks
 
 - name: (asmlib) Install Oracle ASM libraries
@@ -321,6 +328,8 @@
   tags: oracleasmlib
 
 - name: (asmlib) Configure oracleasm
+  become: yes
+  become_user: root
   shell: |
     /usr/sbin/oracleasm configure -e -u {{ grid_user }} -g {{ grid_group }} -b -s y
     /usr/sbin/oracleasm init
@@ -329,11 +338,11 @@
     cat /etc/sysconfig/oracleasm
   register: asmconfig
   when: asm_disk_management == "asmlib"
-  become: yes
-  become_user: root
   tags: asm-disks
 
 - name: (asmlib) Create Oracle ASM raw disks
+  become: yes
+  become_user: root
   command: "/usr/sbin/oracleasm createdisk -v {{ item.1.name }} {{ item.1.blk_device }}1"
   with_subelements:
     - "{{ asm_disks }}"
@@ -342,11 +351,11 @@
   register: asmraw
   failed_when: "( ( asmraw.rc != 0 ) and ( 'ERROR' in asmraw.stdout ) ) or ( ( asmraw.rc != 0 ) and ( 'is already labeled for ASM disk' not in asmraw.stdout ) )"
   changed_when: "'Writing disk header: done' in asmraw.stdout"
-  become: yes
-  become_user: root
   tags: asm-disks
 
 - name: (asmlib) Create Oracle ASM LV disks
+  become: yes
+  become_user: root
   command: "/usr/sbin/oracleasm createdisk -v {{ item.1.name }} {{ item.1.blk_device }}{% if item.1.name is not search('mapper') %}1{% endif %}"
   with_subelements:
     - "{{ asm_disks }}"
@@ -355,19 +364,17 @@
   register: asmlv
   failed_when: "( ( asmlv.rc != 0 ) and ( 'ERROR' in asmlv.stdout ) ) or ( ( asmlv.rc != 0 ) and ( 'is already labeled for ASM disk' not in asmlv.stdout ) )"
   changed_when: "'Writing disk header: done' in asmlv.stdout"
-  become: yes
-  become_user: root
   tags: asm-disks
 
 - name: (asmlib) List ASM disks
+  become: yes
+  become_user: root
   shell: |
     /usr/sbin/oracleasm-discover 'ORCL:*'
     /usr/sbin/oracleasm listdisks
     ls -l /dev/oracleasm/disks
   register: listdisks
   when: asm_disk_management == "asmlib"
-  become: yes
-  become_user: root
   tags: asm-disks
 
 - name: (asmlib) Restart oracleasm

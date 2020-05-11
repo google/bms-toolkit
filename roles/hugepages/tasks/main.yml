@@ -108,6 +108,7 @@
 - name: Check transparent hugepage
   shell: ( cat /sys/kernel/mm/transparent_hugepage/enabled ) || true
   become: yes
+  become_user: root
   register: checkTPH
   ignore_errors: yes
   changed_when: False

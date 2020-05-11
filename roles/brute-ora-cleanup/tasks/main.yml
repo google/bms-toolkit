@@ -51,6 +51,8 @@
     seconds: 10
 
 - name: Remove directories and files
+  become: yes
+  become_user: root
   file:
     path: "{{ item }}"
     state: absent
@@ -84,8 +86,6 @@
     - /var/log/oracleasm
     - /var/log/oracleohasd
   register: remove_files
-  become: yes
-  become_user: root
 
 - name: Find /tmp/CVU directories to remove
   find:
@@ -96,31 +96,31 @@
   register: tmp_dirs
 
 - name: Remove any found /tmp/CVU dirs
+  become: yes
+  become_user: root
   file:
     path: "{{ item.path }}"
     state: absent
   with_items: "{{ tmp_dirs.files }}"
-  become: yes
-  become_user: root
 
 - name: (asmlib) Delete asmlib managed disks
+  become: yes
+  become_user: root
   command: "/usr/sbin/oracleasm deletedisk {{ item.1.name }}"
   with_subelements:
     - "{{ asm_disks }}"
     - disks
   register: delete_asm_disks
-  become: yes
-  become_user: root
   ignore_errors: true
 
 - name: (asmlib) remove oracleasm packages
+  become: yes
+  become_user: root
   yum:
     name: '*oracleasm*'
     state: absent
     lock_timeout: 180
   register: remove_oracleasm
-  become: yes
-  become_user: root
 
 - name: Unmount Oracle user data devices (including fstab)
   mount:
@@ -141,11 +141,11 @@
     - "{{ oracle_user_data_mounts }}"
 
 - name: Zero-out header in Oracle user data disks
+  become: yes
+  become_user: root
   command: "dd if=/dev/zero of={{ item.blk_device }}1 bs=1M count=1"
   with_items:
     - "{{ oracle_user_data_mounts }}"
-  become: yes
-  become_user: root
 
 - name: Delete partition Oracle user data devices
   parted:
@@ -156,29 +156,29 @@
     - "{{ oracle_user_data_mounts }}"
 
 - name: Zero-out header in ASM disks partitions
+  become: yes
+  become_user: root
   command: "dd if=/dev/zero of={{ item.1.blk_device }}1 bs=1M count=1"
   with_subelements:
     - "{{ asm_disks }}"
     - disks
   register: zero_disks
-  become: yes
-  become_user: root
 
 - name: Zero-out header in ASM disks
+  become: yes
+  become_user: root
   command: "dd if=/dev/zero of={{ item.1.blk_device }} bs=1M count=1"
   with_subelements:
     - "{{ asm_disks }}"
     - disks
   register: zero_disks
-  become: yes
-  become_user: root
 
 - name: Refresh kernel partition table view
+  become: yes
+  become_user: root
   command: "blockdev --rereadpt {{ item.blk_device }}"
   with_items:
     - "{{ oracle_user_data_mounts }}"
-  become: yes
-  become_user: root
 
 - name: Delete partition all ASM disks
   #debug: msg="{{ item }}"
@@ -192,18 +192,20 @@
   tags: asm-disks
 
 - name: (udev) remove oracle udev rules
+  become: yes
+  become_user: root
   file:
     path: /etc/udev/rules.d/99-oracle-asmdevices.rules
     state: absent
-  become: yes
-  become_user: root
 
 - name: (udev) Reload rules
-  shell: ( /sbin/udevadm control --reload-rules && /sbin/udevadm trigger )
   become: yes
   become_user: root
+  shell: ( /sbin/udevadm control --reload-rules && /sbin/udevadm trigger )
 
 - name: Remove users
+  become: yes
+  become_user: root
   user:
     name: "{{ item.name }}"
     state: absent
@@ -211,10 +213,10 @@
     force: yes
   with_items: "{{ oracle_users }}"
   register: remove_users
-  become: yes
-  become_user: root
 
 - name: Remove groups
+  become: yes
+  become_user: root
   group:
     name: "{{ item.group }}"
     state: absent
@@ -222,8 +224,6 @@
     - "{{ oracle_groups }}"
     - "{{ asm_groups }}"
   register: remove_groups
-  become: yes
-  become_user: root
 
 - name: Results prior to server reboot
   debug:
@@ -240,15 +240,15 @@
     verbosity: 1
 
 - name: Server reboot
-  reboot:
-  register: server_reboot
   become: yes
   become_user: root
+  reboot:
+  register: server_reboot
   when: "('virtualbox' in ansible_virtualization_type)"
 
 - name: Re-mount swlib
+  become: yes
+  become_user: root
   # Not using the Ansible mount module as this is a temporary mount
   command: "mount -t vboxsf swlib /swlib"
   when: "('virtualbox' in ansible_virtualization_type)"
-  become: yes
-  become_user: root

@@ -64,7 +64,7 @@ fi
  LOG_DIR="./logs"
 LOG_FILE="${LOG_DIR}/log"
 if [[ ! -d "${LOG_DIR}" ]]; then
-  mkdir -p "{LOG_DIR}"
+  mkdir -p "${LOG_DIR}"
   if [ $? -eq 0 ]; then
     printf "\n\033[1;36m%s\033[m\n\n" "Successfully created the ${LOG_DIR} directory to save the ansible logs."
   else

@@ -34,7 +34,7 @@
   file:
     path: "{{ backup_dest }}"
     state: directory
-    mode: '0755'
+    mode: u=rwx,go=rx
     owner: "{{ oracle_user}}"
     group: backupdba
 

@@ -34,7 +34,7 @@
     remote_src: yes
     owner: "{{ grid_user }}"
     group: "{{ oracle_group }}"
-    mode: '0640'
+    mode: u=rw,g=r,o=
   when: oracle_ver == '12.2.0.1.0'
   become: yes
   become_user: root

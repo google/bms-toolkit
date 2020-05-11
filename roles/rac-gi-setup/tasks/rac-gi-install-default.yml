@@ -35,7 +35,7 @@
     state: directory
     owner: "{{ grid_user }}"
     group: "{{ oracle_group }}"
-    mode: '0770'
+    mode: ug=rwx,o=
   become: yes
   loop: "{{ lookup('inventory_hostnames', 'dbasm', wantlist=True) }}"
   delegate_to: "{{ item }}"

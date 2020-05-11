@@ -31,7 +31,7 @@
     dest: /root/gcp-swlib-credentials.json
     owner: root
     group: root
-    mode: '0777'
+    mode: a=rwx
   when: swlib_gcs_service_account_file != ""
 
 - name: gcs | Mount gcs-swlib-storage with service_account

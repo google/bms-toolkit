@@ -17,7 +17,7 @@
   file:
     path: /home/{{ ssh_user }}/.ssh
     state: directory
-    mode: '0700'
+    mode: u=wrx,go=
     owner: "{{ ssh_user }}"
     group: "{{ user_group }}"
   become: true
@@ -27,6 +27,7 @@
 - name: generate ssh key on first node
   openssh_keypair:
     path: /home/{{ ssh_user }}/.ssh/id_rsa
+    mode: u=rw,go=
     owner: "{{ ssh_user }}"
     group: "{{ user_group }}"
   become: true

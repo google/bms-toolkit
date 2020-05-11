@@ -19,7 +19,7 @@
     state: directory
     owner: "{{ oracle_user }}"
     group: "{{ oracle_group }}"
-    mode: 0700
+    mode: u=wrx,go=
   with_items:
     - "{{ scripts_dir }}"
     - "{{ logs_dir }}"
@@ -39,7 +39,7 @@
     dest: "{{ scripts_dir }}/{{ item }}"
     owner: "{{ oracle_user }}"
     group: "{{ oracle_group }}"
-    mode: '0700'
+    mode: u=wrx,go=
   with_items:
     - "rman_full_backup.sh"
     - "rman_arch_backup.sh"

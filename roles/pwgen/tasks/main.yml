@@ -18,7 +18,7 @@
     src: "{{ pwgen_file }}"
     dest: "{{ pwgen_path }}/{{ pwgen_file }}"
     owner: root
-    mode: "0755"
+    mode: u=rwx,go=rx
   become: yes
   become_user: root
 

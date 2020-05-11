@@ -19,7 +19,7 @@
     dest: "{{ scripts_dir }}/{{ item }}"
     owner: "{{ oracle_user }}"
     group: "{{ oracle_group }}"
-    mode: '0700'
+    mode: u=rwx,go=
   with_items:
     - "{{ script_list }}"
   become: yes

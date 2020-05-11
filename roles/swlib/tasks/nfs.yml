@@ -12,8 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# tasks file for roles/nfs-mount
-
 - name: nfs | Install NFS mount utility
   become: yes
   become_user: root
@@ -39,4 +37,3 @@
     opts: "vers=4,_netdev,rsize=8192,wsize=8192,timeo=14,intr,user"
     src: "{{ swlib_mount_src }}"
     state: mounted
-

@@ -15,7 +15,6 @@
 # defaults file for roles/nfs-mount
 
 gcsfuse_version: "0.28.0"
-
 swlib_mount_type: ""  #absent, nfs or gcsfuse
 
 gi_software:

@@ -28,20 +28,20 @@
   register: v_shmmni_sysctl
   changed_when: False
 
-#  - name: get total RAM
-#    shell: set -o pipefail; cat /proc/meminfo | ( grep MemTotal || true ) | awk '{print $2*1024}'
-#    register: v_ram
+#- name: get total RAM
+#  shell: set -o pipefail; cat /proc/meminfo | ( grep MemTotal || true ) | awk '{print $2*1024}'
+#  register: v_ram
 
 - name: get shmmax from memory if not configured in sysctl
   shell: cat /proc/sys/kernel/shmmax || true
   register: v_shmmax
-    when: v_shmmax_sysctl.stdout == ""
+  when: v_shmmax_sysctl.stdout == ""
   changed_when: False
 
 - name: get shmall from memory if not configured in sysctl
   shell: cat /proc/sys/kernel/shmall || true
   register: v_shmall
-    when: v_shmall_sysctl.stdout == ""
+  when: v_shmall_sysctl.stdout == ""
   changed_when: False
 
 - name: get shmmni from memory if not configured in sysctl
@@ -77,7 +77,7 @@
     - { name: 'kernel.shmall', value: "{{ (((ansible_memory_mb.real.total*1024*1024*ram_pct_used|int)/100)/v_shmmni.stdout|int)|round(0,'ceil')|int }}" }
     - { name: 'kernel.shmmni', value: "{{ v_shmmni.stdout|int }}" }
     - { name: 'vm.nr_hugepages', value: "{{ ((ansible_memory_mb.real.total*ram_pct_used|int)//100)//((v_Hugepagesize.stdout|int)//1024) }}" }
-    when: v_shmmax_sysctl.stdout == ""
+  when: v_shmmax_sysctl.stdout == ""
 
 - name: adjust shmmax,shmmni,shmall and hugepages if shmmax is already set but not according recommendations
   sysctl: name={{ item.name }} value={{ item.value }} sysctl_file=/etc/sysctl.conf sysctl_set=yes state=present reload=yes
@@ -86,7 +86,7 @@
     - { name: 'kernel.shmall', value: "{{ (((ansible_memory_mb.real.total*1024*1024*ram_pct_used|int)/100)/v_shmmni.stdout|int)|round(0,'ceil')|int }}" }
     - { name: 'kernel.shmmni', value: "{{ v_shmmni.stdout|int }}" }
     - { name: 'vm.nr_hugepages', value: "{{ ((ansible_memory_mb.real.total*ram_pct_used|int)//100)//((v_Hugepagesize.stdout|int)//1024) }}" }
-    when: v_shmmax_sysctl.stdout != "" and  (v_shmmax_sysctl.stdout|int  <  (ansible_memory_mb.real.total*1024*1024*ram_pct_used|int)//100)
+  when: v_shmmax_sysctl.stdout != "" and (v_shmmax_sysctl.stdout|int < (ansible_memory_mb.real.total*1024*1024*ram_pct_used|int)//100)
 
 - name: adjust shmmni,shmall and hugepages if shmmax is already set according recommendations
   sysctl: name={{ item.name }} value={{ item.value }} sysctl_file=/etc/sysctl.conf sysctl_set=yes state=present reload=yes
@@ -94,7 +94,7 @@
     - { name: 'kernel.shmall', value: "{{ (v_shmmax_sysctl.stdout|int/v_shmmni.stdout|int)|round(0,'ceil')|int }}" }
     - { name: 'kernel.shmmni', value: "{{ v_shmmni.stdout|int }}" }
     - { name: 'vm.nr_hugepages', value: "{{ (((v_shmmax_sysctl.stdout|int)/1024/1024)//((v_Hugepagesize.stdout|int)//1024))|round(0,'ceil')|int }}" }
-    when: v_shmmax_sysctl.stdout != "" and  (v_shmmax_sysctl.stdout|int  >=  (ansible_memory_mb.real.total*1024*1024*ram_pct_used|int)//100) and (v_shmmax_sysctl.stdout|int  <  ansible_memory_mb.real.total*1024*1024)
+  when: v_shmmax_sysctl.stdout != "" and (v_shmmax_sysctl.stdout|int >= (ansible_memory_mb.real.total*1024*1024*ram_pct_used|int)//100) and (v_shmmax_sysctl.stdout|int < ansible_memory_mb.real.total*1024*1024)
 
 - name: adjust shmmax,shmmni,shmall and hugepages if shmmax is already set but bigger then RAM
   sysctl: name={{ item.name }} value={{ item.value }} sysctl_file=/etc/sysctl.conf sysctl_set=yes state=present reload=yes
@@ -103,7 +103,7 @@
     - { name: 'kernel.shmall', value: "{{ (((ansible_memory_mb.real.total*1024*1024*ram_pct_used|int)/100)/v_shmmni.stdout|int)|round(0,'ceil')|int }}" }
     - { name: 'kernel.shmmni', value: "{{ v_shmmni.stdout|int }}" }
     - { name: 'vm.nr_hugepages', value: "{{ ((ansible_memory_mb.real.total*ram_pct_used|int)//100)//((v_Hugepagesize.stdout|int)//1024) }}" }
-    when: v_shmmax_sysctl.stdout != "" and  (v_shmmax_sysctl.stdout|int  >  ansible_memory_mb.real.total*1024*1024)
+  when: v_shmmax_sysctl.stdout != "" and (v_shmmax_sysctl.stdout|int > ansible_memory_mb.real.total*1024*1024)
 
 - name: Check transparent hugepage
   shell: ( cat /sys/kernel/mm/transparent_hugepage/enabled ) || true

@@ -94,7 +94,6 @@
   when: item.release == oracle_rel and patching_type == "gi_patching"
   failed_when: shell_result.stderr != ""
 
-
 - name: gcscopy | Copy GI OPatch update files from GCS to target instance
   shell: |
     set -o pipefail
@@ -131,7 +130,6 @@
     - "{{ opatch_patches }}"
   when: item.release == oracle_ver and patching_type is defined
   failed_when: shell_result.stderr != ""
-
 
 - name: gcscopy | Copy RDBMS software from GCS to target instance
   shell: |
@@ -173,7 +171,6 @@
     - "{{ rdbms_software }}"
   when: item.version == oracle_ver and patching_type is not defined
   failed_when: shell_result.stderr != ""
-
 
 - name: gcscopy | Copy RDBMS OPatch update files from GCS to target instance
   shell: |

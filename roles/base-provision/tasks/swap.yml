@@ -13,7 +13,6 @@
 # limitations under the License.
 
 ---
-
 - name: swap | Create swap partition
   parted:
     device: "{{ swap_blk_device }}"
@@ -38,4 +37,3 @@
     dump: "0"
     passno: "0"
     state: "present"
-

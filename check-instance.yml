@@ -26,6 +26,18 @@
 
   tasks:
 
+    - name: Test connectivity to target instance via ping
+      ping:
+      register: pingrc
+
+    - name: Abort if ping module fails
+      assert:
+        that: "pingrc.ping == 'pong'"
+        fail_msg: >-
+          The instance does not have an usable python distribution
+        success_msg: >-
+          The instance has an usable python installation, continuing
+
     - name: Collect facts from target
       setup:
  
@@ -58,15 +70,3 @@
     - name: Install Python if required
       raw: sudo yum -y install python3
       when: check_python.rc != 0
-
-    - name: Test connectivity to target instance via ping
-      ping:
-      register: pingrc
-
-    - name: Abort if ping module fails
-      assert:
-        that: "pingrc.ping == 'pong'"
-        fail_msg: >-
-          The instance does not have an usable python distribution
-        success_msg: >-
-          The instance has an usable python installation, continuing

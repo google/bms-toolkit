@@ -26,10 +26,6 @@ packages:
   - expect
   - wget
   - net-tools
-  #- pwgen
-  #- dnsmasq
-
 
 swap_blk_device: ""
-
 ntp_preferred: ""

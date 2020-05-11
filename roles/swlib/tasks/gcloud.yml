@@ -30,4 +30,3 @@
     state: installed
     lock_timeout: 180
   when: ansible_os_family == "RedHat"
-

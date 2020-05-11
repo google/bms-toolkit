@@ -12,10 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-## Customizable Global Variables
-
 # Installation related variables:
-
 swlib_path: "{{ lookup('env','ORA_SWLIB_PATH')|lower|default('/swlib',true) }}"
 swlib_unzip_path: "{{ lookup('env','ORA_STAGING')|lower|default(swlib_path,true) }}"
 swlib_mount_type: "{{ lookup('env','ORA_SWLIB_TYPE')|lower|default('',true) }}" #absent for vagrant, gcsfuse or nfs
@@ -32,7 +29,6 @@ swap_blk_device: ""
 ntp_preferred: "{{ lookup('env','NTP_PREF')|lower|default('',true) }}"
 
 # DB configuration related variables:
-
 db_name: "{{ lookup('env','ORA_DB_NAME')|default('ORCL',true) }}"
 db_domain: "{{ lookup('env','ORA_DB_DOMAIN')|default('world',true) }}"
 oracle_ver: "{{ lookup('env','ORA_VERSION')|default('19.3.0.0.0',true) }}"
@@ -51,37 +47,26 @@ redologsize: "{{ lookup('env','ORA_REDO_LOG_SIZE')|regex_replace('^(.*)MB$', '\\
 charset: "{{ lookup('env','ORA_DB_CHARSET')|default('AL32UTF8',true) }}"
 ncharset: "{{ lookup('env','ORA_DB_NCHARSET')|default('AL16UTF16',true) }}"
 
-
 # ASM and storage related variables:
-
 oracle_user_data_mounts:
   - { purpose: software, blk_device: /dev/sdb_BOGUS, fstype: xfs, mount_point: /u01, mount_opts: "defaults" }
   - { purpose: other, blk_device: /dev/sdc_BOGUS, fstype: xfs, mount_point: /u02, mount_opts: "defaults" }
-
 asm_disk_management: "{{ lookup('env','ORA_DISK_MGMT')|lower|default('asmlib',true) }}"
-
 role_separaion: "{{ lookup('env','ORA_ROLE_SEPARATION')|lower|default('true',true) }}"
-
 data_diskgroup: "{{ lookup('env','ORA_DATA_DISKGROUP')|default('DATA',true) }}"
 reco_diskgroup: "{{ lookup('env','ORA_RECO_DISKGROUP')|default('RECO',true) }}"
 
 # Listener related variables:
-
 listener_port: "{{ lookup('env','ORA_LISTENER_PORT')|default('1521',true) }}"
 listener_name: "{{ lookup('env','ORA_LISTENER_NAME')|default('LISTENER',true) }}"
 
-
 # DB backup related variables:
-
 scripts_dir: "/home/{{ oracle_user }}/scripts"
 logs_dir: "/home/{{ oracle_user }}/logs"
-
 backup_dest: "{{ lookup('env','BACKUP_DEST') }}"
-
 rman_db_bu_redundancy: "{{ lookup('env','BACKUP_REDUNDANCY')|default('2',true) }}"
 rman_arch_redundancy: "{{ lookup('env','ARCHIVE_REDUNDANCY')|default('2',true) }}"
 rman_archs_online_days: "{{ lookup('env','ARCHIVE_ONLINE_DAYS')|default('7',true) }}"
-
 full_bu_level0_day: "{{ lookup('env','BACKUP_LEVEL0_DAYS')|default('0',true) }}"
 full_bu_level1_days: "{{ lookup('env','BACKUP_LEVEL1_DAYS')|default('1-6',true) }}"
 full_bu_start_hour: "{{ lookup('env','BACKUP_START_HOUR')|default('01',true) }}"
@@ -99,7 +84,6 @@ arch_bu_start_min: "{{ lookup('env','ARCHIVE_BACKUP_MIN')|default('30',true) }}"
 ## Variables for adjustment in future verions - not currently modifiable
 
 # DB configuration related variables:
-
 db_config_type: "{% if lookup('env','CLUSTER_TYPE') == 'NONE' %}SI{% elif lookup('env','CLUSTER_TYPE') == 'RAC' %}RAC{% endif %}"
 instance_num: 1
 memory_pct: 45
@@ -115,9 +99,7 @@ oracle_sid: "{% if db_config_type == 'SI' %}{{ db_name }}{% else %}{{ db_name }}
 asm_sid: "{% if db_config_type == 'SI' %}+ASM{% else %}+ASM{{ instance_num }}{% endif %}"
 run_initial_bu: true
 
-
 # Installation options:
-
 create_db: true
 create_listener: true
 install_gi: true

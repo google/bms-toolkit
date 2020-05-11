@@ -12,8 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-## Customizable Global Variables
-
 # Installation related variables:
 
 oracle_user_data_mounts_default:

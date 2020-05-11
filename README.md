@@ -1,7 +1,6 @@
-# oracle-toolkit
+# bms-toolkit
 
-Toolkit for installing Oracle and creating an initial database.
-
+Toolkit for installing and creating an initial database on Bare Metal Solution.
 
 ## Download the required Software ##
 

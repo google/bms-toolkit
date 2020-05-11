@@ -14,7 +14,7 @@
 # limitations under the License.
 
 #
-# Create or delete the required devices to be able to use the Oracle Toolkit on VMs.
+# Create or delete the required devices to be able to use bms-toolkit on VMs.
 # Use the -h option for more information
 #
 #

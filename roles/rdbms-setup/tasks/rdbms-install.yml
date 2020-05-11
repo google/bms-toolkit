@@ -23,7 +23,7 @@
   set_fact:
     install_unzip_path: "{{ swlib_unzip_path }}"
     runinstaller_loc: "{{ swlib_unzip_path }}/database"
-  when: oracle_ver in ['12.2.0.1.0','12.1.0.2.0','11.2.0.4.0']
+  when: oracle_ver in ['11.2.0.4.0','12.1.0.2.0','12.2.0.1.0']
   tags: rdbms-setup
 
 - name: rdbms-install | Installer confirmations
@@ -58,7 +58,6 @@
   become: yes
   become_user: "{{ oracle_user }}"
   command: "sh {{ swlib_unzip_path }}/db_install.rsp.sh"
-  args:
   tags: rdbms-setup
 
 - name: rdbms-install | Script cleanup
@@ -107,7 +106,7 @@
   command: "{{ runinstaller_loc }}/runInstaller -executeConfigTools -silent {{ prereq_option }} -responseFile {{ swlib_unzip_path }}/db_install.rsp"
   ignore_errors: yes
   register: install_db_plugins
-  when: oracle_ver not in ['12.1.0.2.0','11.2.0.4.0']
+  when: oracle_ver not in ['11.2.0.4.0','12.1.0.2.0']
   failed_when: "(install_db_plugins.rc not in [0,6]) and
                 ('The Installer has detected that there are no config tools to execute for the specified Oracle home' not in install_db_plugins.stdout)"
   tags: rdbms-setup

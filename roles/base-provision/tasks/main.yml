@@ -105,15 +105,26 @@
 
 # cleanup /etc/hosts to solve a listener related issue, ora listener binds to hostname's IP.
 - name: Remove all 127.0.0.1 lines from /etc/hosts
-  lineinfile: dest=/etc/hosts regexp='^127\.0\.0\.1' state=absent
+  lineinfile:
+    path: /etc/hosts
+    regexp: '^127\.0\.0\.1'
+    state: absent
   tags: etchosts
 
 - name: Add fqdn to /etc/hosts if needed
-  lineinfile: dest=/etc/hosts regexp='.*{{ ansible_fqdn }}$' line="{{ etc_hosts_ip }} {{ ansible_hostname }} {{ ansible_fqdn }}" state=present
+  lineinfile:
+    path: /etc/hosts
+    regexp: '.*{{ ansible_fqdn }}$'
+    line: "{{ etc_hosts_ip }} {{ ansible_hostname }} {{ ansible_fqdn }}"
+    state: present
   tags: etchosts
 
 - name: Add localhost to /etc/hosts if needed
-  lineinfile: dest=/etc/hosts regexp='^127\.0\.0\.1' line="127.0.0.1 localhost localhost.localdomain" state=present
+  lineinfile:
+    path: /etc/hosts
+    regexp: '^127\.0\.0\.1'
+    line: "127.0.0.1 localhost localhost.localdomain"
+    state: present
   tags: etchosts
 
 - name: prep host | create swap on GCE

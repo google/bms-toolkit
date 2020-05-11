@@ -22,10 +22,8 @@
     - name: Verify that Ansible on control node meets the version requirements
       assert:
         that: "ansible_version.full is version_compare('2.8', '>=')"
-        fail_msg: >-
-          You must update Ansible to at least 2.8 to use these playbooks
-        success_msg: >-
-          Ansible version is {{ ansible_version.full }}, continuing
+        fail_msg: "You must update Ansible to at least 2.8 to use these playbooks"
+        success_msg: "Ansible version is {{ ansible_version.full }}, continuing"
   roles:
     - patch
   tags: opatch_restart

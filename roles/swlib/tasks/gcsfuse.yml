@@ -18,7 +18,8 @@
 - name: gcsfuse | Install gcsfuse dependencies
   become: yes
   become_user: root
-  yum: name=fuse
+  yum:
+    name: fuse
 
 - name: gcsfuse | Install gcsfuse
   become: yes

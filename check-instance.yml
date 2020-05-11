@@ -19,10 +19,8 @@
     - name: Verify that Ansible on control node meets the version requirements
       assert:
         that: "ansible_version.full is version_compare('2.8', '>=')"
-        fail_msg: >-
-          You must update Ansible to at least 2.8 to use these playbooks
-        success_msg: >-
-          Ansible version is {{ ansible_version.full }} , continuing
+        fail_msg: "You must update Ansible to at least 2.8 to use these playbooks"
+        success_msg: "Ansible version is {{ ansible_version.full }}, continuing"
   vars:
     allow_install_on_vm: false
 
@@ -33,7 +31,7 @@
  
     - name: Platform verification
       fail:
-        msg: The system may not be provisioned on VM by default. Change allow_install_on_vm to true to test
+        msg: "The system may not be provisioned on VM by default. Use the allow_install_on_vm option for VM testing"
       when:
         - ansible_system_vendor == "Google"
         - ansible_virtualization_type == "kvm"
@@ -48,10 +46,8 @@
     - name: Fail if unable to sudo to root on target
       assert:
         that: "rawrc.stdout_lines[0] == 'root'"
-        fail_msg: >-
-          The account {{ ansible_user }} used to connect does not have sudo privileges to root
-        success_msg: >-
-          The account {{ ansible_user }} used to connect has sudo root privileges, continuing
+        fail_msg: "The account {{ ansible_user }} used to connect does not have sudo privileges to root"
+        success_msg: "The account {{ ansible_user }} used to connect has sudo root privileges, continuing"
 
     - name: Check for Python installation
       raw: test -e /usr/bin/python || test -e /usr/bin/python3

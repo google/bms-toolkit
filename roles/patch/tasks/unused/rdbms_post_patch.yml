@@ -15,8 +15,7 @@
 ---
 - name: rdbms_post_patch | SID
   debug:
-    msg:
-      - "Running post patch operations for SID: {{ oracle_sid }}"
+    msg: "Running post patch operations for SID: {{ oracle_sid }}"
 
 - name: rdbms_post_patch | Start database in upgrade mode
   become: yes
@@ -35,8 +34,7 @@
 
 - name: rdbms_post_patch | Startup upgrade output
   debug:
-    msg:
-      - "{{ upgrade_db }}"
+    msg: "{{ upgrade_db }}"
   when:
     - patch.upgrade
   tags: patch_rdbms,upgrade_db
@@ -66,8 +64,8 @@
 
 - name: rdbms_post_patch | Start database output
   debug:
-    msg:
-      - "{{ start_db }}"
+    msg: "{{ start_db }}"
+    #verbosity: 1
 
 - name: rdbms_post_patch | Open PDBs in upgrade mode
   become: yes
@@ -87,8 +85,8 @@
 
 - name: rdbms_post_patch | PDB open output
   debug:
-    msg:
-      - "{{ upgrade_pdb }}"
+    msg: "{{ upgrade_pdb }}"
+    #verbosity: 1
   when:
     - patch.upgrade
     - oracle_ver != '11.2.0.4.0'
@@ -133,8 +131,8 @@
 
 - name: rdbms_post_patch | datapatch output
   debug:
-    msg:
-      - "{{ datapatch }}"
+    msg: "{{ datapatch }}"
+    #verbosity: 1
 
 - name: rdbms_post_patch  | Recompile invalid objects
   become: yes
@@ -170,3 +168,4 @@
 - name: rdbms_post_patch | Patch registry
   debug:
     msg: "{{ patch_registry }}"
+    #verbosity: 1

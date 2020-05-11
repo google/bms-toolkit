@@ -26,6 +26,7 @@
 - name: rac-db-install | OH Confirmation
   debug:
     msg: "Installing ORACLE_HOME - {{ oracle_home }}"
+    #verbosity: 1
   when: existing_dbhome.stdout == "0"
   tags: rac-db
 
@@ -89,6 +90,7 @@
     msg:
       - "{{ install_rac_db.cmd }}"
       - "{{ install_rac_db.stdout_lines }}"
+    #verbosity: 1
   tags: rac-db,rac-db-install
 
 - name: rac-db-install | Run script root.sh

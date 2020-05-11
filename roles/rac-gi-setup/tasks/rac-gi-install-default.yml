@@ -16,8 +16,8 @@
 - name: rac-gi-install | Set facts
   set_fact:
     install_unzip_path: "{{ grid_home }}"
-    installer_command:  "{{ grid_home }}/gridSetup.sh"
-    cluvfy_command:     "{{ grid_home }}/runcluvfy.sh stage -pre crs -verbose"
+    installer_command: "{{ grid_home }}/gridSetup.sh"
+    cluvfy_command: "{{ grid_home }}/runcluvfy.sh stage -pre crs -verbose"
   tags: rac-gi
 
 - name: rac-gi-install | Installer confirmations
@@ -76,8 +76,7 @@
 - name: rac-gi-install | Get symlinks for devices
   become: yes
   become_user: root
-  #if mapper in disk name - info taken from whole disk,
-  #otherwise from first partition
+  # if mapper in disk name - info taken from whole disk, otherwise from first partition
   shell: |
     udevadm info --query=all --name={% if item is search ('mapper') %}{{ item }}{% else %}{{ item }}1{% endif %} | grep "^S: " | grep {{ path_udev }} | awk '{ print "/dev/"$2 }'
   loop: "{{ asm_disks | json_query('[?diskgroup==`' + hostvars[groups['dbasm'].0]['dg_name'] + '`].disks[*].blk_device') | list | join() }}"
@@ -93,7 +92,8 @@
   tags: rac-gi
 
 - name: rac-gi-install | Set password for asmsys
-  set_fact: pass_asmsys="{{ pwgen_output.stdout }}"
+  set_fact:
+    pass_asmsys: "{{ pwgen_output.stdout }}"
   tags: rac-gi
 
 - name: rac-gi-install | Generate random password
@@ -105,7 +105,8 @@
   tags: rac-gi
 
 - name: rac-gi-install | Set password for asmmon
-  set_fact: pass_asmmon="{{ pwgen_output.stdout }}"
+  set_fact:
+    pass_asmmon: "{{ pwgen_output.stdout }}"
   tags: rac-gi
 
 - name: rac-gi-install | Create GI response file
@@ -130,6 +131,7 @@
     msg:
       - "{{ install_rac_gi.cmd }}"
       - "{{ install_rac_gi.stdout_lines }}"
+    #verbosity: 1
   tags: rac-gi,rac-gi-install
 
 - name: rac-gi-install | Run script orainstRoot.sh

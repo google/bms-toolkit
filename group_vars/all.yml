@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+---
+
 # Installation related variables:
 swlib_path: "{{ lookup('env','ORA_SWLIB_PATH')|lower|default('/swlib',true) }}"
 swlib_unzip_path: "{{ lookup('env','ORA_STAGING')|lower|default(swlib_path,true) }}"
@@ -23,7 +25,7 @@ swlib_gcs_service_account_file: "{{ lookup('env','ORA_SWLIB_CREDENTIALS')|defaul
 #If your RAM size is less than or equal to 2 GB, your swap size should be 1.5 times of the RAM. For example, if your RAM size is 2 GB, you should create swap space of 3GB
 #If your RAM size is between 2 GB and 16 GB, your swap size should be the same size of the RAM. For example, if your RAM size is 4 GB, you should create swap space of 4GB
 #If your RAM size is more than 16 GB, your swap size should be 16 GB. For example, if your RAM size is 32 GB, it is enough if you create a swap space of 16GB
-swap_blk_device: ""
+swap_blk_device: /dev/sdg
 
 # ntp preferred server
 ntp_preferred: "{{ lookup('env','NTP_PREF')|lower|default('',true) }}"

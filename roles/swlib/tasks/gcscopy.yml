@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+---
 - name: gcscopy | Copy GI software from GCS to target instance
   shell: |
     set -o pipefail

@@ -13,8 +13,8 @@
 # limitations under the License.
 
 ---
-# Variables used by more than one role
 
+# Variables used by more than one role
 oracle_ver_dir: "{{ oracle_ver [:6] }}"
 oracle_inventory: "{{ oracle_root }}/oraInventory"
 oracle_base: "{{ oracle_root }}/oracle"

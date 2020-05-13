@@ -174,20 +174,19 @@ If the /u02/swlib/ folder exists on your control node, it will be mounted by Vag
 If you have files in a gcs bucket instead, just add `--ora-swlib-type gcs` or `--ora-swlib-type gcsfuse` along with `--ora-swlib-bucket your_bucket_name` to the following command line.
 
 ```
-./install-oracle.sh --ora-swlib-bucket oracle-swlib --backup-dest /backups --ora-swlib-path /swlib/ --ora-version 18.0.0.0.0 
+./install-oracle.sh --ora-swlib-bucket oracle-swlib --backup-dest /backups --ora-swlib-path /swlib/ --ora-version 18.0.0.0.0
 ```
 
 The following default values are used (you don't need to add these to the command line):
 
 ```
---instance-ip-addr 192.168.56.201 --instance-ssh-user vagrant --instance-ssh-key .vagrant/machines/oracledb1/virtualbox/private_key --instance-ansible-hostname oracledb1 --instance-ansible-hostgroup-name dbasm
+--instance-ip-addr 192.168.56.201 --instance-ssh-user vagrant --instance-ssh-key .vagrant/machines/oracledb1/virtualbox/private_key --instance-hostname oracledb1
 ```
 
 
 This will launch the installation process which should take approximately 20 minutes.
 
-This wrapper script create an inventory file for ansible, using `--instance-ansible-hostgroup-name db-asm-1` as a hostgroup name.
-This is where the hostgroup name needs to match the customized group_vars file we have created previously.
+This wrapper script create an inventory file for ansible.
 #
 # compatible.rdbms
 #

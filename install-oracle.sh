@@ -46,8 +46,9 @@ done
 #
 # Inventory file (used to run the playbooks)
 #
- INVENTORY_DIR="./inventory_files"  # Where to save the inventory files
+INVENTORY_DIR="./inventory_files"  # Where to save the inventory files
 INVENTORY_FILE="${INVENTORY_DIR}/inventory"  # Default, the whole name will be built later using some parameters
+INSTANCE_HOSTGROUP_NAME="dbasm"  # Constant used for both SI and RAC installations
 #
 if [[ ! -d "${INVENTORY_DIR}" ]]; then
   mkdir -p "${INVENTORY_DIR}"
@@ -203,11 +204,8 @@ INSTANCE_IP_ADDR_PARAM='^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2
 INSTANCE_SSH_USER="${INSTANCE_SSH_USER:-`whoami`}"
 INSTANCE_SSH_USER_PARAM="^[a-z0-9]+$"
 
-INSTANCE_ANSIBLE_HOSTGROUP_NAME="${INSTANCE_ANSIBLE_HOSTGROUP_NAME:-dbasm}"
-INSTANCE_ANSIBLE_HOSTGROUP_NAME_PARAM="^[a-z0-9]+$"
-
-INSTANCE_ANSIBLE_HOSTNAME="${INSTANCE_ANSIBLE_HOSTNAME:-${INSTANCE_IP_ADDR}}"
-INSTANCE_ANSIBLE_HOSTNAME_PARAM="^[a-z0-9]+$"
+INSTANCE_HOSTNAME="${INSTANCE_HOSTNAME:-${INSTANCE_IP_ADDR}}"
+INSTANCE_HOSTNAME_PARAM="^[a-z0-9]+$"
 
 INSTANCE_SSH_KEY="${INSTANCE_SSH_KEY:-~/.ssh/id_rsa}"
 INSTANCE_SSH_KEY_PARAM="^.+$"
@@ -229,7 +227,7 @@ GETOPT_OPTIONAL="$GETOPT_OPTIONAL,ora-db-ncharset:,ora-db-container:,ora-db-type
 GETOPT_OPTIONAL="$GETOPT_OPTIONAL,backup-redundancy:,archive-redundancy:,archive-online-days:,backup-level0-days:,backup-level1-days:"
 GETOPT_OPTIONAL="$GETOPT_OPTIONAL,backup-start-hour:,backup-start-min:,archive-backup-min:,backup-script-location:,backup-log-location:"
 GETOPT_OPTIONAL="$GETOPT_OPTIONAL,ora-swlib-type:,ora-swlib-path:,ora-swlib-credentials:,instance-ip-addr:,instance-ssh-user:"
-GETOPT_OPTIONAL="$GETOPT_OPTIONAL,instance-ssh-key:,instance-ansible-hostname:,instance-ansible-hostgroup-name:,ntp-pref:,inventory-file:,compatible-rdbms:"
+GETOPT_OPTIONAL="$GETOPT_OPTIONAL,instance-ssh-key:,instance-hostname:,ntp-pref:,inventory-file:,compatible-rdbms:"
 GETOPT_OPTIONAL="$GETOPT_OPTIONAL,help,validate,check-instance,prep-host,install-sw,config-db,debug,allow-install-on-vm,skip-database-config"
 GETOPT_LONG="$GETOPT_MANDATORY,$GETOPT_OPTIONAL"
 GETOPT_SHORT="h"
@@ -417,12 +415,8 @@ while true; do
     INSTANCE_SSH_KEY="$2"
     shift;
     ;;
-  --instance-ansible-hostgroup-name)
-    INSTANCE_ANSIBLE_HOSTGROUP_NAME="$2"
-    shift;
-    ;;
-  --instance-ansible-hostname)
-    INSTANCE_ANSIBLE_HOSTNAME="$2"
+  --instance-hostname)
+    INSTANCE_HOSTNAME="$2"
     shift;
     ;;
   --instance-ssh-user)
@@ -696,8 +690,8 @@ if [ "${BACKUP_DEST}" = "" ]; then
 fi
 
 # if the hostgroup is not the default then error out when there is no corresponding group_vars/var.yml file
-if [ "${INSTANCE_ANSIBLE_HOSTGROUP_NAME}" != "dbasm" -a ! -r group_vars/${INSTANCE_ANSIBLE_HOSTGROUP_NAME}.yml ]; then
-  echo "Custom ansible hostgroup defined as ${INSTANCE_ANSIBLE_HOSTGROUP_NAME} but no corresponding group_vars/${INSTANCE_ANSIBLE_HOSTGROUP_NAME}.yml file found"
+if [ "${INSTANCE_HOSTGROUP_NAME}" != "dbasm" -a ! -r group_vars/${INSTANCE_HOSTGROUP_NAME}.yml ]; then
+  echo "Custom ansible hostgroup defined as ${INSTANCE_HOSTGROUP_NAME} but no corresponding group_vars/${INSTANCE_HOSTGROUP_NAME}.yml file found"
   exit 2
 fi
 
@@ -723,7 +717,7 @@ COMMON_OPTIONS="ansible_ssh_user=${INSTANCE_SSH_USER} ansible_ssh_private_key_fi
     INVENTORY_FILE="${INVENTORY_FILE}_${ORA_VERSION}_${ORA_DB_NAME}_${CLUSTER_TYPE}"
 
     # We can now fill the inventory file with the information from the JSON file
-    echo "[${INSTANCE_ANSIBLE_HOSTGROUP_NAME}]" > "${INVENTORY_FILE}"
+    echo "[${INSTANCE_HOSTGROUP_NAME}]" > "${INVENTORY_FILE}"
 
     # jq filters for better visibility
     OLDIFS="${IFS}"
@@ -736,7 +730,7 @@ EOF
 
     printf "\n" >> "${INVENTORY_FILE}"
 
-    echo "[${INSTANCE_ANSIBLE_HOSTGROUP_NAME}:vars]" >> "${INVENTORY_FILE}"
+    echo "[${INSTANCE_HOSTGROUP_NAME}:vars]" >> "${INVENTORY_FILE}"
 
     # jq filters for better visibility
     OLDIFS="${IFS}"
@@ -750,10 +744,10 @@ EOF
     jq -rc "${JQF}" "${CLUSTER_CONFIG}" >> "${INVENTORY_FILE}"
 
   else   # Non RAC
-    INVENTORY_FILE="${INVENTORY_FILE}_${INSTANCE_ANSIBLE_HOSTNAME}_${ORA_VERSION}_${ORA_DB_NAME}"
+    INVENTORY_FILE="${INVENTORY_FILE}_${INSTANCE_HOSTNAME}_${ORA_VERSION}_${ORA_DB_NAME}"
     cat <<EOF > ${INVENTORY_FILE}
-[${INSTANCE_ANSIBLE_HOSTGROUP_NAME}]
-${INSTANCE_ANSIBLE_HOSTNAME} "ansible_ssh_host=${INSTANCE_IP_ADDR}" ${COMMON_OPTIONS}
+[${INSTANCE_HOSTGROUP_NAME}]
+${INSTANCE_HOSTNAME} "ansible_ssh_host=${INSTANCE_IP_ADDR}" ${COMMON_OPTIONS}
 EOF
   fi     # End of if RAC
 else
@@ -771,7 +765,7 @@ fi
 if [[ "${CLUSTER_TYPE}" = "RAC" ]]; then
   LOG_FILE="${LOG_FILE}_${ORA_VERSION}_${ORA_DB_NAME}_${TIMESTAMP}_${CLUSTER_TYPE}.log"
 else
-  LOG_FILE="${LOG_FILE}_${INSTANCE_ANSIBLE_HOSTNAME}_${ORA_VERSION}_${ORA_DB_NAME}_${TIMESTAMP}.log"
+  LOG_FILE="${LOG_FILE}_${INSTANCE_HOSTNAME}_${ORA_VERSION}_${ORA_DB_NAME}_${TIMESTAMP}.log"
 fi
 export ANSIBLE_LOG_PATH=${LOG_FILE}
 

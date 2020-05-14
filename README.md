@@ -286,3 +286,7 @@ ansible-playbook prep-host.yml --extra-vars "oracle_ver=19.3.0.0.0"
 ansible-playbook install-sw.yml --extra-vars "oracle_ver=19.3.0.0.0"
 ansible-playbook config-db.yml --extra-vars "oracle_ver=19.3.0.0.0"
 ```
+
+---
+
+This is not an officially supported Google product.

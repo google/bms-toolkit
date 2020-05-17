@@ -75,8 +75,9 @@
     - name: rac-gi-install | GI installation
       include_role:
         name: rac-gi-setup
-        #if 11.2 or 12.1 then rac-gi-install-<oracle_ver>.yml otherwise rac-gi-install-default.yml
-        tasks_from: rac-gi-install-{% if oracle_ver_base in ('11.2','12.1') %}{{ oracle_ver }}{% else %}{{ 'default' }}{% endif %}.yml
+        #if 11.2 or 12.1 then rac-gi-install-<oracle_ver>.yml otherwise rac-gi-install.yml
+        tasks_from: rac-gi-install{% if oracle_ver_base in ('11.2','12.1') %}-{{ oracle_ver }}{% endif %}.yml
+        #tasks_from: rac-gi-install.yml
         public: yes
       loop:
         - "{{ gi_software  | json_query('[?version==`' + oracle_ver + '`].files[*]') | join() }}"
@@ -114,7 +115,7 @@
     - name: rac-db-install | RDBMS installation
       include_role:
         name: rac-db-setup
-        tasks_from: rac-db-install-default.yml
+        tasks_from: rac-db-install.yml
         public: yes
       loop:
         - "{{ rdbms_software | json_query('[?version==`' + oracle_ver + '`].files[*]') | join() }}"

@@ -101,6 +101,7 @@
       {% endif %}
       {% endif %}
       {% endfor %}
+  when: cluster_type == "RAC"
   tags: etchosts
 
 # cleanup /etc/hosts to solve a listener related issue, ora listener binds to hostname's IP.
@@ -117,7 +118,8 @@
     regexp: '.*{{ ansible_fqdn }}$'
     line: "{{ etc_hosts_ip }} {{ ansible_hostname }} {{ ansible_fqdn }}"
     state: present
-  tags: etchosts
+  when: cluster_type == "NONE"
+  tags: etchosts,fqdn
 
 - name: Add localhost to /etc/hosts if needed
   lineinfile:

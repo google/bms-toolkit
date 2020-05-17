@@ -25,6 +25,7 @@
     LD_LIBRARY_PATH: "{{ grid_home }}/lib:${LD_LIBRARY_PATH}"
   become: yes
   become_user: "{{ grid_user }}"
+  changed_when: false
   register: created_dg
   tags: rac-asm-create,check-dg
 

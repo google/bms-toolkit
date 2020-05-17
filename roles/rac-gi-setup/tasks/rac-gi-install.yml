@@ -1,0 +1,164 @@
+# Copyright 2020 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+---
+- name: rac-gi-install | Set facts
+  set_fact:
+    install_unzip_path: "{{ grid_home }}"
+    installer_command: "{{ grid_home }}/gridSetup.sh"
+    cluvfy_command: "{{ grid_home }}/runcluvfy.sh stage -pre crs -verbose"
+  tags: rac-gi
+
+- name: rac-gi-install | Installer confirmations
+  debug:
+    msg:
+      - "Installing from file : {{ swlib_path }}/{{ osw_files }}"
+      - "Unzipping into dir   : {{ install_unzip_path }}"
+      - "Using cluvfy cmd     : {{ cluvfy_command }}"
+      - "Using installer cmd  : {{ installer_command }}"
+  tags: rac-gi
+
+- name: rac-gi-install | Create GI directories
+  become: yes
+  become_user: root
+  file:
+    path: "{{ install_unzip_path }}"
+    state: directory
+    owner: "{{ grid_user }}"
+    group: "{{ oracle_group }}"
+    mode: ug=rwx,o=
+  loop: "{{ lookup('inventory_hostnames', 'dbasm', wantlist=True) }}"
+  delegate_to: "{{ item }}"
+  tags: rac-gi,gi-dirs
+
+- name: rac-gi-install | Unzipping HA interim patches
+  become: yes
+  become_user: "{{ grid_user }}"
+  unarchive:
+    src: "{{ swlib_path }}/{{ item.files | join() }}"
+    dest: "{{ swlib_path }}"
+    remote_src: yes
+  with_items:
+    - "{{ gi_interim_patches }}"
+  when: item.version == oracle_ver and item.category == "HAS_interim_patch"
+  tags: rac-gi,sw-unzip
+
+- name: rac-gi-install | Set variable for HA interim patch
+  set_fact:
+    has_patch: "-applyOneOffs {{ swlib_path }}/{{ item.patchnum | join() }}"
+  with_items:
+    - "{{ gi_interim_patches }}"
+  when: item.version == oracle_ver and item.category == "HAS_interim_patch"
+  tags: rac-gi,has-patch
+
+- name: rac-gi-install | Unzipping software
+  become: yes
+  become_user: "{{ grid_user }}"
+  unarchive:
+    src: "{{ swlib_path }}/{{ item }}"
+    dest: "{{ install_unzip_path }}"
+    remote_src: yes
+  with_items:
+    - "{{ osw_files }}"
+  tags: rac-gi,sw-unzip
+
+- name: rac-gi-install | Get symlinks for devices
+  become: yes
+  become_user: root
+  # if mapper in disk name - info taken from whole disk, otherwise from first partition
+  shell: |
+    udevadm info --query=all --name={% if item is search ('mapper') %}{{ item }}{% else %}{{ item }}1{% endif %} | grep "^S: " | grep {{ path_udev }} | awk '{ print "/dev/"$2 }'
+  loop: "{{ asm_disks | json_query('[?diskgroup==`' + hostvars[groups['dbasm'].0]['dg_name'] + '`].disks[*].blk_device') | list | join() }}"
+  when: asm_disk_management == "udev"
+  register: symlink
+
+- name: rac-gi-install | Generate random password
+  include_role:
+    name: pwgen
+  vars:
+    pwgen_len: 16
+    pwgen_chars: "$#_12345"
+  tags: rac-gi
+
+- name: rac-gi-install | Set password for asmsys
+  set_fact:
+    pass_asmsys: "{{ pwgen_output.stdout }}"
+  tags: rac-gi
+
+- name: rac-gi-install | Generate random password
+  include_role:
+    name: pwgen
+  vars:
+    pwgen_len: 16
+    pwgen_chars: "$#_12345"
+  tags: rac-gi
+
+- name: rac-gi-install | Set password for asmmon
+  set_fact:
+    pass_asmmon: "{{ pwgen_output.stdout }}"
+  tags: rac-gi
+
+- name: rac-gi-install | Create GI response file
+  become: yes
+  become_user: "{{ grid_user }}"
+  template:
+    src: gridsetup.rsp.{{ oracle_ver }}.j2
+    dest: "{{ install_unzip_path }}/gridsetup.rsp"
+  tags: rac-gi,rac-gi-response
+
+- name: rac-gi-install | Run installer
+  become: yes
+  become_user: "{{ grid_user }}"
+  command: "{{ installer_command }} -silent -responseFile {{ install_unzip_path }}/gridsetup.rsp {{ has_patch | default('') }} -ignorePrereqFailure"
+  register: install_rac_gi
+  failed_when: "('Successfully Setup Software' not in install_rac_gi.stdout) or
+                (install_rac_gi.rc not in [0,6,250])"
+  tags: rac-gi,rac-gi-install
+
+- name: rac-gi-install | Installer output
+  debug:
+    msg:
+      - "{{ install_rac_gi.cmd }}"
+      - "{{ install_rac_gi.stdout_lines }}"
+    #verbosity: 1
+  tags: rac-gi,rac-gi-install
+
+- name: rac-gi-install | Run script orainstRoot.sh
+  become: yes
+  become_user: root
+  command: "{{ oracle_root }}/oraInventory/orainstRoot.sh"
+  ignore_errors: yes
+  loop: "{{ lookup('inventory_hostnames', 'dbasm', wantlist=True) }}"
+  delegate_to: "{{ item }}"
+  when: "'skipped' not in install_rac_gi.stdout"
+  tags: rac-gi,root-scripts
+
+- name: rac-gi-install | Run script root.sh
+  become: yes
+  become_user: root
+  command: "{{ grid_home }}/root.sh"
+  loop: "{{ lookup('inventory_hostnames', 'dbasm', wantlist=True) }}"
+  delegate_to: "{{ item }}"
+  when: "'skipped' not in install_rac_gi.stdout"
+  tags: rac-gi,root-scripts
+
+- name: rac-gi-install | Complete plugin configuration
+  become: yes
+  become_user: "{{ grid_user }}"
+  command: "{{ installer_command }} -executeConfigTools -silent -responseFile {{ install_unzip_path }}/gridsetup.rsp"
+  register: gi_plugins
+  ignore_errors: yes
+  tags: rac-gi
+
+- include_tasks: rac-asm-create.yml

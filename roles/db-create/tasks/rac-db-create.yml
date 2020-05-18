@@ -82,6 +82,11 @@
   when: oracle_ver_base != '11.2'
   tags: rac-db-create
 
+- name: rac-db-create | Generate random passwords
+  set_fact:
+    pwd_gen_cmd: echo -e "$({{pass_sys}})\n$({{pass_system}}){% if oracle_ver != "11.2.0.4.0" %}\n$({{pass_pdbadmin}}){% endif %}"
+  tags: rac-db-create
+
 - name: rac-db-create | List of database directories to adjust
   set_fact:
     change_dirs:
@@ -132,7 +137,7 @@
       shell: |
           set -o pipefail
           export PATH={{ oracle_home }}/bin:${PATH}:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin
-          sh {{ swlib_unzip_path }}/dbca_{{ db_name }}.rsp.sh
+          {{ pwd_gen_cmd }} | sh {{ swlib_unzip_path }}/dbca_{{ db_name }}.rsp.sh
       register: dbca_output
       failed_when: "'Completing Database Creation' not in dbca_output.stdout or '100% complete' not in dbca_output.stdout"
       when: pmon_proc.stdout == "0" and check_oratab.stdout == "0"

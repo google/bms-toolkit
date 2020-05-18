@@ -318,7 +318,7 @@
 - name: (udev) reload rules
   become: yes
   become_user: root
-  shell: ( /sbin/udevadm control --reload-rules && /sbin/udevadm trigger )
+  shell: ( /sbin/udevadm control --reload-rules && /sbin/udevadm trigger && /sbin/partprobe )
   tags: asm-disks
 
 - name: (asmlib) Install Oracle ASM libraries
@@ -390,7 +390,6 @@
     msg:
     - "{{ item.stderr_lines }}"
     - "{{ item.stdout_lines }}"
-    #verbosity: 1
   with_items:
     - "{{ asmconfig }}"
     - "{{ listdisks }}"

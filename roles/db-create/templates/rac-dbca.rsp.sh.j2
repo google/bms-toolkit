@@ -3,13 +3,12 @@ dbca -silent -createDatabase -gdbName {{ db_name }}{{ domain() }} \
 -databaseType {{ db_type }} \
 -createAsContainerDatabase {{ container_db }} \
 -numberOfPDBs {{ pdb_count }} \
--pdbAdminPassword {{ pass_pdbadmin }} \
 -pdbName {{ pdb_prefix }} \
 -databaseConfigType {{ db_config_type }} \
 -nodelist {% set c = joiner(",") %}{% for h in groups['dbasm'] %}{{ c() }}{{ h }}{% endfor %} \
 -templateName General_Purpose.dbc \
--emConfiguration none -sysPassword {{ pass_sys }} \
--systemPassword {{ pass_system }} -storageType ASM \
+-emConfiguration none \
+-storageType ASM \
 -diskGroupName {{ data_diskgroup }} \
 -recoveryGroupName {{ reco_diskgroup }} \
 -redoLogFileSize {{ redologsize }} \

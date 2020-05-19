@@ -48,43 +48,14 @@
   when: oracle_ver in ['11.2.0.4.0','12.1.0.2.0']
   tags: rac-db-create
 
-- name: rac-db-create | Random password for sys
-  block:
-    - include_role:
-        name: pwgen
-      vars:
-        pwgen_len: 16
-        pwgen_chars: "AaBbCc12345"
-    - set_fact:
-        pass_sys: "{{ pwgen_output.stdout }}"
+- name: rac-db-create | Set password parameter
+  set_fact:
+    pass_param: "{{pwgen_path}}/{{pwgen_file}} 16 'AaBbCc12345'"
   tags: rac-db-create
-
-- name: rac-db-create | Random password for system
-  block:
-    - include_role:
-        name: pwgen
-      vars:
-        pwgen_len: 16
-        pwgen_chars: "AaBbCc12345"
-    - set_fact:
-        pass_system: "{{ pwgen_output.stdout }}"
-  tags: rac-db-create
-
-- name: rac-db-create | Random password for pdbAdmin
-  block:
-    - include_role:
-        name: pwgen
-      vars:
-        pwgen_len: 16
-        pwgen_chars: "AaBbCc12345"
-    - set_fact:
-        pass_pdbadmin: "{{ pwgen_output.stdout }}"
-  when: oracle_ver_base != '11.2'
-  tags: rac-db-create
-
+  
 - name: rac-db-create | Generate random passwords
   set_fact:
-    pwd_gen_cmd: echo -e "$({{pass_sys}})\n$({{pass_system}}){% if oracle_ver != "11.2.0.4.0" %}\n$({{pass_pdbadmin}}){% endif %}"
+    pwd_gen_cmd: echo -e "$({{ pass_param }})\n$({{ pass_param }}){% if oracle_ver != "11.2.0.4.0" %}\n$({{ pass_param }}){% endif %}"
   tags: rac-db-create
 
 - name: rac-db-create | List of database directories to adjust

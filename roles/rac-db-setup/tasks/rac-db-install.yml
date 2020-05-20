@@ -26,14 +26,13 @@
 - name: rac-db-install | OH Confirmation
   debug:
     msg: "Installing ORACLE_HOME - {{ oracle_home }}"
-    #verbosity: 1
   when: existing_dbhome.stdout == "0"
   tags: rac-db
 
 - name: rac-db-install | Set facts
   set_fact:
-    install_unzip_path: "{% if oracle_ver_base in ('19.3','18.0') %}{{ oracle_home }}{% else %}{{ swlib_path }}{% endif %}"
-    runinstaller_loc: "{% if oracle_ver_base in ('19.3','18.0') %}{{ oracle_home }}{% else %}{{ swlib_path }}/database{% endif %}"
+    install_unzip_path: "{% if oracle_ver_base in ('19.3','18.0') %}{{ oracle_home }}{% else %}{{ swlib_unzip_path }}{% endif %}"
+    runinstaller_loc: "{% if oracle_ver_base in ('19.3','18.0') %}{{ oracle_home }}{% else %}{{ swlib_unzip_path }}/database{% endif %}"
   tags: rac-db
 
 - name: rac-db-install | Installer confirmations
@@ -43,6 +42,50 @@
       - "Unzipping into dir   : {{ install_unzip_path }}"
       - "Using installer dir  : {{ runinstaller_loc }}"
   tags: rac-db
+
+- name: rac-db-install | Define RDBMS release
+  #if release set to latest then get most recent release from rdbms_patches array
+  #if nothing returned then set to "base"
+  set_fact:
+    oracle_rel: "{% if oracle_rel == 'latest' %}{{ gi_patches | json_query('[?base==`' + oracle_ver + '`].release')  | sort(reverse=true) | first | default('base', true) }}{% endif %}"
+  when: oracle_rel is defined
+  tags: rac-db,rel-patch
+
+- name: rac-db-install | List RDBMS release
+  debug:
+    msg: "RDBMS release: {{ oracle_rel }}"
+  tags: rac-db,rel-patch
+
+- name: rac-db-install | Copy RDBMS patch
+  import_role:
+    name: swlib
+    tasks_from: gcscopy
+  vars:
+    patching_type: gi_patching
+  when: oracle_rel != "base"
+  tags: rac-db,sw-copy
+
+- name: rac-db-install | Unzip RDBMS patch
+  unarchive:
+    src: "{{ swlib_path }}/{{ item.patchfile }}"
+    dest: "{{ swlib_unzip_path }}"
+    remote_src: yes
+    creates: .db_patch_{{ item.patchnum }}_{{ oracle_rel }}
+    owner: "{{ oracle_user }}"
+    group: "{{ oracle_group }}"
+  with_items:
+    - "{{ rdbms_patches }}"
+  when: item.release == oracle_rel and item.category == 'RU' and item.category != "HAS_interim_patch"
+  become: yes
+  tags: rac-db,sw-unzip
+
+- name: rac-db-install | Set variable for release patch
+  set_fact:
+    rel_patch: "-apply{% if oracle_ver_base == '12.2' %}PSU{% else %}RU{% endif %} {{ swlib_unzip_path }}/{{ item.patchnum }}{{ item.patch_subdir }}"
+  with_items:
+    - "{{ gi_patches }}"
+  when: item.release == oracle_rel and item.category == 'RU'
+  tags: rac-db,rel-patch
 
 - name: rac-db-install | Create DB directories
   become: yes
@@ -56,6 +99,24 @@
   loop: "{{ lookup('inventory_hostnames', 'dbasm', wantlist=True) }}"
   delegate_to: "{{ item }}"
   tags: rac-db,db-dirs
+
+- name: rac-db-install | Unzip OneOff patch
+  unarchive:
+    src: "{{ swlib_path }}/{{ item.patchfile }}"
+    dest: "{{ swlib_unzip_path }}"
+    remote_src: yes
+    owner: "{{ oracle_user }}"
+    group: "{{ oracle_group }}"
+  with_items:
+    - "{{ rdbms_patches }}"
+  when: item.release == oracle_rel and item.category == 'RU_Combo'
+  become: yes
+  tags: rac-db,sw-unzip
+
+- name: rac-db-install | Set variable for OneOff patch
+  set_fact:
+    oneoff_patch_dirs: "{% set c = joiner(',') %}{% for p in rdbms_patches %}{% if p.release == oracle_rel and p.category == 'RU_Combo' %}{{ c() }}{{ swlib_unzip_path }}/{{ p.patchnum }}{{ p.patch_subdir }}{% endif %}{% endfor %}"
+  tags: rac-db,oneoff-patch
 
 - name: rac-db-install | Unzipping software
   become: yes
@@ -76,21 +137,45 @@
     dest: "{{ install_unzip_path }}/db_install.rsp"
   tags: rac-db,rac-db-response
 
-- name: rac-db-install | Run runInstaller
+- name: rac-db-install | Update DB OPatch
+  unarchive:
+    src: "{{ swlib_path }}/{{ item.patchfile }}"
+    dest: "{{ oracle_home }}"
+    remote_src: yes
+  with_items:
+    - "{{ opatch_patches }}"
+  when:
+    - item.release == oracle_ver
+    - item.category == "OPatch"
+    - oracle_rel != "base"
   become: yes
   become_user: "{{ oracle_user }}"
-  command: "{{ runinstaller_loc }}/runInstaller -silent -waitforcompletion -responseFile {{ install_unzip_path }}/db_install.rsp -ignorePrereqFailure"
+  tags: rac-db,update-opatch-db
+
+- name: rac-db-install | Set installer command
+  set_fact:
+    installer_command: "{{ runinstaller_loc }}/runInstaller -silent -waitforcompletion -responseFile {{ install_unzip_path }}/db_install.rsp {{ rel_patch | default('') }} {% if oneoff_patch_dirs|length > 0 %}-applyOneOffs {{ oneoff_patch_dirs }}{% endif %} -ignorePrereqFailure"
+  tags: rac-db,rac-db-install
+
+- name: rac-db-install | Information
+  debug:
+    msg: "Using installer cmd: {{ installer_command }}"
+  tags: rac-db,rac-db-install
+
+- name: rac-db-install | Run runInstaller
+  command: "{{ installer_command }}"
+  become: yes
+  become_user: "{{ oracle_user }}"
   register: install_rac_db
-  failed_when: "('Successfully Setup Software' not in install_rac_db.stdout) or
-                (install_rac_db.rc not in [0,6,250])"
+  failed_when:
+    - "'Successfully Setup Software' not in install_rac_db.stdout"
+    - "install_rac_db.rc not in [0,6,250]"
   tags: rac-db,rac-db-install
 
 - name: rac-db-install | Installer output
   debug:
     msg:
-      - "{{ install_rac_db.cmd }}"
-      - "{{ install_rac_db.stdout_lines }}"
-    #verbosity: 1
+      - "{{ install_rac_db }}"
   tags: rac-db,rac-db-install
 
 - name: rac-db-install | Run script root.sh

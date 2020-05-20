@@ -16,18 +16,55 @@
 - name: rac-gi-install | Set facts
   set_fact:
     install_unzip_path: "{{ grid_home }}"
-    installer_command: "{{ grid_home }}/gridSetup.sh"
-    cluvfy_command: "{{ grid_home }}/runcluvfy.sh stage -pre crs -verbose"
+    cluvfy_command: "{{ grid_home }}/runcluvfy.sh stage -pre crsinst -n {% set c = joiner(',') %}{% for h in groups['dbasm'] %}{{ c() }}{{ h }}{% endfor %} -verbose"
   tags: rac-gi
 
-- name: rac-gi-install | Installer confirmations
+- name: rac-gi-install | Information
   debug:
     msg:
       - "Installing from file : {{ swlib_path }}/{{ osw_files }}"
       - "Unzipping into dir   : {{ install_unzip_path }}"
       - "Using cluvfy cmd     : {{ cluvfy_command }}"
-      - "Using installer cmd  : {{ installer_command }}"
   tags: rac-gi
+
+- name: rac-gi-install | Define GI release
+  #if release set to latest then get most recent release from gi_patches array
+  #if nothing returned then set to "base"
+  set_fact:
+    oracle_rel: "{% if oracle_rel == 'latest' %}{{ gi_patches | json_query('[?base==`' + oracle_ver + '`].release')  | sort(reverse=true) | first | default('base', true) }}{% endif %}"
+  when: oracle_rel is defined
+  tags: rac-gi,rel-patch
+
+- name: rac-gi-install | Copy GI patch
+  import_role:
+    name: swlib
+    tasks_from: gcscopy
+  vars:
+    patching_type: gi_patching
+  when: oracle_rel != "base"
+  tags: rac-gi,sw-copy
+
+- name: rac-gi-install | Unzip GI patch
+  unarchive:
+    src: "{{ swlib_path }}/{{ item.patchfile }}"
+    dest: "{{ swlib_unzip_path }}"
+    remote_src: yes
+    creates: .gi_patch_{{ oracle_rel }}
+    owner: "{{ grid_user }}"
+    group: "{{ oracle_group }}"
+  with_items:
+    - "{{ gi_patches }}"
+  when: item.release == oracle_rel and item.category == 'RU' and item.category != "HAS_interim_patch"
+  become: yes
+  tags: rac-gi,sw-unzip
+
+- name: rac-gi-install | Set variable for release patch
+  set_fact:
+    rel_patch: "-apply{% if oracle_ver_base == '12.2' %}PSU{% else %}RU{% endif %} {{ swlib_unzip_path }}/{{ item.patchnum }}{{ item.patch_subdir }}"
+  with_items:
+    - "{{ gi_patches }}"
+  when: item.release == oracle_rel and item.category == 'RU'
+  tags: rac-gi,rel-patch
 
 - name: rac-gi-install | Create GI directories
   become: yes
@@ -42,13 +79,14 @@
   delegate_to: "{{ item }}"
   tags: rac-gi,gi-dirs
 
-- name: rac-gi-install | Unzipping HA interim patches
+- name: rac-gi-install | Unzip HA interim patches
   become: yes
   become_user: "{{ grid_user }}"
   unarchive:
     src: "{{ swlib_path }}/{{ item.files | join() }}"
-    dest: "{{ swlib_path }}"
+    dest: "{{ swlib_unzip_path }}"
     remote_src: yes
+    creates: .ha_patch_{{ oracle_ver }}
   with_items:
     - "{{ gi_interim_patches }}"
   when: item.version == oracle_ver and item.category == "HAS_interim_patch"
@@ -56,13 +94,13 @@
 
 - name: rac-gi-install | Set variable for HA interim patch
   set_fact:
-    has_patch: "-applyOneOffs {{ swlib_path }}/{{ item.patchnum | join() }}"
+    has_patch: "-applyOneOffs {{ swlib_unzip_path }}/{{ item.patchnum | join() }}"
   with_items:
     - "{{ gi_interim_patches }}"
   when: item.version == oracle_ver and item.category == "HAS_interim_patch"
   tags: rac-gi,has-patch
 
-- name: rac-gi-install | Unzipping software
+- name: rac-gi-install | Unzip software
   become: yes
   become_user: "{{ grid_user }}"
   unarchive:
@@ -117,13 +155,39 @@
     dest: "{{ install_unzip_path }}/gridsetup.rsp"
   tags: rac-gi,rac-gi-response
 
-- name: rac-gi-install | Run installer
+- name: rac-gi-install | Update GI OPatch
+  unarchive:
+    src: "{{ swlib_path }}/{{ item.patchfile }}"
+    dest: "{{ grid_home }}"
+    remote_src: yes
+  with_items:
+    - "{{ opatch_patches }}"
+  when:
+    - item.release == oracle_ver
+    - item.category == "OPatch"
+    - oracle_rel != "base"
   become: yes
   become_user: "{{ grid_user }}"
-  command: "{{ installer_command }} -silent -responseFile {{ install_unzip_path }}/gridsetup.rsp {{ has_patch | default('') }} -ignorePrereqFailure"
+  tags: rac-gi,update-opatch-gi
+
+- name: rac-gi-install | Set installer command
+  set_fact:
+    installer_command: "{{ grid_home }}/gridSetup.sh -silent -responseFile {{ install_unzip_path }}/gridsetup.rsp {{ has_patch | default('') }} {{ rel_patch | default('') }} -ignorePrereqFailure"
+  tags: rac-gi,rac-gi-install
+
+- name: rac-gi-install | Information
+  debug:
+    msg: "Using installer cmd: {{ installer_command }}"
+  tags: rac-gi,rac-gi-install
+
+- name: rac-gi-install | Run installer
+  command: "{{ installer_command }}"
+  become: yes
+  become_user: "{{ grid_user }}"
   register: install_rac_gi
-  failed_when: "('Successfully Setup Software' not in install_rac_gi.stdout) or
-                (install_rac_gi.rc not in [0,6,250])"
+  failed_when:
+    - "'Successfully Setup Software' not in install_rac_gi.stdout"
+    - "install_rac_gi.rc not in [0,6,250]"
   tags: rac-gi,rac-gi-install
 
 - name: rac-gi-install | Installer output
@@ -131,7 +195,6 @@
     msg:
       - "{{ install_rac_gi.cmd }}"
       - "{{ install_rac_gi.stdout_lines }}"
-    #verbosity: 1
   tags: rac-gi,rac-gi-install
 
 - name: rac-gi-install | Run script orainstRoot.sh
@@ -153,12 +216,35 @@
   when: "'skipped' not in install_rac_gi.stdout"
   tags: rac-gi,root-scripts
 
+- name: rac-gi-install | Change diskgroup compatibility
+  shell: |
+    set -o pipefail
+    asmcmd setattr -G {{ hostvars[groups['dbasm'].0]['dg_name'] }} compatible.{{ item }} {% if item == 'asm' %}{{ diskgroup_compatible_asm }}{% else %}{{ diskgroup_compatible_rdbms }}{% endif %}
+  environment:
+    ORACLE_HOME: "{{ grid_home }}"
+    PATH: "{{ grid_home }}/bin:${PATH}"
+    ORACLE_VERSION: "{{ oracle_ver }}"
+    ORACLE_SID: "{{ asm_sid }}"
+    LD_LIBRARY_PATH: "{{ grid_home }}/lib:${LD_LIBRARY_PATH}"
+  loop:
+    - asm
+    - rdbms
+  become: yes
+  become_user: "{{ grid_user }}"
+  register: dg_compat
+  failed_when:
+    - "'new compatibility setting less than current' not in dg_compat.stderr"
+    - dg_compat.rc != 0
+  tags: rac-gi,dg-compat
+
 - name: rac-gi-install | Complete plugin configuration
   become: yes
   become_user: "{{ grid_user }}"
-  command: "{{ installer_command }} -executeConfigTools -silent -responseFile {{ install_unzip_path }}/gridsetup.rsp"
+  command: "{{ grid_home }}/gridSetup.sh -executeConfigTools -silent -responseFile {{ install_unzip_path }}/gridsetup.rsp"
   register: gi_plugins
   ignore_errors: yes
   tags: rac-gi
 
-- include_tasks: rac-asm-create.yml
+- name: rac-gi-install | Include ASM create task
+  include_tasks: rac-asm-create.yml
+  tags: rac-gi,asm-create

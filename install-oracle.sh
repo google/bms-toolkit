@@ -87,6 +87,9 @@ fi
 ORA_VERSION="${ORA_VERSION:-19.3.0.0.0}"
 ORA_VERSION_PARAM='^(19\.3\.0\.0\.0|18\.0\.0\.0\.0|12\.2\.0\.1\.0|12\.1\.0\.2\.0|11\.2\.0\.4\.0)$'
 
+ORA_RELEASE="${ORA_RELEASE:-latest}"
+ORA_RELEASE_PARAM="^(base|latest|[0-9]{,2}\.[0-9]{,2}\.[0-9]{,2}\.[0-9]{,2}\.[0-9]{,6})$"
+
 ORA_EDITION="${ORA_EDITION:-EE}"
 ORA_EDITION_PARAM="^(EE|SE|SE2)$"
 
@@ -221,7 +224,7 @@ COMPATIBLE_RDBMS_PARAM="^[0-9][0-9]\.[0-9].*"
 
 ###
 GETOPT_MANDATORY="ora-swlib-bucket:,backup-dest:"
-GETOPT_OPTIONAL="ora-version:,ora-edition:,cluster-type:,cluster-config:,ora-staging:,ora-db-name:,ora-db-domain:,ora-db-charset:,ora-disk-mgmt:,ora-role-separation:"
+GETOPT_OPTIONAL="ora-version:,no-patch,ora-edition:,cluster-type:,cluster-config:,ora-staging:,ora-db-name:,ora-db-domain:,ora-db-charset:,ora-disk-mgmt:,ora-role-separation:"
 GETOPT_OPTIONAL="$GETOPT_OPTIONAL,ora-data-diskgroup:,ora-reco-diskgroup:,ora-asm-disks:,ora-data-mounts:,ora-listener-port:,ora-listener-name:"
 GETOPT_OPTIONAL="$GETOPT_OPTIONAL,ora-db-ncharset:,ora-db-container:,ora-db-type:,ora-pdb-name-prefix:,ora-pdb-count:,ora-redo-log-size:"
 GETOPT_OPTIONAL="$GETOPT_OPTIONAL,backup-redundancy:,archive-redundancy:,archive-online-days:,backup-level0-days:,backup-level1-days:"
@@ -253,6 +256,10 @@ while true; do
     if [[ "${ORA_VERSION}" = "12.2" ]] ; then ORA_VERSION="12.2.0.1.0"; fi
     if [[ "${ORA_VERSION}" = "12.1" ]] ; then ORA_VERSION="12.1.0.2.0"; fi
     if [[ "${ORA_VERSION}" = "11" ]]   ; then ORA_VERSION="11.2.0.4.0"; fi
+    shift;
+    ;;
+  --no-patch)
+    ORA_RELEASE="base"
     shift;
     ;;
   --ora-edition)
@@ -816,6 +823,7 @@ export ORA_SWLIB_CREDENTIALS
 export ORA_SWLIB_TYPE
 export ORA_SWLIB_PATH
 export ORA_VERSION
+export ORA_RELEASE
 export NTP_PREF
 export PB_LIST
 export COMPATIBLE_RDBMS

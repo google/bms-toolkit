@@ -126,7 +126,7 @@ shopt -s nocasematch
     exit 1
 }
 [[ ! "$ORA_RELEASE" =~ $ORA_RELEASE_PARAM ]] && {
-    echo "Incorrect parameter provided for ora-version: $ORA_RELEASE"
+    echo "Incorrect parameter provided for ora-release: $ORA_RELEASE"
     exit 1
 }
 [[ ! "$ORA_SWLIB_BUCKET" =~ $ORA_SWLIB_BUCKET_PARAM ]] && {

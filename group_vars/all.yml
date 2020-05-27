@@ -86,7 +86,7 @@ arch_bu_start_min: "{{ lookup('env','ARCHIVE_BACKUP_MIN')|default('30',true) }}"
 ## Variables for adjustment in future verions - not currently modifiable
 
 # DB configuration related variables:
-db_config_type: "{% if lookup('env','CLUSTER_TYPE') == 'NONE' %}SI{% elif lookup('env','CLUSTER_TYPE') == 'RAC' %}RAC{% endif %}"
+db_config_type: "{% if lookup('env','CLUSTER_TYPE')|default('NONE', true) == 'NONE' %}SI{% elif lookup('env','CLUSTER_TYPE') == 'RAC' %}RAC{% endif %}"
 instance_num: 1
 memory_pct: 45
 sga_target: "{{ (ansible_memory_mb.real.total*memory_pct)//100 }}M"

@@ -47,7 +47,7 @@
   #if release set to latest then get most recent release from rdbms_patches array
   #if nothing returned then set to "base"
   set_fact:
-    oracle_rel: "{% if oracle_rel == 'latest' %}{{ gi_patches | json_query('[?base==`' + oracle_ver + '`].release')  | sort(reverse=true) | first | default('base', true) }}{% endif %}"
+    oracle_rel: "{% if oracle_rel == 'latest' %}{{ gi_patches | json_query('[?base==`' + oracle_ver + '`].release')  | sort(reverse=true) | first | default('base', true) }}{% elif oracle_rel == 'base' %}{% else %}{{ oracle_rel }}{% endif %}"
   when: oracle_rel is defined
   tags: rac-db,rel-patch
 
@@ -64,20 +64,6 @@
     patching_type: gi_patching
   when: oracle_rel != "base"
   tags: rac-db,sw-copy
-
-- name: rac-db-install | Unzip RDBMS patch
-  unarchive:
-    src: "{{ swlib_path }}/{{ item.patchfile }}"
-    dest: "{{ swlib_unzip_path }}"
-    remote_src: yes
-    creates: .db_patch_{{ item.patchnum }}_{{ oracle_rel }}
-    owner: "{{ oracle_user }}"
-    group: "{{ oracle_group }}"
-  with_items:
-    - "{{ rdbms_patches }}"
-  when: item.release == oracle_rel and item.category == 'RU' and item.category != "HAS_interim_patch"
-  become: yes
-  tags: rac-db,sw-unzip
 
 - name: rac-db-install | Set variable for release patch
   set_fact:
@@ -109,13 +95,13 @@
     group: "{{ oracle_group }}"
   with_items:
     - "{{ rdbms_patches }}"
-  when: item.release == oracle_rel and item.category == 'RU_Combo'
+  when: item.release == oracle_rel
   become: yes
   tags: rac-db,sw-unzip
 
 - name: rac-db-install | Set variable for OneOff patch
   set_fact:
-    oneoff_patch_dirs: "{% set c = joiner(',') %}{% for p in rdbms_patches %}{% if p.release == oracle_rel and p.category == 'RU_Combo' %}{{ c() }}{{ swlib_unzip_path }}/{{ p.patchnum }}{{ p.patch_subdir }}{% endif %}{% endfor %}"
+    oneoff_patch_dirs: "{% set c = joiner(',') %}{% for p in rdbms_patches %}{% if p.release == oracle_rel %}{{ c() }}{{ swlib_unzip_path }}/{{ p.patchnum }}{{ p.patch_subdir }}{% endif %}{% endfor %}"
   tags: rac-db,oneoff-patch
 
 - name: rac-db-install | Unzipping software

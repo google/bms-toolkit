@@ -15,11 +15,12 @@
 ---
 
 # Installation related variables:
-swlib_path: "{{ lookup('env','ORA_SWLIB_PATH')|lower|default('/swlib',true) }}"
+swlib_path: "{{ lookup('env','ORA_SWLIB_PATH')|lower|default(swlib_path_default,true) }}"
 swlib_unzip_path: "{{ lookup('env','ORA_STAGING')|lower|default(swlib_path,true) }}"
 swlib_mount_type: "{{ lookup('env','ORA_SWLIB_TYPE')|lower|default('',true) }}" #absent for gcsfuse or nfs
 swlib_mount_src: "{{ lookup('env','ORA_SWLIB_BUCKET')|default('',true) | regex_replace ('^gs://') }}"
 swlib_gcs_service_account_file: "{{ lookup('env','ORA_SWLIB_CREDENTIALS')|default('',true) }}"
+swlib_path_default: "{{ oracle_user_data_mounts|selectattr('purpose', 'equalto', 'software') | map(attribute='mount_point') | list | first }}/swlib"
 
 ## The toolkit can optionally configure swap space
 #If your RAM size is less than or equal to 2 GB, your swap size should be 1.5 times of the RAM. For example, if your RAM size is 2 GB, you should create swap space of 3GB

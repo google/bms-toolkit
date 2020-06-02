@@ -17,6 +17,7 @@
   firewalld:
     port: "{{ listener_port }}/tcp"
     permanent: yes
+    immediate: yes
     state: enabled
 
 - name: Test whether port is free

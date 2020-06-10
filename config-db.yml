@@ -23,7 +23,6 @@
         that: "ansible_version.full is version_compare('2.8', '>=')"
         fail_msg: "You must update Ansible to at least 2.8 to use these playbooks"
         success_msg: "Ansible version is {{ ansible_version.full }}, continuing"
-
   tasks:
   - include_role:
       name: lsnr-create
@@ -38,45 +37,5 @@
       - validation-scripts
     loop_control:
       loop_var: role_item
-    when:
-     - create_db|bool
-     - cluster_type == "NONE"
+    when: create_db|bool
   tags: lsnr-create,db-create,db-adjustments,db-backups,validation-scripts
-
-- hosts: dbasm[0]
-  tasks:
-    - include_role:
-        name: db-create
-        tasks_from: rac-db-create.yml
-    - include_role:
-        name: "{{ role_item }}"
-        tasks_from: main
-      loop:
-        - db-adjustements
-        - db-backups
-        - validation-scripts
-      loop_control:
-        loop_var: role_item
-      when:
-        - create_db|bool
-        - cluster_type == "RAC"
-      tags: rac-db-create,rac-db-adjustments,rac-db-backups,rac-validation-scripts
-
-- hosts: all
-  become: yes
-  become_user: root
-  tasks:
-    - name: Add instance to oratab | Get variables
-      include_vars:
-        dir: roles/common/defaults
-    - name: Add instance to oratab | Get the running instance name
-      shell: "set -o pipefail; ps -ef | (grep -i pmon_{{ db_name }} || true ) | ( grep -v grep || true ) | sed s'/^.*pmon_//g'"
-      changed_when: false
-      register: instance_name
-    - name: Add instance to oratab | Add entries to files
-      blockinfile:
-        path: /etc/oratab
-        marker: "# {mark} ANSIBLE MANAGED BLOCK"
-        block: |
-          {{ instance_name.stdout }}:{{ oracle_home }}:N   # Line managed by ansible
-  tags: rac-db-create

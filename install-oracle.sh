@@ -28,6 +28,7 @@ PB_CHECK_INSTANCE="check-instance.yml"
      PB_PREP_HOST="prep-host.yml"
     PB_INSTALL_SW="install-sw.yml"
      PB_CONFIG_DB="config-db.yml"
+ PB_CONFIG_RAC_DB="config-rac-db.yml"
 #
 # These playbooks must exist
 #
@@ -776,6 +777,13 @@ else
 fi
 export ANSIBLE_LOG_PATH=${LOG_FILE}
 
+#
+# if RAC then use config-rac-db playboook, otherwise - config-db
+#
+if [[ "${CLUSTER_TYPE}" = "RAC" ]]; then
+  PB_LIST=${PB_LIST/$PB_CONFIG_DB/config-rac-db.yml}
+  PB_CONFIG_DB="config-rac-db.yml"
+fi
 
 #
 # Trim tailing slashes from variables with paths

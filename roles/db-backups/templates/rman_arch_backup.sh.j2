@@ -10,7 +10,7 @@
                     TS="date +%Y-%m-%d_%H-%M-%S"        # A timestamp
                 A_DATE=$($TS)                           # The current date
                LOG_DIR='{{ logs_dir }}'                 # A directory for the logs
-                  TYPE="ARCH"				# Type is archivelog backup 
+                  TYPE="ARCH"                           # Type is archivelog backup
 export NLS_DATE_FORMAT="DD/MM/YYYY HH24:MI:SS"          # A nice date format for the RMAN logs
 #
 # Set the Oracle env
@@ -26,38 +26,38 @@ logfile="${LOG_DIR}/rman_${A_DATE}_${TYPE}.log"
 # Do the backup
 #
 ${ORACLE_HOME}/bin/rman >> ${outfile} << EOF
-   set echo on
-   spool log to '${logfile}'
-   connect target {% if oracle_ver == "11.2.0.4.0" %}'/'{% else %}'/ AS SYSBACKUP'{% endif %}
+  set echo on
+  spool log to '${logfile}'
+  connect target {% if oracle_ver == "11.2.0.4.0" %}'/'{% else %}'/ AS SYSBACKUP'{% endif %}
 
-   configure controlfile autobackup on										;
-   configure device type disk parallelism 4									;
-   {% if backup_dest[0:1]  == "/" %}
-   configure controlfile autobackup format for device type disk to '{{ backup_dest }}/${ORA_INST_NAME}_%F'      ;
-   configure channel device type disk format '{{ backup_dest }}/${ORA_INST_NAME}_${TYPE}_%U'			;
-   {% else %}   
-   configure controlfile autobackup format for device type disk to '{{ backup_dest }}'      			;
-   configure channel device type disk format '{{ backup_dest }}'						;
-   {% endif %}
-
-   configure archivelog deletion policy to backed up ${ARCH_REDUNDANCY} times to disk				;
-   run {
-      crosscheck archivelog all											;
-      backup check logical archivelog all not backed up ${ARCH_REDUNDANCY} times				;
-      delete noprompt archivelog all backed up ${ARCH_REDUNDANCY} times to disk completed before 'SYSDATE-${ARCH_DAYS_ONLINE}';
-   }
-   spool log off
+  configure controlfile autobackup on;
+  configure device type disk parallelism 4;
+  {% if backup_dest[0:1]  == "/" %}
+  configure controlfile autobackup format for device type disk to '{{ backup_dest }}/${ORA_INST_NAME}_%F';
+  configure channel device type disk format '{{ backup_dest }}/${ORA_INST_NAME}_${TYPE}_%U';
+  {% else %}
+  configure controlfile autobackup format for device type disk to '{{ backup_dest }}';
+  configure channel device type disk format '{{ backup_dest }}';
+  {% endif %}
+  configure snapshot controlfile name to '+{{ reco_diskgroup }}/{{ db_name }}/snapcf_{{ db_name }}.f';
+  configure archivelog deletion policy to backed up ${ARCH_REDUNDANCY} times to disk;
+  run {
+    crosscheck archivelog all;
+    backup check logical archivelog all not backed up ${ARCH_REDUNDANCY} times;
+    delete noprompt archivelog all backed up ${ARCH_REDUNDANCY} times to disk completed before 'SYSDATE-${ARCH_DAYS_ONLINE}';
+  }
+  spool log off
 EOF
 #
 # Return code management
 #
 if [ $? = 0 ]; then
-        printf "\n\t%s\n" "INFO -- $($TS) -- ${TYPE} backup of database ${ORA_INST_NAME} has been completed successfully."
-        printf "\t%s\n\n" "INFO -- $($TS) -- logfile used by this session: ${logfile}."
-        RET_CODE=0
+  printf "\n\t%s\n" "INFO -- $($TS) -- ${TYPE} backup of database {{ db_name }} has been completed successfully."
+  printf "\t%s\n\n" "INFO -- $($TS) -- logfile used by this session: ${logfile}."
+  RET_CODE=0
 else
-        printf "\n\t%s\n\n" "ERROR -- $($TS) --  ${TYPE} backup of database ${ORA_INST_NAME} had errors, please have a look at the logfile: ${logfile}."
-        RET_CODE=123
+  printf "\n\t%s\n\n" "ERROR -- $($TS) --  ${TYPE} backup of database {{ db_name }} had errors, please have a look at the logfile: ${logfile}."
+  RET_CODE=123
 fi
 exit ${RET_CODE}
 #

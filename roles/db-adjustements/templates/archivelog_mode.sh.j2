@@ -1,7 +1,8 @@
 source oraenv <<< {{ oracle_sid }}
 
+srvctl stop db -d {{ db_name }} -o immediate
+
 sqlplus -s / as sysdba << EOF
-shutdown immediate
 startup mount
 alter database archivelog;
 alter database open;
@@ -23,3 +24,5 @@ select name, display_value from v\$system_parameter2 where name like 'db_recover
 )
 order by 1,2;
 EOF
+
+srvctl start db -d {{ db_name }}

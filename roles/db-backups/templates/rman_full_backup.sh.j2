@@ -2,32 +2,32 @@
 #
 # Example: ./rman_full_backup.sh ORCL 0 2 2
 #
-         ORA_INST_NAME=${1}				# Instance name-- should match /etc/oratab
-            RMAN_LEVEL=${2}				# Backup level
-  RETENTION_REDUNDANCY=${3}				# Retention
-       ARCH_REDUNDANCY=${4}				# Archivelog redundancy
-                    TS="date +%Y-%m-%d_%H-%M-%S"	# A timestamp
-                A_DATE=$($TS)				# The current date
-               LOG_DIR='{{ logs_dir }}'			# A directory for the logs
-export NLS_DATE_FORMAT="DD/MM/YYYY HH24:MI:SS"		# A nice date format for RMAN logs
+         ORA_INST_NAME=${1}                             # Instance name-- should match /etc/oratab
+            RMAN_LEVEL=${2}                             # Backup level
+  RETENTION_REDUNDANCY=${3}                             # Retention
+       ARCH_REDUNDANCY=${4}                             # Archivelog redundancy
+                    TS="date +%Y-%m-%d_%H-%M-%S"        # A timestamp
+                A_DATE=$($TS)                           # The current date
+               LOG_DIR='{{ logs_dir }}'                 # A directory for the logs
+export NLS_DATE_FORMAT="DD/MM/YYYY HH24:MI:SS"          # A nice date format for RMAN logs
 #
 # A tag for the logfile and output file depending on the backup level
 #
 if [[ "${RMAN_LEVEL}" = "0" ]]; then
-        TYPE="FULL"					# Full backup
+        TYPE="FULL"                                     # Full backup
 else
-        TYPE="INCR"					# Incremental
+        TYPE="INCR"                                     # Incremental
 fi
 #
 # Check if $LOG_DIR exists; if not, we create it
 #
 if [[ ! -d ${LOG_DIR} ]]; then
-	mkdir -p ${LOG_DIR}
-	if [ $? -eq 0 ];  then
-        	printf "\n\t%s\n\n" "INFO -- $($TS) -- ${LOG_DIR} successfully created."
-	else
-		printf "\n\t%s\n\n" "ERROR -- $($TS) -- Impossible to create ${LOG_DIR}; we wont be able to log this backup."
-	fi
+        mkdir -p ${LOG_DIR}
+        if [ $? -eq 0 ];  then
+                printf "\n\t%s\n\n" "INFO -- $($TS) -- ${LOG_DIR} successfully created."
+        else
+                printf "\n\t%s\n\n" "ERROR -- $($TS) -- Impossible to create ${LOG_DIR}; we wont be able to log this backup."
+        fi
 fi
 #
 # We can now build the output file and logfile names
@@ -47,48 +47,50 @@ ${ORACLE_HOME}/bin/rman >> ${outfile} << EOF
    spool log to '${logfile}'
    connect target {% if oracle_ver == "11.2.0.4.0" %}'/'{% else %}'/ AS SYSBACKUP'{% endif %}
 
-   configure controlfile autobackup on										;
-   configure device type disk parallelism 4									;
+   configure controlfile autobackup on;
+   configure device type disk parallelism 4;
 
    {% if backup_dest[0:1]  == "/" %}
-   configure controlfile autobackup format for device type disk to '{{ backup_dest }}/${ORA_INST_NAME}_%F'	;
+   configure controlfile autobackup format for device type disk to '{{ backup_dest }}/${ORA_INST_NAME}_%F';
    configure channel device type disk format '{{ backup_dest }}/${ORA_INST_NAME}_${TYPE}_Level_${RMAN_LEVEL}_%U';
-   {% else %}	
-   configure controlfile autobackup format for device type disk to '{{ backup_dest }}'				;
-   configure channel device type disk format '{{ backup_dest }}'						;
+   {% else %}
+   configure controlfile autobackup format for device type disk to '{{ backup_dest }}';
+   configure channel device type disk format '{{ backup_dest }}';
+   {% endif %}
+   {% if cluster_type|default('', true) == "RAC" %}
+   configure snapshot controlfile name to '+{{ reco_diskgroup }}/{{ db_name }}/snapcf_{{ db_name }}.f';
    {% endif %}
 
-   configure archivelog deletion policy to backed up ${ARCH_REDUNDANCY} times to disk				;
-   configure retention policy to redundancy ${RETENTION_REDUNDANCY}						;
+   configure archivelog deletion policy to backed up ${ARCH_REDUNDANCY} times to disk;
+   configure retention policy to redundancy ${RETENTION_REDUNDANCY};
    show all;
    run {
       backup check logical
       incremental level=${RMAN_LEVEL} cumulative database
       filesperset 1
       include current controlfile
-      plus archivelog not backed up ${ARCH_REDUNDANCY} times							;
-      report unrecoverable											;
-      report need backup											;
+      plus archivelog not backed up ${ARCH_REDUNDANCY} times;
+      report unrecoverable;
+      report need backup;
    }
-   crosscheck backup												;
-   crosscheck archivelog all											;
-   delete noprompt obsolete											;
+   crosscheck backup;
+   crosscheck archivelog all;
+   delete noprompt obsolete;
    spool log off
 EOF
 #
 # Success or error output with the name of the logfile
 #
 if [ $? = 0 ]; then
-        printf "\n\t%s\n" "INFO -- $($TS) -- ${TYPE} Level ${RMAN_LEVEL} of database ${ORA_INST_NAME} has been completed successfully."
+        printf "\n\t%s\n" "INFO -- $($TS) -- ${TYPE} Level ${RMAN_LEVEL} of database {{ db_name }} has been completed successfully."
         printf "\t%s\n\n" "INFO -- $($TS) -- logfile used by this session: ${logfile}."
-	RET_CODE=0
+        RET_CODE=0
 else
-        printf "\n\t%s\n\n" "ERROR -- $($TS) --  ${TYPE} Level ${RMAN_LEVEL} of database ${ORA_INST_NAME} had errors, please have a look at the logfile: ${logfile}."
-	RET_CODE=123
+        printf "\n\t%s\n\n" "ERROR -- $($TS) --  ${TYPE} Level ${RMAN_LEVEL} of database {{ db_name }} had errors, please have a look at the logfile: ${logfile}."
+        RET_CODE=123
 fi
 exit ${RET_CODE}
 #
 #****************************************************************************************#
-#			E N D      O F       S O U R C E				*#
+#                       E N D      O F       S O U R C E                                *#
 #****************************************************************************************#
-

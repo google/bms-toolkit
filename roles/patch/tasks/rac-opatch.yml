@@ -100,12 +100,23 @@
     - oracle_ver != '11.2.0.4.0'
   register: opatch_analyze
   changed_when: false
-  failed_when: "'Analysis for the patches failed' in opatch_analyze.stdout"
+  ignore_errors: true
+  #failed_when: "'Analysis for the patches failed' in opatch_analyze.results.0.stdout"
   become: yes
   tags: rac-opatch
 
+- name: rac-opatch | If patch to apply then variable is true
+  block:
+  - name: check is apply is needed
+    set_fact:
+      apply_needed: "{{ opatch_analyze.results.0.stdout_lines is search('Following patches were SUCCESSFULLY analyzed to be applied') }}"
+  - name: show the variable value
+    debug:
+      msg: "apply needed? - {{ apply_needed }}"
+  tags: rac-opatch
+
 - name: rac-opatch | GI opatch analyze output
-  debug: var=opatch_analyze.results.stdout_lines
+  debug: var=opatch_analyze.results.0.stdout_lines
   when: opatch_analyze is defined
   tags: rac-opatch
 
@@ -115,15 +126,61 @@
   when:
     - item != inventory_hostname
     - inventory_hostname == groups['dbasm'].0
-    - oracle_rel | regex_search('^19\.[3-6]\.') | default('', true) | length > 0
+    - oracle_rel | regex_search('^19\.') | default('', true) | length > 0
   become: yes
   become_user: "{{ grid_user }}"
   tags: rac-opatch,bug-opatch
+
+- name: rac-opatch | TFA status
+  command: "{{ grid_home }}/bin/tfactl status"
+  no_log: true
+  register: tfa_check
+  become: yes
+  changed_when: false
+  ignore_errors: true
+  tags: rac-opatch,tfa
+
+  # opatchauto fails if TFA is not stopped
+- name: rac-opatch | Stop TFA
+  command: "{{ grid_home }}/bin/tfactl stop"
+  no_log: true
+  become: yes
+  when:
+    - "'is not running' not in tfa_check.stdout"
+    - "'Cannot establish connection with TFA Server' not in tfa_check.stdout"
+    - apply_needed
+  ignore_errors: true
+  tags: rac-opatch,tfa
+
+  # hung "asmcmd daemon" process causing failure of opatchauto
+- name: rac-opatch | Kill asmcmd daemon processes
+  command: "pkill -9 'asmcmd daemon'"
+  no_log: true
+  when: apply_needed
+  become: yes
+  ignore_errors: true
+  tags: rac-opatch
+
+  # with MGMTDB installed under grid permissions should be adjusted for oracle
+- name: rac-dbpatch | Adjust sqlpatch objects
+  file:
+    path: "{{ item.obj_path }}"
+    state: "{{ item.obj_type }}"
+    mode: g+w
+    owner: "{{ oracle_user }}"
+    group: "{{ oracle_group }}"
+  loop:
+    - { obj_path: "{{ oracle_base }}/cfgtoollogs/sqlpatch", obj_type: "directory" }
+    - { obj_path: "{{ oracle_base }}/cfgtoollogs/sqlpatch/sqlpatch_history.txt", obj_type: "file" }
+  when: apply_needed
+  become: yes
+  tags: patch_rdbms,datapatch
 
 - name: rac-opatch | Remove db_state.out if it exists
   file:
     path: "{{ swlib_unzip_path }}/db_state.out"
     state: absent
+  when: apply_needed
   become: yes
   become_user: "{{ oracle_user }}"
   tags: rac-opatch,stop-home
@@ -131,12 +188,14 @@
 - name: rac-opatch | Define node variable
   set_fact:
     node_var: "-node {{ inventory_hostname }}"
+  when: apply_needed
   tags: rac-opatch,stop-home
 
 - name: rac-opatch | Stop RDBMS home
   command: "{{ oracle_home }}/bin/srvctl stop home -o {{ oracle_home }} -t immediate -s {{ swlib_unzip_path }}/db_state.out {{ node_var }}"
   environment:
     ORACLE_HOME: "{{ oracle_home }}"
+  when: apply_needed
   register: stop_home
   failed_when: stop_home.rc not in [0,2]
   become: yes
@@ -150,13 +209,15 @@
   loop: "{{ gi_patches | json_query('[?release==`'+ oracle_rel +'`]') }}"
   loop_control:
     loop_var: patch
-  when: oracle_ver != '11.2.0.4.0'
+  when:
+    - oracle_ver != '11.2.0.4.0'
+    - apply_needed
   register: opatch_apply
   become: yes
   tags: rac-opatch
 
 - name: rac-opatch | Results of GI opatch apply
-  debug: var=opatch_apply.results.stdout_lines
+  debug: var=opatch_apply.results.0.stdout_lines
   when: opatch_apply is defined
   tags: rac-opatch
 
@@ -217,9 +278,9 @@
   loop_control:
     loop_var: patch
   when:
-    - not patch.prereq_check
+    - patch.prereq_check
     - oracle_ver != '11.2.0.4.0'
-  register: opatch_analyze
+  register: rdbms_analyze
   ignore_errors: true
   changed_when: false
   become: yes
@@ -227,8 +288,8 @@
   tags: rac-opatch
 
 - name: rac-opatch | RDBMS opatch analyze output
-  debug: var=opatch_analyze
-  when: opatch_analyze is defined
+  debug: var=rdbms_analyze.results.0.stdout_lines
+  when: rdbms_analyze is defined
   tags: rac-opatch
 
 - name: rac-opatch | Run RDBMS opatch apply
@@ -239,20 +300,21 @@
   loop_control:
     loop_var: patch
   when: oracle_ver != '11.2.0.4.0'
-  register: opatch_apply
+  register: rdbms_apply
   become: yes
   become_user: "{{ oracle_user }}"
   tags: rac-opatch
 
 - name: rac-opatch | Results of RDBMS opatch apply
-  debug: var=opatch_apply.results.stdout_lines
-  when: opatch_apply is defined
+  debug: var=rdbms_apply.results.0.stdout_lines
+  when: rdbms_apply is defined
   tags: rac-opatch
 
 - name: rac-opatch | Start RDBMS home
   command: "{{ oracle_home }}/bin/srvctl start home -o {{ oracle_home }} -s {{ swlib_unzip_path }}/db_state.out  {{ node_var }}"
   environment:
     ORACLE_HOME: "{{ oracle_home }}"
+  when: apply_needed
   register: start_home
   failed_when: start_home.rc not in [0,2]
   become: yes

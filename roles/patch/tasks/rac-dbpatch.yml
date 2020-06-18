@@ -43,12 +43,6 @@
   become_user: "{{ oracle_user }}"
   tags: patch_rdbms,upgrade_db
 
-- name: rac-dbpatch | Shutdown DB results
-  debug:
-    msg: "{{ shutdown_db }}"
-    verbosity: 1
-  tags: patch_rdbms,upgrade_db
-
 - name: rac-dbpatch | Start instance
   shell: |
     set -o pipefail
@@ -62,14 +56,18 @@
   become_user: "{{ oracle_user }}"
   tags: patch_rdbms,upgrade_db
 
-- name: rac-opatch | Instance startup output
-  debug: var=startup_db
-  tags: patch_rdbms,upgrade_db
-
 - name: rac-dbpatch | Start all PDBs
   shell: |
     set -o pipefail
-    sqlplus -s / as sysdba <<< "alter pluggable database all open {{ startup_upgrade }};"
+    sqlplus -s / as sysdba << EOF
+    begin
+      for c in (select 1 from v\$system_parameter2 where name = 'enable_pluggable_database' and value = 'TRUE')
+    loop
+      execute immediate 'alter pluggable database all open {{ startup_upgrade }}';
+    end loop;
+    end;
+    /
+    EOF
   environment:
     ORACLE_HOME: "{{ oracle_home }}"
     ORACLE_SID: "{{ oracle_sid }}"
@@ -78,16 +76,8 @@
   ignore_errors: yes
   become: yes
   become_user: "{{ oracle_user }}"
-  when:
-    - oracle_ver != '11.2.0.4.0'
-    - lookup('env', 'ORA_DB_CONTAINER')|bool
+  when: oracle_ver != '11.2.0.4.0'
   tags: patch_rdbms,start_pdb
-
-- name: rac-dbpatch | Start PDBs output
-  debug: var=startup_pdb
-  when:
-    - oracle_ver != '11.2.0.4.0'
-    - lookup('env', 'ORA_DB_CONTAINER')|bool
 
 - name: rac-dbpatch | Run datapatch
   shell: |
@@ -98,7 +88,7 @@
     PATH: "{{ oracle_home }}/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin"
   when: oracle_ver != '11.2.0.4.0'
   register: datapatch_output
-  failed_when: "datapatch_output.rc != 0"
+  ignore_errors: yes
   become: yes
   become_user: "{{ oracle_user }}"
   tags: patch_rdbms,datapatch
@@ -195,7 +185,15 @@
 - name: rac-dbpatch | Start all PDBs
   shell: |
     set -o pipefail
-    sqlplus -s / as sysdba <<< "alter pluggable database all open;"
+    sqlplus -s / as sysdba << EOF
+    begin
+      for c in (select 1 from v\$system_parameter2 where name = 'enable_pluggable_database' and value = 'TRUE')
+    loop
+      execute immediate 'alter pluggable database all open';
+    end loop;
+    end;
+    /
+    EOF
   environment:
     ORACLE_HOME: "{{ oracle_home }}"
     ORACLE_SID: "{{ oracle_sid }}"
@@ -204,14 +202,49 @@
   ignore_errors: yes
   become: yes
   become_user: "{{ oracle_user }}"
-  when:
-    - oracle_ver != '11.2.0.4.0'
-    - lookup('env', 'ORA_DB_CONTAINER')|bool
+  when: oracle_ver != '11.2.0.4.0'
   tags: patch_rdbms,start_pdb
 
-- name: rac-dbpatch | Start all PDBs output
-  debug: var=startup_pdb
+- name: rac-dbpatch | Run datapatch second time
+  shell: |
+    {{ oracle_home }}/OPatch/datapatch -verbose
+  environment:
+    ORACLE_SID: "{{ oracle_sid }}"
+    ORACLE_HOME: "{{ oracle_home }}"
+    PATH: "{{ oracle_home }}/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin"
   when:
     - oracle_ver != '11.2.0.4.0'
-    - lookup('env', 'ORA_DB_CONTAINER')|bool
+  register: datapatch_output2
+  ignore_errors: yes
+  become: yes
+  become_user: "{{ oracle_user }}"
+  tags: patch_rdbms,datapatch
+
+- name: rac-dbpatch | Datapatch results for second time
+  debug: var=datapatch_output2.stdout_lines
+  when: oracle_ver != '11.2.0.4.0'
+  tags: patch_rdbms,datapatch
+
+- name: rac-dbpatch | Close and open all PDBs for second time
+  shell: |
+    set -o pipefail
+    sqlplus -s / as sysdba << EOF
+    begin
+      for c in (select 1 from v\$system_parameter2 where name = 'enable_pluggable_database' and value = 'TRUE')
+    loop
+      execute immediate 'alter pluggable database all close';
+      execute immediate 'alter pluggable database all open';
+    end loop;
+    end;
+    /
+    EOF
+  environment:
+    ORACLE_HOME: "{{ oracle_home }}"
+    ORACLE_SID: "{{ oracle_sid }}"
+    PATH: "{{ oracle_home }}/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin"
+  register: restart_pdb
+  ignore_errors: yes
+  become: yes
+  become_user: "{{ oracle_user }}"
+  when: oracle_ver != '11.2.0.4.0'
   tags: patch_rdbms,start_pdb

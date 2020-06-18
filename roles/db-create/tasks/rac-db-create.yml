@@ -52,7 +52,7 @@
   set_fact:
     pass_param: "{{pwgen_path}}/{{pwgen_file}} 16 'AaBbCc12345'"
   tags: rac-db-create
-  
+
 - name: rac-db-create | Generate random passwords
   set_fact:
     pwd_gen_cmd: echo -e "$({{ pass_param }})\n$({{ pass_param }}){% if oracle_ver != "11.2.0.4.0" %}\n$({{ pass_param }}){% endif %}"
@@ -125,3 +125,180 @@
   debug:
      msg: "{{ dbca_output | default('') }}"
   tags: rac-db-create
+
+- name: rac-db-create | Save PDBs state
+  shell: |
+    set -o pipefail
+    sqlplus / as sysdba << EOF
+    alter pluggable database all save state;
+    EOF
+  environment:
+    ORACLE_HOME: "{{ oracle_home }}"
+    ORACLE_SID: "{{ oracle_sid }}"
+    PATH: "{{ oracle_home }}/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin"
+  when:
+    - oracle_ver != '11.2.0.4.0'
+    - pdb_prefix is defined
+  become: yes
+  become_user: "{{ oracle_user }}"
+  tags: rac-db-create,pdbs-state
+
+- name: rac-db-create | Get SID on the node
+  shell: |
+    set -o pipefail
+    export ORACLE_HOME={{ oracle_home }}
+    export PATH=${ORACLE_HOME}/bin:${PATH}:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin
+    srvctl status db -d {{ db_name }} -sid
+  become: yes
+  become_user: "{{ oracle_user }}"
+  changed_when: false
+  register: sid_node
+  tags: rac-db-create
+
+- name: rac-db-create | Add instance to oratab
+  lineinfile:
+    path: /etc/oratab
+    regexp: '^{{ sid_node.stdout }}\:'
+    line: '{{ sid_node.stdout }}:{{ oracle_home }}:N'
+  become: yes
+  tags: rac-db-create
+
+# Run the block of tasks to patch database to the latest release
+- name: rac-db-create | Blocks of tasks if release is not base
+  vars:
+    startup_upgrade: upgrade
+  block:
+    - name: rac-db-create | Set cluster_database to false
+      shell: |
+        set -o pipefail
+        sqlplus -s / as sysdba <<< "alter system set cluster_database=false scope=spfile;"
+      environment:
+        ORACLE_HOME: "{{ oracle_home }}"
+        ORACLE_SID: "{{ oracle_sid }}"
+        PATH: "{{ oracle_home }}/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin"
+      become: yes
+      become_user: "{{ oracle_user }}"
+
+    - name: rac-db-create | Stop database
+      shell: |
+        set -o pipefail
+        srvctl stop db -d {{ db_name }} -o immediate
+      environment:
+        ORACLE_HOME: "{{ oracle_home }}"
+        ORACLE_SID: "{{ oracle_sid }}"
+        PATH: "{{ oracle_home }}/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin"
+      register: shutdown_db
+      become: yes
+      become_user: "{{ oracle_user }}"
+
+    - name: rac-db-create | Startup upgrade
+      shell: |
+        set -o pipefail
+        sqlplus -s / as sysdba <<< "startup {{ startup_upgrade }};"
+      environment:
+        ORACLE_HOME: "{{ oracle_home }}"
+        ORACLE_SID: "{{ oracle_sid }}"
+        PATH: "{{ oracle_home }}/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin"
+      register: startup_db
+      become: yes
+      become_user: "{{ oracle_user }}"
+
+    - name: rac-db-create | Open pluggable databases in upgrade mode
+      shell: |
+        set -o pipefail
+        sqlplus -s / as sysdba << EOF
+        begin
+          for c in (select 1 from v\$system_parameter2 where name = 'enable_pluggable_database' and value = 'TRUE')
+        loop
+          execute immediate 'alter pluggable database all open {{ startup_upgrade }}';
+        end loop;
+        end;
+        /
+        EOF
+      environment:
+        ORACLE_HOME: "{{ oracle_home }}"
+        ORACLE_SID: "{{ oracle_sid }}"
+        PATH: "{{ oracle_home }}/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin"
+      when: oracle_ver != '11.2.0.4.0'
+      ignore_errors: yes
+      become: yes
+      become_user: "{{ oracle_user }}"
+
+    - name: rac-db-create | Run datapatch
+      shell: |
+        {{ oracle_home }}/OPatch/datapatch -verbose
+      environment:
+        ORACLE_SID: "{{ oracle_sid }}"
+        ORACLE_HOME: "{{ oracle_home }}"
+        PATH: "{{ oracle_home }}/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin"
+      when: oracle_ver != '11.2.0.4.0'
+      register: datapatch_output
+      ignore_errors: yes
+      become: yes
+      become_user: "{{ oracle_user }}"
+
+    - name: rac-db-create | Show datapatch results
+      debug: var=datapatch_output.stdout_lines
+      when: oracle_ver != '11.2.0.4.0'
+
+    - name: rac-db-create | Set cluster_database to true
+      shell: |
+        set -o pipefail
+        sqlplus -s / as sysdba <<< "alter system set cluster_database=true scope=spfile;"
+      environment:
+        ORACLE_HOME: "{{ oracle_home }}"
+        ORACLE_SID: "{{ oracle_sid }}"
+        PATH: "{{ oracle_home }}/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin"
+      become: yes
+      become_user: "{{ oracle_user }}"
+
+    - name: rac-db-create | Restart database
+      shell: |
+        set -o pipefail
+        srvctl stop instance -i {{ oracle_sid }} -d {{ db_name }} ; \
+        srvctl start db -d {{ db_name }} ;
+      environment:
+        ORACLE_HOME: "{{ oracle_home }}"
+        PATH: "{{ oracle_home }}/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin"
+      register: restart_db
+      become: yes
+      become_user: "{{ oracle_user }}"
+
+    - name: rac-db-create | Close and open pluggable databases
+      shell: |
+        set -o pipefail
+        sqlplus -s / as sysdba << EOF
+        begin
+          for c in (select 1 from v\$system_parameter2 where name = 'enable_pluggable_database' and value = 'TRUE')
+        loop
+          execute immediate 'alter pluggable database all close';
+          execute immediate 'alter pluggable database all open';
+        end loop;
+        end;
+        /
+        EOF
+      environment:
+        ORACLE_HOME: "{{ oracle_home }}"
+        ORACLE_SID: "{{ oracle_sid }}"
+        PATH: "{{ oracle_home }}/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin"
+      ignore_errors: yes
+      become: yes
+      become_user: "{{ oracle_user }}"
+      when: oracle_ver != '11.2.0.4.0'
+
+    - name: rac-db-create | Show pluggable databases
+      shell: |
+        set -o pipefail
+        sqlplus -s / as sysdba << EOF
+        show pdbs
+        EOF
+      environment:
+        ORACLE_HOME: "{{ oracle_home }}"
+        ORACLE_SID: "{{ oracle_sid }}"
+        PATH: "{{ oracle_home }}/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin"
+      ignore_errors: yes
+      become: yes
+      become_user: "{{ oracle_user }}"
+      when: oracle_ver != '11.2.0.4.0'
+  when: oracle_rel != "base"
+  tags: rac-db-create,newdb-datapatch

@@ -24,49 +24,5 @@
   vars:
     allow_install_on_vm: false
 
-  tasks:
-
-    - name: Test connectivity to target instance via ping
-      ping:
-      register: pingrc
-
-    - name: Abort if ping module fails
-      assert:
-        that: "pingrc.ping == 'pong'"
-        fail_msg: >-
-          The instance does not have an usable python distribution
-        success_msg: >-
-          The instance has an usable python installation, continuing
-
-    - name: Collect facts from target
-      setup:
- 
-    - name: Platform verification
-      fail:
-        msg: "The system may not be provisioned on VM by default. Use the allow_install_on_vm option for VM testing"
-      when:
-        - ansible_system_vendor == "Google"
-        - ansible_virtualization_type == "kvm"
-        - ansible_virtualization_role == "guest"
-        - allow_install_on_vm == false
-
-    - name: Test privilege escalation on target
-      raw: sudo -u root whoami
-      register: rawrc
-      changed_when: False
-
-    - name: Fail if unable to sudo to root on target
-      assert:
-        that: "rawrc.stdout_lines[0] == 'root'"
-        fail_msg: "The account {{ ansible_user }} used to connect does not have sudo privileges to root"
-        success_msg: "The account {{ ansible_user }} used to connect has sudo root privileges, continuing"
-
-    - name: Check for Python installation
-      raw: test -e /usr/bin/python || test -e /usr/bin/python3
-      changed_when: false
-      failed_when: false
-      register: check_python
-
-    - name: Install Python if required
-      raw: sudo yum -y install python3
-      when: check_python.rc != 0
+  roles:
+    - check-instance

@@ -1,0 +1,58 @@
+# Copyright 2020 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+---
+install_os_packages: true
+
+packages:
+  - chrony
+  - bind-utils
+  - unzip
+  - expect
+  - wget
+  - net-tools
+  - squid
+  - dnsmasq
+  - git
+
+running_services:
+  - chronyd
+  - dnsmasq
+  - squid
+
+ntp_servers:
+  - time1.google.com
+  - time2.google.com
+  - time3.google.com
+  - time4.google.com
+
+ntp_allow_from: 
+  - 192.168.100.0/16
+
+dnsmasq_listen_addr: 
+  - 127.0.0.1
+
+squid_cache_port: 3128
+
+squid_listen_addr:
+  - 127.0.0.1
+
+squid_allow_from:
+  - 127.0.0.0/8
+
+remote_server_port: 22
+remote_server_timeout: 5
+
+remote_servers:
+  - 127.0.0.1

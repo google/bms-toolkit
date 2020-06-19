@@ -76,7 +76,8 @@ options, and usage scenarios. All commands run from the "control node".
       --backup-dest "+RECO" \  
       --ora-swlib-path /u02/swlib/ \  
       --ora-swlib-type gcs \  
-      --instance-ip-addr ${INSTANCE_IP_ADDR}```
+      --instance-ip-addr ${INSTANCE_IP_ADDR}
+	```
 
 ## Command quick reference for RAC deployments
 
@@ -106,7 +107,8 @@ Initial steps similar to those of the Single Instance installation.
       --ora-swlib-path /u02/swlib/ \  
       --ora-swlib-type gcs \  
       --instance-ip-addr ${INSTANCE_IP_ADDR} \  
-      --cluster-type RAC```
+      --cluster-type RAC
+	```
 
 ## Overview
 
@@ -652,7 +654,8 @@ Found p30463673_122010_Linux-x86-64.zip : COMBO OF OJVM RU COMPONENT 12.2.0.1.20
         file size matches (2135739707), md5 matches (04e26701ecdf04898abe363cdbeaaa40).
 
 Found p6880880_122010_Linux-x86-64.zip : OPatch Utility
-        size does not match (remote: 118408624, expected: 111682884), md5 does not match (remote: b8e1367997544ab2790c5bcbe65ca805, expected: ad583938cc58d2e0805f3f9c309e7431).```
+        size does not match (remote: 118408624, expected: 111682884), md5 does not match (remote: b8e1367997544ab2790c5bcbe65ca805, expected: ad583938cc58d2e0805f3f9c309e7431).
+```
 
 ## Prerequisite configuration
 
@@ -697,8 +700,7 @@ file:
         "mount_opts":"defaults"
     }
 ]
-
-$```
+```
 
 #### ASM disk group configuration file
 
@@ -739,7 +741,7 @@ configuration file:
         ]
     }
 ]
-$```
+```
 
 #### Specifying LVM logical volumes
 
@@ -1731,8 +1733,8 @@ ok: [10.150.0.42] => {
 TASK [Collect facts from target] ********************************************************************************************************************
 ok: [10.150.0.42]
 
-... <output truncated for brevity >```
-
+... <output truncated for brevity >
+```
 
 In the following example, command-line arguments are used to specify the Oracle
 Standard Edition and to create a non-container database.
@@ -1819,13 +1821,15 @@ ok: [dbserver] => {
 TASK [Collect facts from target] ********************************************************************************************************************
 ok: [dbserver]
 
-... <output truncated for brevity>```
+... <output truncated for brevity>
+```
 
 The following example shows the error message that is received when an invalid
 parameter is specified.
 
 ```$ ./install-oracle.sh --ora-version=7.3.4 --ora-swlib-bucket gs://oracle-software --backup-dest +RECO
-Incorrect parameter provided for ora-version: 7.3.4```
+Incorrect parameter provided for ora-version: 7.3.4
+```
 
 ## Post installation tasks
 
@@ -1843,7 +1847,8 @@ administrative connection and change the passwords by using the SQL Plus
 
 ```sqlplus / as sysdba
 
-SQL> password SYSTEM```
+SQL> password SYSTEM
+```
 
 ### Validate the environment
 
@@ -1858,7 +1863,8 @@ script, as shown in the following example:
 ```$ /home/oracle/scripts/asm_disks.sh
 Disk device /dev/sdd1 may be an ASM disk - Disk name: DATA_0000
 Disk device /dev/sde1 may be an ASM disk - Disk name: RECO_0000
-Disk device /dev/sdf1 may be an ASM disk - Disk name: DEMO_0000```
+Disk device /dev/sdf1 may be an ASM disk - Disk name: DEMO_0000
+```
 
 #### Displaying cluster resource status
 
@@ -1881,7 +1887,8 @@ TYPE=ora.diskgroup.type
 TARGET=ONLINE
 STATE=ONLINE on db-host-1
 
-... <output truncated for brevity>```
+... <output truncated for brevity>
+```
 
 #### Verify an Oracle cluster
 
@@ -1933,7 +1940,8 @@ Verification of system requirement was successful.
 CVU operation performed:      system requirement
 Date:                         Jul 15, 2019 11:26:26 PM
 CVU home:                     /u01/app/18.0.0/grid/
-User:                         oracle```
+User:                         oracle
+```
 
 
 ### Patching
@@ -1999,7 +2007,8 @@ ok: [toolkit-db2] => {
 TASK [patch : Update OPatch in GRID_HOME]
 
 
-... <output truncated for brevity >```
+... <output truncated for brevity >
+```
 
 ### Patching RAC databases
 
@@ -2054,7 +2063,8 @@ is the default behavior:
    --cluster-type RAC \
    --cluster-config bms_cluster.json \
    --ora-reco-diskgroup DATA \
-   --ora-db-name ORCL```
+   --ora-db-name ORCL
+```
 
 If you do not specify a value on the **--compatible-rdbms** parameter, the
 "rdbms compatibility" of the ASM disk group is set to the major version level
@@ -2093,7 +2103,8 @@ rdbms_patches:
   - { category: "RU_Combo", base: "19.3.0.0.0", release: "19.7.0.0.200414", patchnum: "30783556", patchfile: "p30783556_190000_Linux-x86-64.zip", patch_subdir: "/30805684", prereq_check: TRUE, method: "opatch apply", ocm: FALSE, upgrade: TRUE }
 
 The following example shows the specification of the JSON file by using the
-**--extra-vars** Ansible** **parameter:```
+**--extra-vars** Ansible** **parameter:
+```
 
 ```./install-oracle.sh \
    --ora-swlib-bucket gs://oracle-software \
@@ -2111,7 +2122,8 @@ The following example shows the specification of the JSON file by using the
    --cluster-config bms_cluster.json \
    --ora-reco-diskgroup DATA \
    --ora-db-name ORCL
-   -- "--extra-vars @patches.json"```
+   -- "--extra-vars @patches.json"
+```
 
 Note: you can use the `--extra-vars` Ansible parameter to specify other things
 besides a JSON file that contains patch details, such as specifying other
@@ -2131,7 +2143,8 @@ For example:
    --ora-swlib-path /u01/oracle_install \
    --ora-staging /u01/oracle_install \
    --ora-db-name ORCL
-   -- "--extra-vars @patches.json"```
+   -- "--extra-vars @patches.json"
+```
 
 ### Destructive Cleanup
 
@@ -2162,7 +2175,8 @@ recommended:
           --inventory-file <value>
           --yes-i-am-sure
           [ --ora-role-separation <value> ]
-          [ --help ]```
+          [ --help ]
+```
 
 Sample usage:
 
@@ -2183,4 +2197,5 @@ Found Ansible at /usr/bin/ansible-playbook
 Running Ansible playbook: /usr/bin/ansible-playbook -i ./inventory_files/inventory_oracledb1_18.0.0.0.0_ORCL  brute-cleanup.yml
 
 PLAY [all] ************************************************************************************
-... <output truncated for brevity>```
+... <output truncated for brevity>
+```

@@ -57,7 +57,7 @@ options, and usage scenarios. All commands run from the "control node".
 
 1. Validate media specifying GCS storage bucket and optionally database:
 
-`./check-swlib.sh --ora-swlib-bucket gs://[cloud-storage-bucket-name] 
+    `./check-swlib.sh --ora-swlib-bucket gs://[cloud-storage-bucket-name] 
      --ora-version 19.3.0.0.0`
 
 1. Validate access to target server (optionally include -i and location of

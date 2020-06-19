@@ -1,3 +1,4 @@
+
 # Toolkit for Oracle on Bare Metal SolutionUser Guide
 
 **Table of Contents**
@@ -54,10 +55,9 @@ Sample commands for a simple quick-start and basic toolkit usage for an Oracle
 additional details and comprehensive explanations of the toolkit, scripting,
 options, and usage scenarios. All commands run from the "control node".
 
-1. Validate media specifying GCS storage bucket and optionally database
-   version:
+1. Validate media specifying GCS storage bucket and optionally database:
 
-    `./check-swlib.sh --ora-swlib-bucket gs://[cloud-storage-bucket-name] 
+`./check-swlib.sh --ora-swlib-bucket gs://[cloud-storage-bucket-name] 
      --ora-version 19.3.0.0.0`
 
 1. Validate access to target server (optionally include -i and location of
@@ -71,12 +71,12 @@ options, and usage scenarios. All commands run from the "control node".
 
 1. Run an installation:
 
-    ````./install-oracle.sh \  
+    ```./install-oracle.sh \  
       --ora-swlib-bucket gs://[cloud-storage-bucket-name] \  
       --backup-dest "+RECO" \  
       --ora-swlib-path /u02/swlib/ \  
       --ora-swlib-type gcs \  
-      --instance-ip-addr ${INSTANCE_IP_ADDR}````
+      --instance-ip-addr ${INSTANCE_IP_ADDR}```
 
 ## Command quick reference for RAC deployments
 
@@ -100,13 +100,13 @@ Initial steps similar to those of the Single Instance installation.
 
 1. Run installation. Only IP address of the first cluster node is required: 
  
-    ````./install-oracle.sh \  
+    ```./install-oracle.sh \  
       --ora-swlib-bucket gs://[cloud-storage-bucket-name] \  
       --backup-dest "+RECO" \  
       --ora-swlib-path /u02/swlib/ \  
       --ora-swlib-type gcs \  
       --instance-ip-addr ${INSTANCE_IP_ADDR} \  
-      --cluster-type RAC````
+      --cluster-type RAC```
 
 ## Overview
 
@@ -266,7 +266,8 @@ release, including the base release, patchsets, the OPatch utility, and any
 additional patches listed by Oracle.
 
 Do not unzip the downloaded installation files. The toolkit requires the
-downloads in their original, compressed-file format.  
+downloads in their original, compressed-file format.
+
 **The latest patch release tested with toolkit: JAN2020 (200114)**
 
 #### Downloading Patches from My Oracle Support
@@ -696,6 +697,7 @@ file:
         "mount_opts":"defaults"
     }
 ]
+
 $```
 
 #### ASM disk group configuration file

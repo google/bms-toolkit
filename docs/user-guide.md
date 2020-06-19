@@ -3,50 +3,50 @@
 
 **Table of Contents**
 
-   - [Command quick reference for single instance deployments](#command-quick-reference-for-single-instance-deployments)
-   - [Command quick reference for RAC deployments](#command-quick-reference-for-rac-deployments)
-   - [Overview](#overview)
-      - [Software Stack](#software-stack)
-      - [Requirements and Prerequisites](#requirements-and-prerequisites)
-         - [Control node requirements](#control-node-requirements)
-         - [Target server requirements](#target-server-requirements)
-   - [Installing the toolkit](#installing-the-toolkit)
-   - [Downloading and staging the Oracle Software](#downloading-and-staging-the-oracle-software)
-      - [Downloading the Oracle installation software](#downloading-the-oracle-installation-software)
-         - [Downloading Patches from My Oracle Support](#downloading-patches-from-my-oracle-support)
-         - [Required Oracle Software - Download Summary](#required-oracle-software---download-summary)
-      - [Staging the Oracle installation media](#staging-the-oracle-installation-media)
-         - [Cloud Storage bucket](#cloud-storage-bucket)
-         - [Cloud Storage FUSE](#cloud-storage-fuse)
-         - [NFS share](#nfs-share)
-      - [Validating Media](#validating-media)
-   - [Prerequisite configuration](#prerequisite-configuration)
-         - [Data mount configuration file](#data-mount-configuration-file)
-         - [ASM disk group configuration file](#asm-disk-group-configuration-file)
-         - [Specifying LVM logical volumes](#specifying-lvm-logical-volumes)
-   - [Configuring Installations](#configuring-installations)
-      - [Configuration defaults](#configuration-defaults)
-      - [Oracle User Directories](#oracle-user-directories)
-      - [Database backup configuration](#database-backup-configuration)
-      - [Parameters](#parameters)
-         - [Target environment parameters](#target-environment-parameters)
-         - [Software installation parameters](#software-installation-parameters)
-         - [Storage configuration parameters](#storage-configuration-parameters)
-         - [Database configuration parameters](#database-configuration-parameters)
-         - [RAC configuration parameters](#rac-configuration-parameters)
-         - [Backup configuration parameters](#backup-configuration-parameters)
-         - [Additional operational parameters](#additional-operational-parameters)
-      - [Example Toolkit Execution](#example-toolkit-execution)
-   - [Post installation tasks](#post-installation-tasks)
-      - [Reset passwords](#reset-passwords)
-      - [Validate the environment](#validate-the-environment)
-         - [Listing Oracle ASM devices](#listing-oracle-asm-devices)
-         - [Displaying cluster resource status](#displaying-cluster-resource-status)
-         - [Verify an Oracle cluster](#verify-an-oracle-cluster)
-         - [Oracle validation utilities](#oracle-validation-utilities)
-      - [Patching](#patching)
-      - [Patching RAC databases](#patching-rac-databases)
-      - [Destructive Cleanup](#destructive-cleanup)
+- [Command quick reference for single instance deployments](#command-quick-reference-for-single-instance-deployments)
+- [Command quick reference for RAC deployments](#command-quick-reference-for-rac-deployments)
+- [Overview](#overview)
+   - [Software Stack](#software-stack)
+   - [Requirements and Prerequisites](#requirements-and-prerequisites)
+      - [Control node requirements](#control-node-requirements)
+      - [Target server requirements](#target-server-requirements)
+- [Installing the toolkit](#installing-the-toolkit)
+- [Downloading and staging the Oracle Software](#downloading-and-staging-the-oracle-software)
+   - [Downloading the Oracle installation software](#downloading-the-oracle-installation-software)
+      - [Downloading Patches from My Oracle Support](#downloading-patches-from-my-oracle-support)
+      - [Required Oracle Software - Download Summary](#required-oracle-software---download-summary)
+   - [Staging the Oracle installation media](#staging-the-oracle-installation-media)
+      - [Cloud Storage bucket](#cloud-storage-bucket)
+      - [Cloud Storage FUSE](#cloud-storage-fuse)
+      - [NFS share](#nfs-share)
+   - [Validating Media](#validating-media)
+- [Prerequisite configuration](#prerequisite-configuration)
+      - [Data mount configuration file](#data-mount-configuration-file)
+      - [ASM disk group configuration file](#asm-disk-group-configuration-file)
+      - [Specifying LVM logical volumes](#specifying-lvm-logical-volumes)
+- [Configuring Installations](#configuring-installations)
+   - [Configuration defaults](#configuration-defaults)
+   - [Oracle User Directories](#oracle-user-directories)
+   - [Database backup configuration](#database-backup-configuration)
+   - [Parameters](#parameters)
+      - [Target environment parameters](#target-environment-parameters)
+      - [Software installation parameters](#software-installation-parameters)
+      - [Storage configuration parameters](#storage-configuration-parameters)
+      - [Database configuration parameters](#database-configuration-parameters)
+      - [RAC configuration parameters](#rac-configuration-parameters)
+      - [Backup configuration parameters](#backup-configuration-parameters)
+      - [Additional operational parameters](#additional-operational-parameters)
+   - [Example Toolkit Execution](#example-toolkit-execution)
+- [Post installation tasks](#post-installation-tasks)
+   - [Reset passwords](#reset-passwords)
+   - [Validate the environment](#validate-the-environment)
+      - [Listing Oracle ASM devices](#listing-oracle-asm-devices)
+      - [Displaying cluster resource status](#displaying-cluster-resource-status)
+      - [Verify an Oracle cluster](#verify-an-oracle-cluster)
+      - [Oracle validation utilities](#oracle-validation-utilities)
+   - [Patching](#patching)
+   - [Patching RAC databases](#patching-rac-databases)
+   - [Destructive Cleanup](#destructive-cleanup)
 
 ## Command quick reference for single instance deployments
 
@@ -536,8 +536,7 @@ Cloud Storage buckets as file systems on Linux or macOS systems.
 #### Cloud Storage bucket
 
 To use a Cloud Storage bucket to stage your installation media, you need the
-`gsutil` tool installed on your control node. The [gsutil
-tool]([https://cloud.google.com/storage/docs/gsutil](https://cloud.google.com/storage/docs/gsutil))
+`gsutil` tool installed on your control node. The [`gsutil` tool](https://cloud.google.com/storage/docs/gsutil)
 is a Python application that lets you access Cloud Storage from the command
 line. To get the `gsutil` tool, install the [Cloud
 SDK](https://cloud.google.com/sdk/docs).
@@ -614,7 +613,8 @@ Found p30463609_190000_Linux-x86-64.zip : COMBO OF OJVM RU COMPONENT 19.6.0.0.20
         file size matches (2308492999), md5 matches (0b2f7ae16f623e8d26905ae7ba600b06).
 
 Found p6880880_190000_Linux-x86-64.zip : OPatch Utility
-        file size matches (111682884), md5 matches (ad583938cc58d2e0805f3f9c309e7431).```
+        file size matches (111682884), md5 matches (ad583938cc58d2e0805f3f9c309e7431).
+```
 
 
 Example of a failed media validation:

@@ -130,3 +130,20 @@
     #verbosity: 1
   when: pmon_proc.stdout == "0" and check_oratab.stdout == "0"
   tags: db-create
+
+- name: Save PDBs state
+  shell: |
+    set -o pipefail
+    sqlplus / as sysdba << EOF
+    alter pluggable database all save state;
+    EOF
+  environment:
+    ORACLE_HOME: "{{ oracle_home }}"
+    ORACLE_SID: "{{ oracle_sid }}"
+    PATH: "{{ oracle_home }}/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin"
+  when:
+    - oracle_ver != '11.2.0.4.0'
+    - pdb_prefix is defined
+  become: yes
+  become_user: "{{ oracle_user }}"
+  tags: db-create

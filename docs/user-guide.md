@@ -1,5 +1,5 @@
 
-# Toolkit for Oracle on Bare Metal SolutionUser Guide
+# Toolkit for Bare Metal Solution: User Guide
 
 **Table of Contents**
 

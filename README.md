@@ -2,74 +2,35 @@
 
 Toolkit for installing and creating an initial database on Bare Metal Solution.
 
-## Download the required Software ##
+## Installing the toolkit ##
 
-You should download the software yourself from the relevant Oracle download websites. You will be accepting Oracle's License agreement as you are doing this.
+Install the toolkit to a Linux machine that will serve as your control node for managing your Oracle installation.
 
-If your plan is to run Oracle on GCP, then you should place these archives in a GCS bucket with proper ACLs.
+Download the toolkit to your control node by clicking the **Clone or Download** button on the bms-toolkit home page and selecting **Download zip**.
 
-If you are just testing out the toolkit with Vagrant, then you could place your binaries in a local shared Virtualbox folder in `/u02/swlib`
+If you are using the Cloud Shell as your control node, download the tool to your $HOME directory.
 
-You also have the option of making these files available through an NFS share.
+For more information about installing the toolkit, see [Installing the toolkit](/docs/toolkit-user-guide#installing-the-toolkit).
 
-To work with GCS, you need the gcloud-sdk to be installed and authentication configured on your control node.
+## Downloading the required Oracle software ##
 
-If you are placing these files in GCS, you can confirm that you have the required files to continue by running the following command:
+You need to download the Oracle installation files yourself and then stage them to a repository that is accessible to the toolkit.
 
-```
-./check-swlib.sh --ora-swlib-bucket gs://oracle-swlib --ora-version=18.0.0.0.0
-Running with parameters from command line or environment variables:
+For more information about downloading the Oracle installation media for use the the toolkit, see [Downloading and staging the Oracle Software](/docs/toolkit-user-guide#downloading-the-oracle-software).
 
-ORA_SWLIB_BUCKET=gs://oracle-swlib
-ORA_VERSION=18.0.0.0.0
+## Staging the installation media ##
 
-Found V978967-01.zip : Oracle Database 18.0.0.0.0 for Linux x86-64
-	file size matches (4564649047), md5 matches (99a7c4a088a8a502c261e741a8339ae8).
+You need to stage the Oracle installation media in a repository that the toolkit can access.
 
-Found V978971-01.zip : Oracle Grid Infrastructure 18.0.0.0.0 for Linux x86-64
-	file size matches (5382265496), md5 matches (cd42d137fd2a2eeb4e911e8029cc82a9).
+You can use any of the following options as your media repository:
 
-Found p29249695_180000_Linux-x86-64.zip : Combo of OJVM Update 18.6.0 + DB Update 18.6.0 patch 29249695 for Linux x86-64
-	file size matches (816895458), md5 matches (bf2731311ef5f92c38208096f1b8e862).
+- [Cloud Storage FUSE](https://cloud.google.com/storage/docs/gcs-fuse), an open source [FUSE](http://fuse.sourceforge.net/) adapter that allows you to mount Cloud Storage buckets as file systems on Linux or macOS systems.
+- A [Cloud Storage](https://cloud.google.com/storage/docs/introduction) bucket.
+- A networked NFS share.
 
-Found p29301682_180000_Linux-x86-64.zip : Grid Infrastructure Release Update 18.6.0 patch 29301682 for Linux x86-64
-	file size matches (2231236189), md5 matches (4b30104aea3e9efc5238ebca22999acc).
+When you run the toolkit, you specify the repository on the `--ora-swlib-type` parameter.
 
-Found p6880880_180000_Linux-x86-64.zip : OPatch Utility
-	file size matches (111682884), md5 matches (ad583938cc58d2e0805f3f9c309e7431).
-```
-
-If all files are not found, you should re-download the files and place them in the GCS bucket and run this script again.
-
-## Point your deployment to the swlib software location ##
-
-`--ora-swlib-type` can have different values:
-
-- empty: used when we don't want to manage swlib directly, or swlib is managed externally (by Vagrant for example)
-- gcsfuse: The host will mount the gcs bucket with gcsfuse.
-- gcs: This is a man in the middle copy of a gcs bucket, via your ansible control node, to the host.
-- nfs: Swlib is a network nfs share.
-
-
-gcfuse:
-With the gcsfuse option, you can also pass the location of a gcs service account json file. This is useful if your instance doesn't have a proper instance service account.
-You should also confirm that the instance scopes allow to use gcs storage.
-To create a new service account, navigate to your Google Cloud Console, and select the "IAM & Admin" tab, then "Service accounts". Click on "Create Service Account", and chose a relevant name. Pick a proper role such as "Storage Admin". Click on the "Create Key" button, and download the file in JSON format.
-You can then pass the file as a parameter to the deployment:
-
-```
---ora-swlib-type gcsfuse --ora-swlib-bucket oracle-swlib --ora-swlib-credentials ~/path_to/service_account.json
-```
-This service account will get uploaded to the server so that gcsfuse can use it.
-
-gcs:
-This relies on gsutil properly configured on the ansible control node.
-
-nfs:
-In this case ora-swlib-bucket is in fact an nfs mount point.
-```
---ora-swlib-type nfs --ora-swlib-bucket 192.168.0.250:/my_nfs_export
-```
+For more information about staging the installation media, see [Downloading and staging the Oracle Software](/docs/toolkit-user-guide#downloading-the-oracle-software).
 
 
 ## Customizing Storage options ##
@@ -158,35 +119,6 @@ You can look at the `group_vars/lvm.yml` file for an example.
 We provide an `group_vars/db-asm-1.yml` file that works with our default Vagrant disk layout.
 
 
-## Testing with Vagrant ##
-
-This toolkit can be tested using the included Vagrant based lab setup.
-
-VM configuration details are specified in the `hosts.yml` file - customize as required.
-
-The Vagrant VMs are based on OL7 - the initial source box will be downloaded on first run.  Create VMs using simple commands such as:
-
-```bash
-vagrant destroy -f ; vagrant up
-```
-
-If the /u02/swlib/ folder exists on your control node, it will be mounted by Vagrant to /swlib/. You need to have the Oracle archives in this folder.
-If you have files in a gcs bucket instead, just add `--ora-swlib-type gcs` or `--ora-swlib-type gcsfuse` along with `--ora-swlib-bucket your_bucket_name` to the following command line.
-
-```
-./install-oracle.sh --ora-swlib-bucket oracle-swlib --backup-dest /backups --ora-swlib-path /swlib/ --ora-version 18.0.0.0.0
-```
-
-The following default values are used (you don't need to add these to the command line):
-
-```
---instance-ip-addr 192.168.56.201 --instance-ssh-user vagrant --instance-ssh-key .vagrant/machines/oracledb1/virtualbox/private_key --instance-hostname oracledb1
-```
-
-
-This will launch the installation process which should take approximately 20 minutes.
-
-This wrapper script create an inventory file for ansible.
 #
 # compatible.rdbms
 #
@@ -260,11 +192,9 @@ Run the DB creation and configuration playbook with:
 
 ## Destructive Clean-up ##
 
-An additional role & playbook performs a desructive brute-force removal of Oracle software and configuration.  It does not remove other host prerequisits.
+If you need to delete an Oracle installation, the toolkit provides a destructive cleanup option.
 
-Run the desructive brute-force Oracle software removal with:
-
-`cleanup-oracle.sh` or `ansible-playbook brute-cleanup.yml`
+For more information, see [Destructive Cleanup](/docs/toolkit-user-guide#destructive-cleanup).
 
 
 ## Execution Instructions ##

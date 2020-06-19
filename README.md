@@ -6,10 +6,11 @@ Toolkit for installing and creating an initial Oracle database on Bare Metal Sol
 
 * Create a Google Cloud VM to act as a [control node](/docs/toolkit-user-guide#control-node-requirements); it should be on a VPC that has SSH access to the database hosts.
 * [Extract the toolkit code](/docs/toolkit-user-guide#installing-the-toolkit) on the control node.
-* Create a Cloud Storage bucket to host Oracle software images.  [Download software](/docs/toolkit-user-guide#downloading-and-staging-the-oracle-software) from Oracle and populate the bucket.  Use [check-swlib.sh](/docs/toolkit-user-guide#validating-media) to determine which files are required for your desired Oracle version.
+* Create a Cloud Storage bucket to host Oracle software images.  
 ```bash
 gsutil mb -b on gs://installation-media-1234
 ```
+* [Download software](/docs/toolkit-user-guide#downloading-and-staging-the-oracle-software) from Oracle and populate the bucket.  Use [check-swlib.sh](/docs/toolkit-user-guide#validating-media) to determine which files are required for your Oracle version.
 * Create a SSH key, and populate to an anisble user on each database host.
 * Create a JSON file `db1_asm.json` with ASM disk devices
 ```json

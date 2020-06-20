@@ -12,5 +12,5 @@ dbca -silent -createDatabase -gdbName {{ db_name }}{{ domain() }} \
 -diskGroupName {{ data_diskgroup }} \
 -recoveryGroupName {{ reco_diskgroup }} \
 -redoLogFileSize {{ redologsize }} \
--initParams pga_aggregate_target='{{ pga_aggtar_bytes }}',sga_target='{{ sga_target_bytes }}',streams_pool_size=64M,use_large_pages=TRUE,{% if hostvars[groups['dbasm'].0]['cluster_domain'] is defined and hostvars[groups['dbasm'].0]['cluster_domain']|length > 0 %}db_domain='{{ hostvars[groups['dbasm'].0]['cluster_domain'] }}',{% endif %}diagnostic_dest='{{ oracle_base }}' \
+-initParams pga_aggregate_target='{{ pga_aggtar_bytes }}',sga_target='{{ sga_target_bytes }}',streams_pool_size=64M,use_large_pages=TRUE,db_domain='{{ db_domain }}',diagnostic_dest='{{ oracle_base }}' \
 -ignorePreReqs -ignorePrereqFailure

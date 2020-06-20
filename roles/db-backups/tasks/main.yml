@@ -52,12 +52,12 @@
   become: yes
   become_user: "{{ oracle_user }}"
   cron:
-    name: "{{ db_name }} RMAN weekly LEVEL={{ item.level }}"
+    name: "{{ oracle_sid }} RMAN weekly LEVEL={{ item.level }}"
     weekday: "{{ item.days }}"
     hour: "{{ full_bu_start_hour }}"
     minute: "{{ full_bu_start_min }}"
     user: "{{ oracle_user }}"
-    job: "{{ scripts_dir }}/rman_full_backup.sh {{ db_name }} {{ item.level }} {{ rman_db_bu_redundancy }} {{ rman_arch_redundancy }}"
+    job: "{{ scripts_dir }}/rman_full_backup.sh {{ oracle_sid }} {{ item.level }} {{ rman_db_bu_redundancy }} {{ rman_arch_redundancy }}"
   with_items:
      - {level: 0, days: '{{ full_bu_level0_day }}' }
      - {level: 1, days: '{{ full_bu_level1_days }}' }
@@ -67,10 +67,10 @@
   become: yes
   become_user: "{{ oracle_user }}"
   cron:
-    name: "{{ db_name }} ARCH backups"
+    name: "{{ oracle_sid }} ARCH backups"
     minute: "{{ arch_bu_start_min }}"
     user: "{{ oracle_user }}"
-    job: "{{ scripts_dir }}/rman_arch_backup.sh {{ db_name }} {{ rman_arch_redundancy }} {{ rman_archs_online_days }}"
+    job: "{{ scripts_dir }}/rman_arch_backup.sh {{ oracle_sid }} {{ rman_arch_redundancy }} {{ rman_archs_online_days }}"
   tags: db-backups,add-backups
 
 - name: Run initial full backup
@@ -78,7 +78,7 @@
   become_user: "{{ oracle_user }}"
   shell: |
     export PATH={{ oracle_home }}/bin:/usr/local/bin:${PATH}
-    {{ scripts_dir }}/rman_full_backup.sh {{ db_name }} 0 {{ rman_db_bu_redundancy }} {{ rman_arch_redundancy }}
+    {{ scripts_dir }}/rman_full_backup.sh {{ oracle_sid }} 0 {{ rman_db_bu_redundancy }} {{ rman_arch_redundancy }}
   when: run_initial_bu|bool
   register: full_backup
   tags: db-backups,run-backups
@@ -88,7 +88,7 @@
   become_user: "{{ oracle_user }}"
   shell: |
     export PATH={{ oracle_home }}/bin:/usr/local/bin:${PATH}
-    {{ scripts_dir }}/rman_arch_backup.sh {{ db_name }} {{ rman_arch_redundancy }} {{ rman_archs_online_days }}
+    {{ scripts_dir }}/rman_arch_backup.sh {{ oracle_sid }} {{ rman_arch_redundancy }} {{ rman_archs_online_days }}
   when: run_initial_bu|bool
   register: arch_backup
   tags: db-backups,run-backups

@@ -15,15 +15,8 @@
 ---
 - name: rdbms-install | Set facts
   set_fact:
-    install_unzip_path: "{{ oracle_home }}"
-    runinstaller_loc: "{{ oracle_home }}"
-  tags: rdbms-setup
-
-- name: rdbms-install | Version specific adjustments
-  set_fact:
-    install_unzip_path: "{{ swlib_unzip_path }}"
-    runinstaller_loc: "{{ swlib_unzip_path }}/database"
-  when: oracle_ver in ['11.2.0.4.0','12.1.0.2.0','12.2.0.1.0']
+    install_unzip_path: "{% if oracle_ver_base in ('19.3','18.0') %}{{ oracle_home }}{% else %}{{ swlib_unzip_path }}{% endif %}"
+    runinstaller_loc: "{% if oracle_ver_base in ('19.3','18.0') %}{{ oracle_home }}{% else %}{{ swlib_unzip_path }}/database{% endif %}"
   tags: rdbms-setup
 
 - name: rdbms-install | Installer confirmations
@@ -34,6 +27,54 @@
       - "Using installer dir  : {{ runinstaller_loc }}"
     #verbosity: 1
   tags: rdbms-setup
+
+- name: rdbms-install | Define RDBMS release
+  #if release set to latest then get most recent release from rdbms_patches array
+  #if nothing returned then set to "base"
+  set_fact:
+    oracle_rel: "{% if oracle_rel == 'latest' %}{{ gi_patches | json_query('[?base==`' + oracle_ver + '`].release')  | sort(reverse=true) | first | default('base', true) }}{% elif oracle_rel == 'base' %}{% else %}{{ oracle_rel }}{% endif %}"
+  when: oracle_rel is defined
+  tags: rdbms-setup,rel-patch
+
+- name: rdbms-install | List RDBMS release
+  debug:
+    msg: "RDBMS release: {{ oracle_rel }}"
+  tags: rdbms-setup,rel-patch
+
+- name: rdbms-install | Copy RDBMS patch
+  import_role:
+    name: swlib
+    tasks_from: gcscopy
+  vars:
+    patching_type: gi_patching
+  when: oracle_rel != "base"
+  tags: rdbms-setup,sw-copy
+
+- name: rdbms-install | Set variable for release patch
+  set_fact:
+    rel_patch: "-apply{% if oracle_ver_base == '12.2' %}PSU{% else %}RU{% endif %} {{ swlib_unzip_path }}/{{ item.patchnum }}{{ item.patch_subdir }}"
+  with_items:
+    - "{{ gi_patches }}"
+  when: item.release == oracle_rel and item.category == 'RU'
+  tags: rdbms-setup,rel-patch
+
+- name: rdbms-install | Unzip OneOff patch
+  unarchive:
+    src: "{{ swlib_path }}/{{ item.patchfile }}"
+    dest: "{{ swlib_unzip_path }}"
+    remote_src: yes
+    owner: "{{ oracle_user }}"
+    group: "{{ oracle_group }}"
+  with_items:
+    - "{{ rdbms_patches }}"
+  when: item.release == oracle_rel
+  become: yes
+  tags: rdbms-setup,sw-unzip
+
+- name: rdbms-install | Set variable for OneOff patch
+  set_fact:
+    oneoff_patch_dirs: "{% set c = joiner(',') %}{% for p in rdbms_patches %}{% if p.release == oracle_rel %}{{ c() }}{{ swlib_unzip_path }}/{{ p.patchnum }}{{ p.patch_subdir }}{% endif %}{% endfor %}"
+  tags: rdbms-setup,oneoff-patch
 
 - name: rdbms-install | Unzipping software
   become: yes
@@ -68,13 +109,38 @@
     state: absent
   tags: rdbms-setup
 
+- name: rdbms-install | Update DB OPatch
+  unarchive:
+    src: "{{ swlib_path }}/{{ item.patchfile }}"
+    dest: "{{ oracle_home }}"
+    remote_src: yes
+  with_items:
+    - "{{ opatch_patches }}"
+  when:
+    - item.release == oracle_ver
+    - item.category == "OPatch"
+    - oracle_rel != "base"
+  become: yes
+  become_user: "{{ oracle_user }}"
+  tags: rdbms-setup,update-opatch-db
+
+- name: rdbms-install | Set installer command
+  set_fact:
+    installer_command: "{{ runinstaller_loc }}/runInstaller -silent -waitforcompletion -responseFile {{ swlib_unzip_path }}/db_install.rsp {{ rel_patch | default('') }} {% if oneoff_patch_dirs|length > 0 %}-applyOneOffs {{ oneoff_patch_dirs }}{% endif %} -ignorePrereqFailure"
+  tags: rdbms-setup
+
+- name: rdbms-install | Information
+  debug:
+    msg: "Using installer cmd: {{ installer_command }}"
+  tags: rdbms-setup
+
 - name: rdbms-install | Run runInstaller
   become: yes
   become_user: "{{ oracle_user }}"
-  command: "{{ runinstaller_loc }}/runInstaller -silent {{ prereq_option }} -waitforcompletion -responseFile {{ swlib_unzip_path }}/db_install.rsp"
+  command: "{{ installer_command }}"
   register: install_db_software
   failed_when: "('Successfully Setup Software' not in install_db_software.stdout) or
-                (install_db_software.rc not in [0,6])"
+                (install_db_software.rc not in [0,6,250])"
   tags: rdbms-setup
 
 - name: rdbms-install | runInstaller output

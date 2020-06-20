@@ -39,9 +39,46 @@
       - "Installing from file : {{ osw.files }}"
       - "Unzipping into dir   : {{ install_unzip_path }}"
       - "Using cluvfy cmd     : {{ cluvfy_command }}"
-      - "Using installer cmd  : {{ installer_command }}"
-    #verbosity: 1
   tags: gi-setup
+
+- name: gi-install | Define GI release
+  #if release set to latest then get most recent release from gi_patches array
+  #if nothing returned then set to "base"
+  set_fact:
+    oracle_rel: "{% if oracle_rel == 'latest' %}{{ gi_patches | json_query('[?base==`' + oracle_ver + '`].release')  | sort(reverse=true) | first | default('base', true) }}{% endif %}"
+  when: oracle_rel is defined
+  tags: gi-setup,rel-patch
+
+- name: gi-install | Copy GI patch
+  import_role:
+    name: swlib
+    tasks_from: gcscopy
+  vars:
+    patching_type: gi_patching
+  when: oracle_rel != "base"
+  tags: gi-setup,sw-copy
+
+- name: gi-install | Unzip GI patch
+  unarchive:
+    src: "{{ swlib_path }}/{{ item.patchfile }}"
+    dest: "{{ swlib_unzip_path }}"
+    remote_src: yes
+    creates: .gi_patch_{{ oracle_rel }}
+    owner: "{{ grid_user }}"
+    group: "{{ oracle_group }}"
+  with_items:
+    - "{{ gi_patches }}"
+  when: item.release == oracle_rel and item.category == 'RU' and item.category != "HAS_interim_patch"
+  become: yes
+  tags: gi-setup,sw-unzip
+
+- name: gi-install | Set variable for release patch
+  set_fact:
+    rel_patch: "-apply{% if oracle_ver_base == '12.2' %}PSU{% else %}RU{% endif %} {{ swlib_unzip_path }}/{{ item.patchnum }}{{ item.patch_subdir }}"
+  with_items:
+    - "{{ gi_patches }}"
+  when: item.release == oracle_rel and item.category == 'RU'
+  tags: gi-setup,rel-patch
 
 - name: gi-install | Unzipping GI software
   become: yes
@@ -113,10 +150,40 @@
     state: absent
   tags: gi-setup
 
+- name: gi-install | Set mgmtdb option
+  set_fact:
+    mgmt_option: "{% if oracle_ver_base in ('12.1') %}-J-Doracle.install.mgmtDB=false{% else %}-J-Doracle.install.mgmtDB=false -J-Doracle.install.mgmtDB.CDB=false -J Doracle.install.crs.enableRemoteGIMR=false{% endif %}"
+  tags: gi-setup
+
+- name: gi-install | Set installer command
+  set_fact:
+    installer_command: "{{ grid_home }}/gridSetup.sh -silent -responseFile {{ swlib_unzip_path }}/grid_install.rsp {{ rel_patch|default('') }} {{ mgmt_option|default('') }} -ignorePrereqFailure"
+  tags: gi-setup
+
+- name: gi-install | Update GI OPatch
+  unarchive:
+    src: "{{ swlib_path }}/{{ item.patchfile }}"
+    dest: "{{ grid_home }}"
+    remote_src: yes
+  with_items:
+    - "{{ opatch_patches }}"
+  when:
+    - item.release == oracle_ver
+    - item.category == "OPatch"
+    - oracle_rel != "base"
+  become: yes
+  become_user: "{{ grid_user }}"
+  tags: gi-setup,opatch
+
+- name: gi-install | Information
+  debug:
+    msg: "Using installer cmd: {{ installer_command }}"
+  tags: gi-setup
+
 - name: gi-install | Run installer
   become: yes
   become_user: "{{ grid_user }}"
-  command: "{{ installer_command }} -silent -responseFile {{ swlib_unzip_path }}/grid_install.rsp"
+  command: "{{ installer_command }}"
   register: install_grid_software
   failed_when: "('Successfully Setup Software' not in install_grid_software.stdout) or
                 (install_grid_software.rc not in [0,6])"
@@ -129,18 +196,6 @@
       - "{{ install_grid_software.stdout_lines }}"
     #verbosity: 1
   tags: gi-setup
-
-- name: gi-install | Update OPatch
-  become: yes
-  become_user: "{{ grid_user }}"
-  unarchive:
-    src: "{{ swlib_path }}/{{ item.patchfile }}"
-    dest: "{{ grid_home }}"
-    remote_src: yes
-  with_items:
-    - "{{ opatch_patches }}"
-  when: item.release == osw.version and item.category == "OPatch" and patching_type is defined
-  tags: gi-setup,opatch
 
 - name: gi-install | Create OCM response file (if neccessary)
   become: yes
@@ -251,7 +306,7 @@
 - name: gi-install | Complete plugin configuration
   become: yes
   become_user: "{{ grid_user }}"
-  command: "{{ installer_command }} -executeConfigTools -silent -responseFile {{ swlib_unzip_path }}/grid_install.rsp"
+  command: "{{ grid_home }}/gridSetup.sh -executeConfigTools -silent -responseFile {{ swlib_unzip_path }}/grid_install.rsp"
   register: install_grid_plugins
   when: oracle_ver not in ['11.2.0.4.0','12.1.0.2.0']
   failed_when: "(   ('Successfully Setup Software' not in install_grid_plugins.stdout) or

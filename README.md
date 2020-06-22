@@ -4,7 +4,7 @@ Toolkit for installing and creating an initial Oracle database on Bare Metal Sol
 
 ## Quick Start 
 
-1. Create a Google Cloud VM to act as a [control node](/docs/user-guide#control-node-requirements); it should be on a VPC that has SSH access to the database hosts.
+1. Create a Google Cloud VM to act as a [control node](/docs/user-guide#control-node-requirements); it should be on a VPC network that has SSH access to the database hosts.
 1. [Extract the toolkit code](/docs/user-guide#installing-the-toolkit) on the control node.
 1. Create a Cloud Storage bucket to host Oracle software images.  
      ```bash
@@ -57,7 +57,7 @@ Toolkit for installing and creating an initial Oracle database on Bare Metal Sol
     --instance-ip-addr 172.16.1.1
     ```
 
-Full documentaiton is available in the [user guide](/docs/user-guide)
+Full documentation is available in the [user guide](/docs/user-guide)
 
 ## Destructive cleanup
 
@@ -67,7 +67,7 @@ Run the desructive brute-force Oracle software removal with `cleanup-oracle.sh` 
 
 ## Contributing to the project
 
-Contributons and pull requests are welcome.  See [docs/contributing.md](docs/contributing.md) and [docs/code-of-conduct.md](docs/code-of-conduct.md) for details.
+Contributions and pull requests are welcome.  See [docs/contributing.md](docs/contributing.md) and [docs/code-of-conduct.md](docs/code-of-conduct.md) for details.
 
 ## The fine print
 

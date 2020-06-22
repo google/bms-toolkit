@@ -4,13 +4,13 @@ Toolkit for installing and creating an initial Oracle database on Bare Metal Sol
 
 ## Quick Start 
 
-1. Create a Google Cloud VM to act as a [control node](/docs/user-guide#control-node-requirements); it should be on a VPC network that has SSH access to the database hosts.
-1. [Extract the toolkit code](/docs/user-guide#installing-the-toolkit) on the control node.
+1. Create a Google Cloud VM to act as a [control node](/docs/user-guide.md#control-node-requirements); it should be on a VPC network that has SSH access to the database hosts.
+1. [Extract the toolkit code](/docs/user-guide.md#installing-the-toolkit) on the control node.
 1. Create a Cloud Storage bucket to host Oracle software images.  
      ```bash
      gsutil mb -b on gs://installation-media-1234
      ```
-1. [Download software](/docs/user-guide#downloading-and-staging-the-oracle-software) from Oracle and populate the bucket.  Use [check-swlib.sh](/docs/user-guide#validating-media) to determine which files are required for your Oracle version.
+1. [Download software](/docs/user-guide.md#downloading-and-staging-the-oracle-software) from Oracle and populate the bucket.  Use [check-swlib.sh](/docs/user-guide.md#validating-media) to determine which files are required for your Oracle version.
 1. Create an SSH key, and populate to an Anisble user on each database host.
 1. Create a JSON file `db1_asm.json` with ASM disk devices:
     ```json
@@ -57,11 +57,11 @@ Toolkit for installing and creating an initial Oracle database on Bare Metal Sol
     --instance-ip-addr 172.16.1.1
     ```
 
-Full documentation is available in the [user guide](/docs/user-guide)
+Full documentation is available in the [user guide](/docs/user-guide.md)
 
 ## Destructive cleanup
 
-An Ansible role and playbook performs a [desructive brute-force removal](/docs/user-guide#destructive-cleanup) of Oracle software and configuration.  It does not remove other host prerequisites.
+An Ansible role and playbook performs a [desructive brute-force removal](/docs/user-guide.md#destructive-cleanup) of Oracle software and configuration.  It does not remove other host prerequisites.
 
 Run the desructive brute-force Oracle software removal with `cleanup-oracle.sh` or `ansible-playbook brute-cleanup.yml`
 

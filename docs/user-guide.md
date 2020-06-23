@@ -793,9 +793,6 @@ Most parameters have default values, so you only need to specify them when you
 need a different value. The parameter values that the toolkit uses are echoed
 during execution so you can confirm the configuration.
 
-The complete list of parameters and their values are provided in the [Parameters
-section](#parametersn).
-
 Configuring an installation is discussed in [Configuring
 installations](#configuring-installations).
 

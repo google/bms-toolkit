@@ -856,8 +856,6 @@ Default values for the parameters are shown in bold letters.
 
 #### Target environment parameters
 
-Top of target
-
 <table>
 <thead>
 <tr>
@@ -936,11 +934,7 @@ generates a filename.</td>
 </tbody>
 </table>
 
-Bottom of target
-
 #### Software installation parameters
-
-Top of software
 
 <table>
 <thead>
@@ -1088,11 +1082,7 @@ relying on the OS defaults.</td>
 </tbody>
 </table>
 
-Bottom of software
-
 #### Storage configuration parameters
-
-Top of storage
 
 <table>
 <thead>
@@ -1933,7 +1923,7 @@ ok: [toolkit-db2] => {
 
 TASK [patch : Update OPatch in GRID_HOME]
 
-... <output truncated for brevity >
+... output truncated for brevity
 ```
 
 ### Patching RAC databases
@@ -1948,7 +1938,7 @@ user from the GI home and, therefore, if the GI and RDBMS homes are of the same
 major release, patches both the GI and RDBMS homes in a single step.
 
 By default, if RAC GI and RDBMS homes are of the same base release, the
-**install-oracle.sh **script applies the latest RU/PSU patch to both.
+**install-oracle.sh** script applies the latest RU/PSU patch to both.
 
 You can skip all RU/PSU patching steps and install only the base software by
 specifying the command line option `--no-patch`. You can then apply patches
@@ -1970,7 +1960,7 @@ release because it was patched during installation, the toolkit uses the Oracle
 `datapatch` utility to apply patches at the database level, which is known as _SQL
 level patching_.
 
-# BMS RAC install with latest RU
+#### BMS RAC install with latest RU
 
 The following example RAC installation command applies the PSU/RU patches, which
 is the default behavior:
@@ -2071,7 +2061,7 @@ For example:
   --ora-swlib-path /u01/oracle_install \
   --ora-staging /u01/oracle_install \
   --ora-db-name ORCL
-  -- "--extra-vars @patches.json"
+  -- "--extra-vars @patches.yaml"
 ```
 
 ### Destructive Cleanup
@@ -2131,5 +2121,5 @@ Found Ansible at /usr/bin/ansible-playbook
 Running Ansible playbook: /usr/bin/ansible-playbook -i ./inventory_files/inventory_oracledb1_18.0.0.0.0_ORCL  brute-cleanup.yml
 
 PLAY [all] ************************************************************************************
-... <output truncated for brevity>
+... output truncated for brevity
 ```

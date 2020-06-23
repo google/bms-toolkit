@@ -2164,10 +2164,14 @@ the following actions:
 -  Re-initializes ASM storage devices and uninstalls ASMlib if installed.
 -  Reboots the server.
 
-Important: review the parameter list carefully. Providing the Oracle release
-version is mandatory. Providing values for the role separation parameter, which
-defaults to "TRUE", and the specific location of the Ansible inventory file is
-recommended:
+**Important**: a destructive cleanup permanently deletes the databases and any data they
+contain. Any backups that are stored local to the server are also deleted. Backups
+stored in Cloud Storage, Cloud Storage FUSE, or NFS devices are not affected by a
+destructive cleanup.
+
+**Recommendation**: provide a value for the role separation parameter, which
+defaults to `TRUE`. On the `--inventory-file` parameter, specify the location
+of the inventory file:
 
 ```$ ./cleanup-oracle.sh --help
         Usage: cleanup-oracle.sh

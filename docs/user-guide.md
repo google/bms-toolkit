@@ -2169,8 +2169,8 @@ stored in Cloud Storage, Cloud Storage FUSE, or NFS devices are not affected by 
 destructive cleanup.
 
 **Recommendation**: provide a value for the role separation parameter, which
-defaults to `TRUE`, and that you provide the specific location of the Unusable inventory
-file:
+defaults to `TRUE`. On the `--inventory-file` parameter, specify the location
+of the inventory file:
 
 ```$ ./cleanup-oracle.sh --help
         Usage: cleanup-oracle.sh

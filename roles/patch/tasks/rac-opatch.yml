@@ -271,7 +271,7 @@
   tags: rac-opatch,sw_unzip
 
 - name: rac-opatch | Run RDBMS opatch analyze
-  command: "{{ oracle_home }}/OPatch/{{ patch.method }} -analyze"
+  command: "{{ oracle_home }}/OPatch/opatch prereq CheckConflictAgainstOHWithDetail -ph ./"
   args:
     chdir: "{{ swlib_unzip_path }}/{{ patch.patchnum }}/{{ patch.patch_subdir }}"
   loop: "{{ rdbms_patches | json_query('[?release==`'+ oracle_rel +'`]') }}"

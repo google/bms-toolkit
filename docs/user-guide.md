@@ -157,8 +157,8 @@ bucket where the toolkit can access it.
 
 ### Software Stack
 
-The toolkit customizes the software stack for Oracle database workloads. Any out
-of a number of Oracle database software releases can be installed. In addition,
+The toolkit customizes the software stack for Oracle Database workloads. Any out
+of a number of Oracle Database software releases can be installed. In addition,
 the configuration of the software stack includes:
 
 - The Oracle Grid Infrastructure (GI) and Automatic Storage Manager (ASM),
@@ -1971,7 +1971,7 @@ version.
 
 When creating a database, if the RDBMS home software is no longer at the base
 release because it was patched during installation, the toolkit uses the Oracle
-datapatch utility to apply patches at the database level, which is known as _SQL
+`datapatch` utility to apply patches at the database level, which is known as _SQL
 level patching_.
 
 # BMS RAC install with latest RU
@@ -1998,20 +1998,19 @@ is the default behavior:
   --ora-db-name ORCL
 ```
 
-If you do not specify a value on the **--compatible-rdbms** parameter, the
-"rdbms compatibility" of the ASM disk group is set to the major version level
-that is defined on the **--ora-version** parameter. Note: "19.0.0.0.0" is used
-for Oracle 19c, not 19.3.0.0.0 due to issues with the DBCA utility.
+If you do not specify a value on the `--compatible-rdbms` parameter, the
+RDBMS compatibility of the ASM disk group is set to the major version level
+that is defined on the `--ora-version` parameter.
 
 To patch RAC databases, the toolkit performs the following actions:
 
 1. Stops the RAC databases in their homes by using the "stop home" option
    from the master node.
 1. Stops TFA.
-1. Kills the asmcmd daemon processes.
-1. Executes "opatchauto apply", patching both nodes.
-1. Restarts the services, including "start home".
-1. On the master node only, runs the datapatch utility over several
+1. Kills the `asmcmd` daemon processes.
+1. Executes `opatchauto apply`, patching both nodes.
+1. Restarts the services, including `start home`.
+1. On the master node only, runs the `datapatch` utility over several
    iterations to resolve any PDB invalid states.
 
 Regardless of which script is used, the specifics about which patch files to
@@ -2097,10 +2096,14 @@ the following actions:
 -  Re-initializes ASM storage devices and uninstalls ASMlib if installed.
 -  Reboots the server.
 
-Important: review the parameter list carefully. Providing the Oracle release
-version is mandatory. Providing values for the role separation parameter, which
-defaults to "TRUE", and the specific location of the Ansible inventory file is
-recommended:
+**Important**: a destructive cleanup permanently deletes the databases and any data they
+contain. Any backups that are stored local to the server are also deleted. Backups
+stored in Cloud Storage, Cloud Storage FUSE, or NFS devices are not affected by a
+destructive cleanup.
+
+**Recommendation**: provide a value for the role separation parameter, which
+defaults to `TRUE`. On the `--inventory-file` parameter, specify the location
+of the inventory file:
 
 ```bash
 $ ./cleanup-oracle.sh --help

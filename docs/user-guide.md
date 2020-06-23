@@ -57,7 +57,7 @@ options, and usage scenarios. All commands run from the "control node".
 1. Validate media specifying GCS storage bucket and optionally database:
 
     ```bash
-    ./check-swlib.sh --ora-swlib-bucket gs://[cloud-storage-bucket-name]
+    ./check-swlib.sh --ora-swlib-bucket gs://[cloud-storage-bucket-name] \
      --ora-version 19.3.0.0.0
     ```
 
@@ -93,33 +93,33 @@ Initial steps similar to those of the Single Instance installation.
 1. Validate media specifying Cloud Storage bucket and optionally database
    version:
 
-    ```bash
+   ```bash
    ./check-swlib.sh --ora-swlib-bucket gs://[cloud-storage-bucket-name]
    --ora-version 19.3.0.0.0
-    ```
+   ```
 
 1. Validate access to target RAC nodes:
 
     ```bash
-   ssh ${INSTANCE_SSH_USER:-`whoami`}@${INSTANCE_IP_ADDR_NODE_1} sudo -u root hostname
-   ssh ${INSTANCE_SSH_USER:-`whoami`}@${INSTANCE_IP_ADDR_NODE_2} sudo -u root hostname
+    ssh ${INSTANCE_SSH_USER:-`whoami`}@${INSTANCE_IP_ADDR_NODE_1} sudo -u root hostname
+    ssh ${INSTANCE_SSH_USER:-`whoami`}@${INSTANCE_IP_ADDR_NODE_2} sudo -u root hostname
     ```
 
 1. Review optional toolkit parameters:
 
-    `./install-oracle.sh --help`
+   `./install-oracle.sh --help`
 
 1. Run installation. Only IP address of the first cluster node is required:
 
-    ```bash
-./install-oracle.sh \
---ora-swlib-bucket gs://[cloud-storage-bucket-name] \
---backup-dest "+RECO" \
---ora-swlib-path /u02/swlib/ \
---ora-swlib-type gcs \
---instance-ip-addr ${INSTANCE_IP_ADDR} \
---cluster-type RAC
-    ```
+   ```bash
+   ./install-oracle.sh \
+   --ora-swlib-bucket gs://[cloud-storage-bucket-name] \
+   --backup-dest "+RECO" \
+   --ora-swlib-path /u02/swlib/ \
+   --ora-swlib-type gcs \
+   --instance-ip-addr ${INSTANCE_IP_ADDR} \
+   --cluster-type RAC
+   ```
 
 ## Overview
 
@@ -143,8 +143,8 @@ RUs:
 - Oracle 11.2.0.4.0
 - Oracle 12.1.0.2.0
 - Oracle 12.2.0.1.0
-- Oracle 18.0.0.0.0
-- Oracle 19.3.0.0.0
+- Oracle 18c
+- Oracle 19c
 
 The toolkit does not include any Oracle software. You must obtain the
 appropriate licenses and download the Oracle software on your own. This guide

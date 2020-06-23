@@ -261,7 +261,6 @@ while true; do
     ;;
   --no-patch)
     ORA_RELEASE="base"
-    shift;
     ;;
   --ora-edition)
     ORA_EDITION="$(echo $2| tr 'a-z' 'A-Z')"

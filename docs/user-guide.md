@@ -145,8 +145,8 @@ bucket where the toolkit can access it.
 
 ### Software Stack
 
-The toolkit customizes the software stack for Oracle database workloads. Any out
-of a number of Oracle database software releases can be installed. In addition,
+The toolkit customizes the software stack for Oracle Database workloads. Any out
+of a number of Oracle Database software releases can be installed. In addition,
 the configuration of the software stack includes:
 
 -  The Oracle Grid Infrastructure (GI) and Automatic Storage Manager (ASM),
@@ -2041,7 +2041,7 @@ version.
 
 When creating a database, if the RDBMS home software is no longer at the base
 release because it was patched during installation, the toolkit uses the Oracle
-datapatch utility to apply patches at the database level, which is known as _SQL
+`datapatch` utility to apply patches at the database level, which is known as _SQL
 level patching_.
 
 The following example RAC installation command applies the PSU/RU patches, which
@@ -2066,20 +2066,19 @@ is the default behavior:
    --ora-db-name ORCL
 ```
 
-If you do not specify a value on the **--compatible-rdbms** parameter, the
-"rdbms compatibility" of the ASM disk group is set to the major version level
-that is defined on the **--ora-version **parameter.Note: "19.0.0.0.0" is used
-for Oracle 19c, not 19.3.0.0.0 due to issues with the DBCA utility.
+If you do not specify a value on the `--compatible-rdbms` parameter, the
+RDBMS compatibility of the ASM disk group is set to the major version level
+that is defined on the `--ora-version` parameter.
 
 To patch RAC databases, the toolkit performs the following actions:
 
 1. Stops the RAC databases in their homes by using the "stop home" option
    from the master node.
 1. Stops TFA.
-1. Kills the asmcmd daemon processes.
-1. Executes "opatchauto apply", patching both nodes.
-1. Restarts the services, including "start home".
-1. On the master node only, runs the datapatch utility over several
+1. Kills the `asmcmd` daemon processes.
+1. Executes `opatchauto apply`, patching both nodes.
+1. Restarts the services, including `start home`.
+1. On the master node only, runs the `datapatch` utility over several
    iterations to resolve any PDB invalid states.
 
 Regardless of which script is used, the specifics about which patch files to
@@ -2088,8 +2087,8 @@ versions, are taken from the `gi_patches` and `rdbms_patches` environment
 variables. The defaults for these variables are defined in the
 `roles/common/defaults/main.yml` Ansible file. You can override the default
 values or specify patches that are not included in the
-`roles/common/defaults/main.yml`**` file in a properly structured JSON file that
-you reference on the `**`--extra-vars`**` Ansible argument.
+`roles/common/defaults/main.yml` file in a properly structured JSON file that
+you reference on the `--extra-vars` Ansible argument.
 
 The following example shows a JSON file that contains patch specifications for
 both the GI and RDBMS software:
@@ -2103,7 +2102,7 @@ rdbms_patches:
   - { category: "RU_Combo", base: "19.3.0.0.0", release: "19.7.0.0.200414", patchnum: "30783556", patchfile: "p30783556_190000_Linux-x86-64.zip", patch_subdir: "/30805684", prereq_check: TRUE, method: "opatch apply", ocm: FALSE, upgrade: TRUE }
 
 The following example shows the specification of the JSON file by using the
-**--extra-vars** Ansible** **parameter:
+`--extra-vars` Ansible parameter:
 ```
 
 ```./install-oracle.sh \
@@ -2164,10 +2163,14 @@ the following actions:
 -  Re-initializes ASM storage devices and uninstalls ASMlib if installed.
 -  Reboots the server.
 
-Important: review the parameter list carefully. Providing the Oracle release
-version is mandatory. Providing values for the role separation parameter, which
-defaults to "TRUE", and the specific location of the Ansible inventory file is
-recommended:
+**Important**: a destructive cleanup permanently deletes the databases and any data they
+contain. Any backups that are stored local to the server are also deleted. Backups
+stored in Cloud Storage, Cloud Storage FUSE, or NFS devices are not affected by a
+destructive cleanup.
+
+**Recommendation**: provide a value for the role separation parameter, which
+defaults to `TRUE`, and that you provide the specific location of the Unusable inventory
+file:
 
 ```$ ./cleanup-oracle.sh --help
         Usage: cleanup-oracle.sh

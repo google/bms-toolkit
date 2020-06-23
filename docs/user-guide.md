@@ -1,52 +1,51 @@
-
 # Toolkit for Bare Metal Solution: User Guide
 
-**Table of Contents**
+## Table of Contents
 
 - [Command quick reference for single instance deployments](#command-quick-reference-for-single-instance-deployments)
 - [Command quick reference for RAC deployments](#command-quick-reference-for-rac-deployments)
 - [Overview](#overview)
-   - [Software Stack](#software-stack)
-   - [Requirements and Prerequisites](#requirements-and-prerequisites)
-      - [Control node requirements](#control-node-requirements)
-      - [Target server requirements](#target-server-requirements)
+  - [Software Stack](#software-stack)
+  - [Requirements and Prerequisites](#requirements-and-prerequisites)
+    - [Control node requirements](#control-node-requirements)
+    - [Target server requirements](#target-server-requirements)
 - [Installing the toolkit](#installing-the-toolkit)
 - [Downloading and staging the Oracle Software](#downloading-and-staging-the-oracle-software)
-   - [Downloading the Oracle installation software](#downloading-the-oracle-installation-software)
-      - [Downloading Patches from My Oracle Support](#downloading-patches-from-my-oracle-support)
-      - [Required Oracle Software - Download Summary](#required-oracle-software---download-summary)
-   - [Staging the Oracle installation media](#staging-the-oracle-installation-media)
-      - [Cloud Storage bucket](#cloud-storage-bucket)
-      - [Cloud Storage FUSE](#cloud-storage-fuse)
-      - [NFS share](#nfs-share)
-   - [Validating Media](#validating-media)
+  - [Downloading the Oracle installation software](#downloading-the-oracle-installation-software)
+    - [Downloading Patches from My Oracle Support](#downloading-patches-from-my-oracle-support)
+    - [Required Oracle Software - Download Summary](#required-oracle-software---download-summary)
+  - [Staging the Oracle installation media](#staging-the-oracle-installation-media)
+    - [Cloud Storage bucket](#cloud-storage-bucket)
+    - [Cloud Storage FUSE](#cloud-storage-fuse)
+    - [NFS share](#nfs-share)
+  - [Validating Media](#validating-media)
 - [Prerequisite configuration](#prerequisite-configuration)
-      - [Data mount configuration file](#data-mount-configuration-file)
-      - [ASM disk group configuration file](#asm-disk-group-configuration-file)
-      - [Specifying LVM logical volumes](#specifying-lvm-logical-volumes)
+  - [Data mount configuration file](#data-mount-configuration-file)
+  - [ASM disk group configuration file](#asm-disk-group-configuration-file)
+  - [Specifying LVM logical volumes](#specifying-lvm-logical-volumes)
 - [Configuring Installations](#configuring-installations)
-   - [Configuration defaults](#configuration-defaults)
-   - [Oracle User Directories](#oracle-user-directories)
-   - [Database backup configuration](#database-backup-configuration)
-   - [Parameters](#parameters)
-      - [Target environment parameters](#target-environment-parameters)
-      - [Software installation parameters](#software-installation-parameters)
-      - [Storage configuration parameters](#storage-configuration-parameters)
-      - [Database configuration parameters](#database-configuration-parameters)
-      - [RAC configuration parameters](#rac-configuration-parameters)
-      - [Backup configuration parameters](#backup-configuration-parameters)
-      - [Additional operational parameters](#additional-operational-parameters)
-   - [Example Toolkit Execution](#example-toolkit-execution)
+  - [Configuration defaults](#configuration-defaults)
+  - [Oracle User Directories](#oracle-user-directories)
+  - [Database backup configuration](#database-backup-configuration)
+  - [Parameters](#parameters)
+    - [Target environment parameters](#target-environment-parameters)
+    - [Software installation parameters](#software-installation-parameters)
+    - [Storage configuration parameters](#storage-configuration-parameters)
+    - [Database configuration parameters](#database-configuration-parameters)
+    - [RAC configuration parameters](#rac-configuration-parameters)
+    - [Backup configuration parameters](#backup-configuration-parameters)
+    - [Additional operational parameters](#additional-operational-parameters)
+  - [Example Toolkit Execution](#example-toolkit-execution)
 - [Post installation tasks](#post-installation-tasks)
-   - [Reset passwords](#reset-passwords)
-   - [Validate the environment](#validate-the-environment)
-      - [Listing Oracle ASM devices](#listing-oracle-asm-devices)
-      - [Displaying cluster resource status](#displaying-cluster-resource-status)
-      - [Verify an Oracle cluster](#verify-an-oracle-cluster)
-      - [Oracle validation utilities](#oracle-validation-utilities)
-   - [Patching](#patching)
-   - [Patching RAC databases](#patching-rac-databases)
-   - [Destructive Cleanup](#destructive-cleanup)
+  - [Reset passwords](#reset-passwords)
+  - [Validate the environment](#validate-the-environment)
+    - [Listing Oracle ASM devices](#listing-oracle-asm-devices)
+    - [Displaying cluster resource status](#displaying-cluster-resource-status)
+    - [Verify an Oracle cluster](#verify-an-oracle-cluster)
+    - [Oracle validation utilities](#oracle-validation-utilities)
+  - [Patching](#patching)
+  - [Patching RAC databases](#patching-rac-databases)
+  - [Destructive Cleanup](#destructive-cleanup)
 
 ## Command quick reference for single instance deployments
 
@@ -57,27 +56,34 @@ options, and usage scenarios. All commands run from the "control node".
 
 1. Validate media specifying GCS storage bucket and optionally database:
 
-    `./check-swlib.sh --ora-swlib-bucket gs://[cloud-storage-bucket-name] 
-     --ora-version 19.3.0.0.0`
+    ```bash
+    ./check-swlib.sh --ora-swlib-bucket gs://[cloud-storage-bucket-name]
+     --ora-version 19.3.0.0.0
+    ```
 
 1. Validate access to target server (optionally include -i and location of
    private key file):
-  
-    `ssh ${INSTANCE_SSH_USER:-`whoami`}@${INSTANCE_IP_ADDR} sudo -u root hostname`
+
+   ```bash
+   ssh ${INSTANCE_SSH_USER:-`whoami`}@${INSTANCE_IP_ADDR} sudo -u root hostname
+   ```
 
 1. Review toolkit parameters:
 
-    `./install-oracle.sh --help`
+   ```bash
+   ./install-oracle.sh --help
+   ```
 
 1. Run an installation:
 
-    ```./install-oracle.sh \  
-      --ora-swlib-bucket gs://[cloud-storage-bucket-name] \  
-      --backup-dest "+RECO" \  
-      --ora-swlib-path /u02/swlib/ \  
-      --ora-swlib-type gcs \  
-      --instance-ip-addr ${INSTANCE_IP_ADDR}
-	```
+   ```bash
+   ./install-oracle.sh \
+   --ora-swlib-bucket gs://[cloud-storage-bucket-name] \
+   --backup-dest "+RECO" \
+   --ora-swlib-path /u02/swlib/ \
+   --ora-swlib-type gcs \
+   --instance-ip-addr ${INSTANCE_IP_ADDR}
+   ```
 
 ## Command quick reference for RAC deployments
 
@@ -87,28 +93,33 @@ Initial steps similar to those of the Single Instance installation.
 1. Validate media specifying Cloud Storage bucket and optionally database
    version:
 
-    `./check-swlib.sh --ora-swlib-bucket gs://[cloud-storage-bucket-name]
-      --ora-version 19.3.0.0.0`
+    ```bash
+   ./check-swlib.sh --ora-swlib-bucket gs://[cloud-storage-bucket-name]
+   --ora-version 19.3.0.0.0
+    ```
 
 1. Validate access to target RAC nodes:
- 
-    `ssh ${INSTANCE_SSH_USER:-`whoami`}@${INSTANCE_IP_ADDR_NODE_1} sudo -u root hostname  
-     ssh ${INSTANCE_SSH_USER:-`whoami`}@${INSTANCE_IP_ADDR_NODE_2} sudo -u root hostname`
 
-1. Review optional toolkit parameters:  
+    ```bash
+   ssh ${INSTANCE_SSH_USER:-`whoami`}@${INSTANCE_IP_ADDR_NODE_1} sudo -u root hostname
+   ssh ${INSTANCE_SSH_USER:-`whoami`}@${INSTANCE_IP_ADDR_NODE_2} sudo -u root hostname
+    ```
 
-    `./install-oracle.sh --help`  
+1. Review optional toolkit parameters:
 
-1. Run installation. Only IP address of the first cluster node is required: 
- 
-    ```./install-oracle.sh \  
-      --ora-swlib-bucket gs://[cloud-storage-bucket-name] \  
-      --backup-dest "+RECO" \  
-      --ora-swlib-path /u02/swlib/ \  
-      --ora-swlib-type gcs \  
-      --instance-ip-addr ${INSTANCE_IP_ADDR} \  
-      --cluster-type RAC
-	```
+    `./install-oracle.sh --help`
+
+1. Run installation. Only IP address of the first cluster node is required:
+
+    ```bash
+./install-oracle.sh \
+--ora-swlib-bucket gs://[cloud-storage-bucket-name] \
+--backup-dest "+RECO" \
+--ora-swlib-path /u02/swlib/ \
+--ora-swlib-type gcs \
+--instance-ip-addr ${INSTANCE_IP_ADDR} \
+--cluster-type RAC
+    ```
 
 ## Overview
 
@@ -118,9 +129,9 @@ the Google Cloud Bare Metal Solution. You can also use the toolkit to provision
 initial Oracle Database Recovery Manager (RMAN) backups to Google Cloud Storage
 or another storage system.
 
-This guide is for experienced professional users of Oracle software who are  
-deploying Oracle Database software and preparing initial Oracle databases on  
-Google Cloud [Bare Metal Solution](https://cloud.google.com/bare-metal).    
+This guide is for experienced professional users of Oracle software who are
+deploying Oracle Database software and preparing initial Oracle databases on
+Google Cloud [Bare Metal Solution](https://cloud.google.com/bare-metal).
 The toolkit defines default values for most options, so you can run the toolkit
 with only a few specifications. Your configuration options are listed later in
 this guide.
@@ -129,11 +140,11 @@ The toolkit supports the following major releases of Oracle Database and applies
 the most recent quarterly patches, also known as Oracle Release Updates or
 RUs:
 
--  Oracle 11.2.0.4.0
--  Oracle 12.1.0.2.0
--  Oracle 12.2.0.1.0
--  Oracle 18.0.0.0.0
--  Oracle 19.3.0.0.0
+- Oracle 11.2.0.4.0
+- Oracle 12.1.0.2.0
+- Oracle 12.2.0.1.0
+- Oracle 18.0.0.0.0
+- Oracle 19.3.0.0.0
 
 The toolkit does not include any Oracle software. You must obtain the
 appropriate licenses and download the Oracle software on your own. This guide
@@ -149,26 +160,26 @@ The toolkit customizes the software stack for Oracle Database workloads. Any out
 of a number of Oracle Database software releases can be installed. In addition,
 the configuration of the software stack includes:
 
--  The Oracle Grid Infrastructure (GI) and Automatic Storage Manager (ASM),
-   at the same major release as the database software.
--  The configuration of Oracle resources, like the database, listener, and
-   ASM resources, via
-   "[Oracle Restart](https://docs.oracle.com/en/database/oracle/oracle-database/19/admin/configuring-automatic-restart-of-an-oracle-database.html)"
-   for single-instance deployments and Oracle Clusterware for RAC deployments.
--  The optional separation of OS roles,"role separation," so you can have
-   different OS users for the GI and database software.
--  The installation of all of the required OS packages that are necessary for
-   the Oracle software installation, including common packages, such as ntp,
-   bind-utils, unzip, expect, wget, and net-tools.
--  The configuration of Linux Huge Pages, usually as a percentage of the
-   available memory, and the disabling of Red Hat Transparent Huge Pages (THP),
-   as per the recommended Oracle practices.
--  The adjustment of Linux kernel settings, as necessary. For more
-   information, see the
-   [Oracle documentation](https://docs.oracle.com/en/database/oracle/oracle-database/19/ladbi/minimum-parameter-settings-for-installation.html).
--  The disabling of the Linux firewall and SELinux, as recommended for Oracle
-   database servers.
--  The creation of a swap device, as necessary.
+- The Oracle Grid Infrastructure (GI) and Automatic Storage Manager (ASM),
+  at the same major release as the database software.
+- The configuration of Oracle resources, like the database, listener, and
+  ASM resources, via
+  "[Oracle Restart](https://docs.oracle.com/en/database/oracle/oracle-database/19/admin/configuring-automatic-restart-of-an-oracle-database.html)"
+  for single-instance deployments and Oracle Clusterware for RAC deployments.
+- The optional separation of OS roles,"role separation," so you can have
+  different OS users for the GI and database software.
+- The installation of all of the required OS packages that are necessary for
+  the Oracle software installation, including common packages, such as ntp,
+  bind-utils, unzip, expect, wget, and net-tools.
+- The configuration of Linux Huge Pages, usually as a percentage of the
+  available memory, and the disabling of Red Hat Transparent Huge Pages (THP),
+  as per the recommended Oracle practices.
+- The adjustment of Linux kernel settings, as necessary. For more
+  information, see the
+  [Oracle documentation](https://docs.oracle.com/en/database/oracle/oracle-database/19/ladbi/minimum-parameter-settings-for-installation.html).
+- The disabling of the Linux firewall and SELinux, as recommended for Oracle
+  database servers.
+- The creation of a swap device, as necessary.
 
 You can further customize the environment and host server(s), as needed.
 
@@ -176,14 +187,16 @@ You can further customize the environment and host server(s), as needed.
 
 You need at least two servers to install Oracle software by using the toolkit:
 
--  **Control node**: a virtual or physical machine from which the toolkit is
-   executed.
--  **Database server(s)**: target where the Oracle software will be installed
-   and configured.
+- **Control node**: a virtual or physical machine from which the toolkit is
+  executed.
+- **Database server(s)**: target where the Oracle software will be installed
+  and configured.
 
 A second database server (or node) is required for RAC deployments.
 
-![Shows workflow from user through control node to staging repository and then to servers in the Bare Metal Solution environment. A dotted line goes to Cloud Storage for backups.](bms-toolkit-architecture.png)
+![Shows workflow from user through control node to staging repository and then
+to servers in the Bare Metal Solution environment. A dotted line goes to Cloud
+Storage for backups.](bms-toolkit-architecture.png)
 
 #### Control node requirements
 
@@ -192,13 +205,13 @@ The control node can be any server capable of ssh.
 The control node must have the following software installed:
 
 - [Ansible]([https://en.wikipedia.org/wiki/Ansible_(software)](https://en.wikipedia.org/wiki/Ansible_(software)))
-version 2.9 or higher.  
+  version 2.9 or higher.
 - If you are using a Cloud Storage bucket to stage your Oracle installation
-media, the [Google Cloud SDK](https://cloud.google.com/sdk/docs).  
+  media, the [Google Cloud SDK](https://cloud.google.com/sdk/docs).
 - Ideally, a mainstream Linux OS.
 
-Depending on the Linux distribution you are using on your control node, you can  
-install Ansible with `sudo apt-get install ansible`. Your installation command  
+Depending on the Linux distribution you are using on your control node, you can
+install Ansible with `sudo apt-get install ansible`. Your installation command
 might be different. You can verify your version of Ansible with ansible
 `--version`.
 
@@ -220,8 +233,8 @@ The target database server(s) must be running a version of Linux that is
 certified for Oracle Database. The toolkit currently supports the following
 certified OS versions:
 
--  Red Hat Enterprise Linux (RHEL) 7 (versions 7.3 through 7.8 inclusive).
--  Oracle Linux (OL) 7 (versions 7.3 through 7.8 inclusive).
+- Red Hat Enterprise Linux (RHEL) 7 (versions 7.3 and up).
+- Oracle Linux (OL) 7 (versions 7.3 and up).
 
 For more information about Oracle-supported platforms see the Oracle
 certification matrix in the "My Oracle Support" (MOS) site (sign in required):
@@ -231,7 +244,7 @@ certification matrix in the "My Oracle Support" (MOS) site (sign in required):
 
 The latest version of the toolkit can be downloaded from Google Git
 Repositories:
-[https://github.com/google/bms-toolkit](https://github.com/google/bms-toolkit) 
+[https://github.com/google/bms-toolkit](https://github.com/google/bms-toolkit)
 
 On the `google/bms-toolkit` home page in GitHub, download the toolkit to your
 control node by clicking the **Clone or Download** button and selecting
@@ -270,8 +283,6 @@ additional patches listed by Oracle.
 Do not unzip the downloaded installation files. The toolkit requires the
 downloads in their original, compressed-file format.
 
-**The latest patch release tested with toolkit: JAN2020 (200114)**
-
 #### Downloading Patches from My Oracle Support
 
 For convenience, direct links to My Oracle Support (MOS) for applicable patches
@@ -284,17 +295,17 @@ patches through My Oracle Support.
 <table>
 <thead>
 <tr>
-<th><strong>Oracle Release</strong></th>
-<th><strong>Category - Site</strong></th>
-<th><strong>Software Piece</strong></th>
-<th><strong>File Name<br>
+<th>Oracle Release</th>
+<th>Category - Site</th>
+<th>Software Piece</th>
+<th>File Name<br>
 (From "Oracle eDelivery" or "My Oracle
-Support")</strong></th>
+Support")</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><strong>19.3.0.0.0</strong></td>
+<td>19.3.0.0.0</td>
 <td>Base - eDelivery</td>
 <td>Oracle Database 19.3.0.0.0 for Linux x86-64</td>
 <td>V982063-01.zip</td>
@@ -331,7 +342,7 @@ Support")</strong></th>
 href="https://support.oracle.com/epmos/faces/PatchResultsNDetails?releaseId=600000000122912&patchId=6880880&languageId=0&platformId=226">p6880880_190000_Linux-x86-64.zip</a></td>
 </tr>
 <tr>
-<td><strong>18.0.0.0.0</strong></td>
+<td>18.0.0.0.0</td>
 <td>Base - eDelivery</td>
 <td>Oracle Database 18.0.0.0.0 for Linux x86-64</td>
 <td>V978967-01.zip</td>
@@ -374,7 +385,7 @@ href="https://support.oracle.com/epmos/faces/PatchResultsNDetails?releaseId=6000
 href="https://support.oracle.com/epmos/faces/PatchResultsNDetails?releaseId=600000000107457&patchId=6880880&languageId=0&platformId=226">p6880880_180000_Linux-x86-64.zip</a></td>
 </tr>
 <tr>
-<td><strong>12.2.0.1.0</strong></td>
+<td>12.2.0.1.0</td>
 <td>Base - eDelivery</td>
 <td>Oracle Database 12.2.0.1.0 for Linux x86-64</td>
 <td>V839960-01.zip</td>
@@ -428,7 +439,7 @@ href="https://support.oracle.com/epmos/faces/PatchResultsNDetails?releaseId=6000
 href="https://support.oracle.com/epmos/faces/PatchResultsNDetails?releaseId=600000000063735&patchId=6880880&languageId=0&platformId=226">p6880880_122010_Linux-x86-64.zip</a></td>
 </tr>
 <tr>
-<td><strong>12.1.0.2.0</strong></td>
+<td>12.1.0.2.0</td>
 <td>Base - eDelivery</td>
 <td>Oracle Database 12.1.0.2.0 for Linux x86-64</td>
 <td>V46095-01_1of2.zip<br>
@@ -471,7 +482,7 @@ href="https://support.oracle.com/epmos/faces/PatchResultsNDetails?releaseId=6000
 href="https://support.oracle.com/epmos/faces/PatchResultsNDetails?releaseId=80121010&patchId=6880880&languageId=0&platformId=226">p6880880_121010_Linux-x86-64.zip</a></td>
 </tr>
 <tr>
-<td><strong>11.2.0.4</strong></td>
+<td>11.2.0.4</td>
 <td>Patch - MOS</td>
 <td>11.2.0.4.0 PATCH SET FOR ORACLE DATABASE SERVER - Patch 13390677 for Linux
 x86-64</td>
@@ -529,10 +540,10 @@ toolkit will fail.
 You can stage the Oracle installation media in any one of the following
 repository types:
 
-- A [Cloud Storage](https://cloud.google.com/storage/docs/introduction) bucket.  
+- A [Cloud Storage](https://cloud.google.com/storage/docs/introduction) bucket.
 - [Cloud Storage FUSE](https://cloud.google.com/storage/docs/gcs-fuse), an open
-source [FUSE](http://fuse.sourceforge.net/) adapter that allows you to mount
-Cloud Storage buckets as file systems on Linux or macOS systems.  
+  source [FUSE](http://fuse.sourceforge.net/) adapter that allows you to mount
+  Cloud Storage buckets as file systems on Linux or macOS systems.
 - A network NFS share.
 
 #### Cloud Storage bucket
@@ -552,16 +563,16 @@ account scopes allow you to use Cloud Storage.
 
 To create a new service account:
 
-1. 1. Navigate to your Google Cloud Console.
-1. 1. Select the **IAM & Admin** tab > **Service accounts**.
-1. 1. Click on **Create Service Account** and chose a relevant name.
-1. 1. Select a role that provides the permission that you need, such as
+1. Navigate to your Google Cloud Console.
+1. Select the **IAM & Admin** tab > **Service accounts**.
+1. Click on **Create Service Account** and chose a relevant name.
+1. Select a role that provides the permission that you need, such as
    **Storage Admin**.
-1. 1. Click on the "Create Key" button, and download the file in JSON format.
+1. Click on the "Create Key" button, and download the file in JSON format.
 
 You can then pass the file as a parameter to the deployment:
 
-```
+```bash
 --ora-swlib-type gcsfuse --ora-swlib-bucket oracle-swlib --ora-swlib-credentials ~/path_to/service_account.json
 ```
 
@@ -573,7 +584,7 @@ can use it.
 When you use an NFS share, you specify the NFS mount point on the
 `ora-swlib-bucket` parameter:
 
-```
+```bash
 --ora-swlib-type nfs --ora-swlib-bucket 192.168.0.250:/my_nfs_export
 ```
 
@@ -587,7 +598,9 @@ that you are installing. The version default is 19.3.0.0.0.
 
 Example of a successful media validation:
 
-```$ ./check-swlib.sh --ora-swlib-bucket gs://oracle-software --ora-version 19.3.0.0.0
+```bash
+$ ./check-swlib.sh --ora-swlib-bucket gs://oracle-software --ora-version 19.3.0.0.0
+
 Running with parameters from command line or environment variables:
 
 ORA_SWLIB_BUCKET=gs://oracle-software
@@ -618,10 +631,10 @@ Found p6880880_190000_Linux-x86-64.zip : OPatch Utility
         file size matches (111682884), md5 matches (ad583938cc58d2e0805f3f9c309e7431).
 ```
 
-
 Example of a failed media validation:
 
-```$ ./check-swlib.sh --ora-swlib-bucket gs://oracle-software --ora-version 12.2.0.1.0
+```bash
+$ ./check-swlib.sh --ora-swlib-bucket gs://oracle-software --ora-version 12.2.0.1.0
 Running with parameters from command line or environment variables:
 
 ORA_SWLIB_BUCKET=gs://oracle-software
@@ -662,12 +675,12 @@ Found p6880880_122010_Linux-x86-64.zip : OPatch Utility
 Before you run the tool you need to create JSON formatted configuration files
 for the data mount devices and the ASM disk group.
 
-#### Data mount configuration file
+### Data mount configuration file
 
 In the data mount configuration file, you specify disk device attributes for:
 
--  Oracle software installation, which is usually mounted at /u01
--  Oracle diagnostic destination, which is usually mounted at /u02
+- Oracle software installation, which is usually mounted at /u01
+- Oracle diagnostic destination, which is usually mounted at /u02
 
 In the configuration file, specify the block devices (actual devices, not
 partitions), the mount point names, the file system types, and the mount options
@@ -676,16 +689,16 @@ in valid JSON format.
 When you run the toolkit, specify the path to the configuration file by using
 either the `--ora-data-mounts` command line option or the
 `ORA_DATA_MOUNTS` environment variable. The file path can be relative or
-fully qualified. The file name defaults to "`data_mounts_config.json`".
+fully qualified. The file name defaults to `data_mounts_config.json`.
 
 The following example shows a properly formatted JSON data mount configuration
 file:
 
-```$ cat data_mounts_config.json
+```json
 [
     {
         "purpose": "software",
-        "blk_device": "/dev/sdb",
+        "blk_device": "/dev/mapper/3600a098038314352502b4f782f446138",
         "name": "u01",
         "fstype":"xfs",
         "mount_point":"/u01",
@@ -693,7 +706,7 @@ file:
     },
     {
         "purpose": "diag",
-        "blk_device": "/dev/sdc",
+        "blk_device": "/dev/mapper/3600a098038314352502b4f782f446230",
         "name": "u02",
         "fstype":"xfs",
         "mount_point":"/u02",
@@ -702,7 +715,7 @@ file:
 ]
 ```
 
-#### ASM disk group configuration file
+### ASM disk group configuration file
 
 In the ASM disk group configuration, specify the disk group names, the ASM disk
 names, and the associated block devices (the actual devices, not partitions) in
@@ -711,22 +724,22 @@ valid JSON format.
 When you run the toolkit, specify the path to the configuration file by using
 either the  `--ora-asm-disks` command line option or the `ORA_ASM_DISKS`
 environment variable. The file path can be relative or fully qualified. The file
-name defaults to "`ask_disk_config.json`".
+name defaults to `ask_disk_config.json`.
 
 The following example shows a properly formatted JSON ASM disk group
 configuration file:
 
-```$ cat asm_disk_config.json
+```json
 [
     {
         "diskgroup": "DATA",
         "disks": [
             {
-                "blk_device": "/dev/sdd",
+                "blk_device": "/dev/mapper/3600a098038314352502b4f782f446244",
                 "name": "DATA1"
             },
             {
-                "blk_device": "/dev/sde",
+                "blk_device": "/dev/mapper/3600a098038314352502b4f782f446245",
                 "name": "DATA2"
             }
         ]
@@ -735,7 +748,7 @@ configuration file:
         "diskgroup": "RECO",
         "disks": [
             {
-                "blk_device": "/dev/sdf",
+                "blk_device": "/dev/mapper/3600a098038314352502b4f782f446246",
                 "name": "RECO1"
             }
         ]
@@ -743,12 +756,12 @@ configuration file:
 ]
 ```
 
-#### Specifying LVM logical volumes
+### Specifying LVM logical volumes
 
 In addition to the raw devices, you can also specify LVM logical volumes by
 using the following format:
 
-`"blk_devices": "/dev/mapper/oracle-data"`
+`"blk_device": "/dev/mapper/oracle-data"`
 
 ## Configuring Installations
 
@@ -780,14 +793,11 @@ need a different value. The parameter values that the toolkit uses are echoed
 during execution so you can confirm the configuration.
 
 The complete list of parameters and their values are provided in the [Parameters
-section](#heading=h.m1e7sxtn4kzm).
-
-Configuring an installation is discussed in [Configuring
-installations](#configuring-installations).
+section](#parameters).
 
 ### Oracle User Directories
 
-The Oracle convention for naming of file system mounts is **_/pm**_, where
+The Oracle convention for naming of file system mounts is **_/pm_**, where
 **_p_** is a string constant and **_m_** is a unique key, typically a two digit
 integer. The standard string constant for Oracle user file system mounts is the
 letter "u".
@@ -795,9 +805,9 @@ letter "u".
 Following this convention, the toolkit creates the following default file system
 mounts:
 
-+ **/u01** - For Oracle software. For example, /u01/app/oracle/product.
+- **/u01** - For Oracle software. For example, /u01/app/oracle/product.
 
-+ **/u02** - For other Oracle files, including software staging and, optionally, the
+- **/u02** - For other Oracle files, including software staging and, optionally, the
   Oracle Automatic Diagnostic Repository (ADR).
 
 You don't have to use a separate file system, physical device, or logical volume
@@ -811,16 +821,16 @@ backup, an archived redo log backup, and sets the initial backup schedule based
 on your specifications or the default backup values.
 
 The parameters for configuring your backups are described in [Backup
-configuration parameters](#heading=h.r1os3xron5il). The following list shows the
+configuration parameters](#backup-configuration-parameters). The following list shows the
 default backup configuration implemented by the toolkit:
 
--  Backup scripts are stored in the directory `/home/oracle/scripts`.
--  Associated log files are stored in the directory `/home/oracle/logs`.
--  Weekly FULL database LEVEL=0 backups are run at 01:00 on Sundays.
--  Daily FULL database LEVEL=1 cumulative incremental backups are run at
-   01:00, Monday through Friday.
--  Hourly archived redo log backups run at 30 minutes past every hour.
--  RMAN backups are written to the Fast Recovery Area (FRA).
+- Backup scripts are stored in the directory `/home/oracle/scripts`.
+- Associated log files are stored in the directory `/home/oracle/logs`.
+- Weekly FULL database LEVEL=0 backups are run at 01:00 on Sundays.
+- Daily FULL database LEVEL=1 cumulative incremental backups are run at
+  01:00, Monday through Friday.
+- Hourly archived redo log backups run at 30 minutes past every hour.
+- RMAN backups are written to the Fast Recovery Area (FRA).
 
 The toolkit schedules the backups by using the Linux cron utility under the
 Oracle software owner user. You can run the backup scripts as necessary.
@@ -840,19 +850,21 @@ Command-line commands are presented in lower case letters and are preceded by
 two dashes.
 
 You can specify parameters as either command line arguments or as predefined
-environment variables. 
+environment variables.
 
 Default values for the parameters are shown in bold letters.
 
 #### Target environment parameters
 
+Top of target
+
 <table>
 <thead>
 <tr>
-<th><strong>Attribute</strong></th>
-<th><strong>Parameter options</strong></th>
-<th><strong>Range of Values</strong></th>
-<th><strong>Notes</strong></th>
+<th>Attribute</th>
+<th>Parameter options</th>
+<th>Range of Values</th>
+<th>Notes</th>
 </tr>
 </thead>
 <tbody>
@@ -863,9 +875,8 @@ INSTANCE_IP_ADDR
 <br>
 --instance-ip-addr
 </pre></p>
-
 </td>
-<td><user defined - no default></td>
+<td>user defined - no default</td>
 <td>The IP address of the target server to host the Oracle software and
 database.<br>
 Applicable for Oracle "single instance" installations.</td>
@@ -877,10 +888,9 @@ INSTANCE_HOSTNAME
 <br>
 --instance-hostname
 </pre></p>
-
 </td>
-<td><user defined><br>
-<strong><INSTANCE_IP_ADDR></strong></td>
+<td>user defined<br>
+INSTANCE_IP_ADDR</td>
 <td>Optional hostname for the target server. Defaults to value of
 INSTANCE_IP_ADDR. Specifying a hostname adds clarity to log and debug
 files. </td>
@@ -892,10 +902,9 @@ INSTANCE_SSH_USER
 <br>
 --instance-ssh-user
 </pre></p>
-
 </td>
-<td><user defined><br>
-<strong><current user></strong></td>
+<td>user defined<br>
+current user</td>
 <td>Remote user with connectivity (including privilege escalation capabilities)
 on target server.</td>
 </tr>
@@ -906,10 +915,9 @@ INSTANCE_SSH_KEY
 <br>
 --instance-ssh-key
 </pre></p>
-
 </td>
-<td><user defined><br>
-<strong>~/.ssh/id_rsa</strong></td>
+<td>user defined<br>
+~/.ssh/id_rsa</td>
 <td></td>
 </tr>
 <tr>
@@ -919,25 +927,28 @@ No environment variable
 <br>
 --inventory-file
 </pre></p>
-
 </td>
-<td><user defined><br>
-<strong><toolkit generated></strong></td>
+<td>user defined<br>
+toolkit generated</td>
 <td>Optional Ansible inventory file name. If not supplied, the toolkit
 generates a filename.</td>
 </tr>
 </tbody>
 </table>
 
+Bottom of target
+
 #### Software installation parameters
+
+Top of software
 
 <table>
 <thead>
 <tr>
-<th><strong>Attribute</strong></th>
-<th><strong>Parameters</strong></th>
-<th><strong>Parameter Values</strong></th>
-<th><strong>Notes</strong></th>
+<th>Attribute</th>
+<th>Parameters</th>
+<th>Parameter Values</th>
+<th>Notes</th>
 </tr>
 </thead>
 <tbody>
@@ -947,9 +958,8 @@ generates a filename.</td>
 ORA_VERSION
 --ora-version
 </pre></p>
-
 </td>
-<td><strong>19.3.0.0.0</strong><br>
+<td>19.3.0.0.0<br>
 18.0.0.0.0<br>
 12.2.0.1.0<br>
 12.1.0.2.0<br>
@@ -962,9 +972,8 @@ ORA_VERSION
 ORA_EDITION
 --ora-edition
 </pre></p>
-
 </td>
-<td><strong>EE</strong><br>
+<td>EE<br>
 SE, for 11.2.0.4.0 only<br>
 SE2, for 12.1.0.2.0 and above</td>
 <td>SE or SE2 depending on the Oracle version chosen.</td>
@@ -975,9 +984,8 @@ SE2, for 12.1.0.2.0 and above</td>
 ORA_SWLIB_TYPE
 --ora-swlib-type
 </pre></p>
-
 </td>
-<td><strong>GCS</strong><br>
+<td>GCS<br>
 GCSFUSE<br>
 NFS</td>
 <td>Remote storage type acting as a software library where the required
@@ -988,10 +996,8 @@ installation media is stored.</td>
 <td><p><pre>
 ORA_SWLIB_BUCKET
 --ora-swlib-bucket
-</pre></p>
-
-</td>
-<td><user defined - no default><br>
+</pre></p></td>
+<td>user defined - no default<br>
 Example: gs://oracle-software</td>
 <td>GCS bucket where the required base software and patches have been
 downloaded and staged.<br>
@@ -1003,11 +1009,9 @@ Only used when ORA_SWLIB_TYPE=GCS.</td>
 <td><p><pre>
 ORA_SWLIB_PATH
 --ora-swlib-path
-</pre></p>
-
-</td>
-<td><user defined><br>
-<strong>/u01/swlib</strong></td>
+</pre></p></td>
+<td>user defined<br>
+/u01/swlib</td>
 <td>Path where the required base software and patches have been downloaded and
 staged.<br>
 <br>
@@ -1018,10 +1022,8 @@ Not used when ORA_SWLIB_TYPE=GCS.</td>
 <td><p><pre>
 ORA_SWLIB_CREDENTIALS
 --ora-swlib-credentials
-</pre></p>
-
-</td>
-<td><user defined - no default></td>
+</pre></p></td>
+<td>user defined - no default</td>
 <td>Service account key file name. Only used when ORA_SWLIB_TYPE=GCSFUSE.</td>
 </tr>
 <tr>
@@ -1030,26 +1032,22 @@ ORA_SWLIB_CREDENTIALS
 <p><pre>
 ORA_DATA_MOUNTS
 --ora-data-mounts
-</pre></p>
-
-</td>
-<td><user defined><br>
-<strong>data_mounts_config.json</strong></td>
+</pre></p></td>
+<td>user defined<br>
+data_mounts_config.json</td>
 <td>Properly formatted JSON file providing mount and file system details for
 local mounts including installation location for the Oracle software and
 the location for Oracle diagnostic (ADR) directories. See <a
-href="#heading=h.1c8re379xog0">Data mount configuration file</a>.</td>
+href="#data-mount-configuration-file">Data mount configuration file</a>.</td>
 </tr>
 <tr>
 <td>Software unzip location</td>
 <td><p><pre>
 ORA_STAGING
 --ora-staging
-</pre></p>
-
-</td>
-<td><user defined><br>
-<strong><ORA_SWLIB_PATH></strong></td>
+</pre></p></td>
+<td>user defined<br>
+<ORA_SWLIB_PATH></td>
 <td>Working area for unzipping and staging software and installation
 files.<br>
 <br>
@@ -1060,11 +1058,9 @@ Should have at least 16GB of available free space.</td>
 <td><p><pre>
 ORA_LISTENER_NAME
 --ora-listener-name
-</pre></p>
-
-</td>
-<td><user defined><br>
-<strong>LISTENER</strong></td>
+</pre></p></td>
+<td>user defined<br>
+LISTENER</td>
 <td></td>
 </tr>
 <tr>
@@ -1072,11 +1068,9 @@ ORA_LISTENER_NAME
 <td><p><pre>
 ORA_LISTENER_PORT
 --ora-listener-port
-</pre></p>
-
-</td>
-<td><user defined><br>
-<strong>1521</strong></td>
+</pre></p></td>
+<td>user defined<br>
+1521</td>
 <td></td>
 </tr>
 <tr>
@@ -1084,10 +1078,8 @@ ORA_LISTENER_PORT
 <td><p><pre>
 NTP_PREF
 --ntp-pref
-</pre></p>
-
-</td>
-<td><user defined - no default></td>
+</pre></p></td>
+<td>user defined - no default</td>
 <td>Preferred NTP server to use in /etc/ntp.conf.<br>
 <br>
 Optional: set only if you need to manually define an NTP server, instead of
@@ -1096,15 +1088,19 @@ relying on the OS defaults.</td>
 </tbody>
 </table>
 
+Bottom of software
+
 #### Storage configuration parameters
+
+Top of storage
 
 <table>
 <thead>
 <tr>
-<th><strong>Attribute</strong></th>
-<th><strong>Parameters</strong></th>
-<th><strong>Parameter Values</strong></th>
-<th><strong>Notes</strong></th>
+<th>Attribute</th>
+<th>Parameters</th>
+<th>Parameter Values</th>
+<th>Notes</th>
 </tr>
 </thead>
 <tbody>
@@ -1113,11 +1109,9 @@ relying on the OS defaults.</td>
 <td><p><pre>
 ORA_DISK_MGMT
 --ora-disk-mgmt
-</pre></p>
-
-</td>
+</pre></p></td>
 <td>asmlib<br>
-<strong>udev</strong></td>
+udev</td>
 <td>ASMlib option is applicable to Oracle Linux as RHEL implementation requires
 Red Hat support. See MOS Doc ID: 1089399.1</td>
 </tr>
@@ -1126,10 +1120,8 @@ Red Hat support. See MOS Doc ID: 1089399.1</td>
 <td><p><pre>
 ORA_ROLE_SEPARATION
 --ora-role-separation
-</pre></p>
-
-</td>
-<td><strong>true</strong><br>
+</pre></p></td>
+<td>true<br>
 false</td>
 <td>Role separation means that the Grid Infrastructure is owned by the OS user
 "grid" instead of the OS user "oracle".</td>
@@ -1139,11 +1131,9 @@ false</td>
 <td><p><pre>
 ORA_DATA_DISKGROUP
 --ora-data-diskgroup
-</pre></p>
-
-</td>
-<td><user defined><br>
-<strong>DATA</strong></td>
+</pre></p></td>
+<td>user defined<br>
+DATA</td>
 <td>Default disk group for DB files for initial database.</td>
 </tr>
 <tr>
@@ -1151,11 +1141,9 @@ ORA_DATA_DISKGROUP
 <td><p><pre>
 ORA_RECO_DISKGROUP
 --ora-reco-diskgroup
-</pre></p>
-
-</td>
-<td><user defined><br>
-<strong>RECO</strong></td>
+</pre></p></td>
+<td>user defined<br>
+RECO</td>
 <td>Default disk group for FRA files for initial database.</td>
 </tr>
 <tr>
@@ -1163,13 +1151,11 @@ ORA_RECO_DISKGROUP
 <td><p><pre>
 ORA_ASM_DISKS
 --ora-asm-disks
-</pre></p>
-
-</td>
-<td><user defined><br>
-<strong>asm_disk_config.json</strong></td>
+</pre></p></td>
+<td>user defined<br>
+asm_disk_config.json</td>
 <td>Name of an ASM configuration file that contains ASM disk definitions in
-valid JSON format. See <a href="#heading=h.jx90uz64rlgu">ASM disk group
+valid JSON format. See <a href="#asm-disk-group-configuration-file">ASM disk group
 configuration file</a>.</td>
 </tr>
 </tbody>
@@ -1180,10 +1166,10 @@ configuration file</a>.</td>
 <table>
 <thead>
 <tr>
-<th><strong>Attribute</strong></th>
-<th><strong>Parameters</strong></th>
-<th><strong>Parameter Values</strong></th>
-<th><strong>Notes</strong></th>
+<th>Attribute</th>
+<th>Parameters</th>
+<th>Parameter Values</th>
+<th>Notes</th>
 </tr>
 </thead>
 <tbody>
@@ -1192,25 +1178,21 @@ configuration file</a>.</td>
 <td><p><pre>
 ORA_DB_NAME
 --ora-db-name
-</pre></p>
-
-</td>
-<td><user defined><br>
-<strong>ORCL</strong></td>
+</pre></p></td>
+<td>user defined<br>
+ORCL</td>
 <td>Up to 8 characters. Must start with a letter. Other 7 characters can
-include alphanumeric characters, underscore (_), number sign (#), and
-dollar sign ($).</td>
+include alphanumeric characters, underscore, number sign, and
+dollar sign</td>
 </tr>
 <tr>
 <td>Database domain</td>
 <td><p><pre>
 ORA_DB_DOMAIN
 --ora-db-domain
-</pre></p>
-
-</td>
-<td><user defined><br>
-<strong>.world</strong></td>
+</pre></p></td>
+<td>user defined<br>
+.world</td>
 <td>String of name components up to 128 characters long including periods.</td>
 </tr>
 <tr>
@@ -1218,11 +1200,9 @@ ORA_DB_DOMAIN
 <td><p><pre>
 ORA_DB_CHARSET
 --ora-db-charset
-</pre></p>
-
-</td>
-<td><user defined><br>
-<strong>AL32UTF8</strong></td>
+</pre></p></td>
+<td>user defined<br>
+AL32UTF8</td>
 <td></td>
 </tr>
 <tr>
@@ -1230,11 +1210,9 @@ ORA_DB_CHARSET
 <td><p><pre>
 ORA_DB_NCHARSET
 --ora-db-ncharset
-</pre></p>
-
-</td>
-<td><user defined><br>
-<strong>AL16UTF16</strong></td>
+</pre></p></td>
+<td>user defined<br>
+AL16UTF16</td>
 <td></td>
 </tr>
 <tr>
@@ -1242,11 +1220,9 @@ ORA_DB_NCHARSET
 <td><p><pre>
 COMPATIBLE_RDBMS
 --compatible-rdbms
-</pre></p>
-
-</td>
-<td><user defined><br>
-<strong><Oracle version></strong></td>
+</pre></p></td>
+<td>user defined<br>
+<Oracle version></td>
 <td>Defaults to the value of ORA_VERSION.</td>
 </tr>
 <tr>
@@ -1254,10 +1230,8 @@ COMPATIBLE_RDBMS
 <td><p><pre>
 ORA_DB_CONTAINER
 --ora-db-container
-</pre></p>
-
-</td>
-<td><strong>true</strong><br>
+</pre></p></td>
+<td>true<br>
 false</td>
 <td>Not applicable for release 11.2.0.4.</td>
 </tr>
@@ -1266,10 +1240,8 @@ false</td>
 <td><p><pre>
 ORA_PDB_NAME
 --ora-pdb-name-prefix
-</pre></p>
-
-</td>
-<td><strong>PDB</strong></td>
+</pre></p></td>
+<td>PDB</td>
 <td>Not applicable for release 11.2.0.4.</td>
 </tr>
 <tr>
@@ -1277,10 +1249,8 @@ ORA_PDB_NAME
 <td><p><pre>
 ORA_PDB_COUNT
 --ora-pdb-count
-</pre></p>
-
-</td>
-<td><strong>1</strong></td>
+</pre></p></td>
+<td>1</td>
 <td>If greater than 1, a numeric is appended to each PDB name.<br>
 <br>
 The PDB count may have Oracle licensing implications.<br>
@@ -1292,10 +1262,8 @@ Not applicable for release 11.2.0.4.</td>
 <td><p><pre>
 ORA_DB_TYPE
 --ora-db-type
-</pre></p>
-
-</td>
-<td><strong>MULTIPURPOSE</strong><br>
+</pre></p></td>
+<td>MULTIPURPOSE<br>
 DATA_WAREHOUSING<br>
 OLTP</td>
 <td></td>
@@ -1305,11 +1273,9 @@ OLTP</td>
 <td><p><pre>
 ORA_REDO_LOG_SIZE
 --ora-redo-log-size
-</pre></p>
-
-</td>
-<td><user defined><br>
-<strong>100MB</strong></td>
+</pre></p></td>
+<td>user defined<br>
+100MB</td>
 <td></td>
 </tr>
 </tbody>
@@ -1320,10 +1286,10 @@ ORA_REDO_LOG_SIZE
 <table>
 <thead>
 <tr>
-<th><strong>Attribute</strong></th>
-<th><strong>Parameters</strong></th>
-<th><strong>Parameter Values</strong></th>
-<th><strong>Notes</strong></th>
+<th>Attribute</th>
+<th>Parameters</th>
+<th>Parameter Values</th>
+<th>Notes</th>
 </tr>
 </thead>
 <tbody>
@@ -1332,10 +1298,8 @@ ORA_REDO_LOG_SIZE
 <td><p><pre>
 CLUSTER_TYPE
 --cluster-type
-</pre></p>
-
-</td>
-<td><strong>NONE</strong><br>
+</pre></p></td>
+<td>NONE<br>
 RAC</td>
 <td>Specify "RAC" to install a RAC cluster. Otherwise a "Single Instance"
 installation is performed.</td>
@@ -1345,11 +1309,9 @@ installation is performed.</td>
 <td><p><pre>
 CLUSTER_CONFIG
 --cluster-config
-</pre></p>
-
-</td>
-<td><user defined><br>
-<strong>cluster_config.json</strong></td>
+</pre></p></td>
+<td>user defined<br>
+cluster_config.json</td>
 <td>Used to specify the RAC scan listener name, port, IPs, and so forth. Also
 used to list RAC nodes.<br>
 <br>
@@ -1367,10 +1329,8 @@ Specifies a file containing properly formed JSON text.</td>
 <th><p><pre>
 BACKUP_DEST
 --backup-dest
-</pre></p>
-
-</th>
-<th><user defined - no default><br>
+</pre></p></th>
+<th>user defined - no default<br>
 Example: +RECO</th>
 <th>Disk group name or NFS file share location. Can include formatting options,
 such as "/u02/db_backups/ORCL_%I_%T_%s_%p.bak", for example.<br>
@@ -1390,11 +1350,9 @@ destination is not available or writeable.</th>
 <td><p><pre>
 BACKUP_REDUNDANCY
 --backup-redundancy
-</pre></p>
-
-</td>
-<td><user defined field><br>
-<strong>2</strong></td>
+</pre></p></td>
+<td>user defined field<br>
+2</td>
 <td>An integer that specifies the number of full backups to keep.</td>
 </tr>
 <tr>
@@ -1402,11 +1360,9 @@ BACKUP_REDUNDANCY
 <td><p><pre>
 ARCHIVE_REDUNDANCY
 --archive-redundancy
-</pre></p>
-
-</td>
-<td><user defined field><br>
-<strong>2</strong></td>
+</pre></p></td>
+<td>user defined field<br>
+2</td>
 <td>An integer that specifies the number of times to redundantly backup
 archived redo logs into an RMAN backup set.</td>
 </tr>
@@ -1415,11 +1371,9 @@ archived redo logs into an RMAN backup set.</td>
 <td><p><pre>
 ARCHIVE_ONLINE_DAYS
 --archive-online-days
-</pre></p>
-
-</td>
-<td><user defined field><br>
-<strong>7</strong></td>
+</pre></p></td>
+<td>user defined field<br>
+7</td>
 <td>Archived redo logs are only deleted from disk when they are older than this
 number of days.<br>
 <br>
@@ -1430,11 +1384,9 @@ number of days.<br>
 <td><p><pre>
 BACKUP_LEVEL0_DAYS
 --backup-level0-days
-</pre></p>
-
-</td>
-<td><user defined><br>
-<strong>0</strong></td>
+</pre></p></td>
+<td>user defined<br>
+0</td>
 <td>Day(s) of week in cron format to be used for cron creation.</td>
 </tr>
 <tr>
@@ -1442,11 +1394,9 @@ BACKUP_LEVEL0_DAYS
 <td><p><pre>
 BACKUP_LEVEL1_DAYS
 --backup-level1-days
-</pre></p>
-
-</td>
-<td><user defined><br>
-<strong>1-6</strong></td>
+</pre></p></td>
+<td>user defined<br>
+1-6</td>
 <td>Day(s) of week in cron format to be used for cron creation.</td>
 </tr>
 <tr>
@@ -1454,11 +1404,9 @@ BACKUP_LEVEL1_DAYS
 <td><p><pre>
 BACKUP_START_HOUR
 --backup-start-hour
-</pre></p>
-
-</td>
-<td><user defined><br>
-<strong>01</strong></td>
+</pre></p></td>
+<td>user defined<br>
+01</td>
 <td>Hour in 24hour format.<br>
 <br>
 Used in cron for RMAN full (level=0 and level=1) backups.</td>
@@ -1468,11 +1416,9 @@ Used in cron for RMAN full (level=0 and level=1) backups.</td>
 <td><p><pre>
 BACKUP_START_MIN
 --backup-start-min
-</pre></p>
-
-</td>
-<td><user defined><br>
-<strong>00</strong></td>
+</pre></p></td>
+<td>user defined<br>
+00</td>
 <td>Minute in XX format.<br>
 <br>
 Used in cron for RMAN full (level=0 and level=1) backups.</td>
@@ -1482,11 +1428,9 @@ Used in cron for RMAN full (level=0 and level=1) backups.</td>
 <td><p><pre>
 ARCHIVE_BACKUP_MIN
 --archive-backup-min
-</pre></p>
-
-</td>
-<td><user defined><br>
-<strong>30</strong></td>
+</pre></p></td>
+<td>user defined<br>
+30</td>
 <td>Minute in XX format.<br>
 <br>
 Used in cron for RMAN full (level=0 and level=1) backups.</td>
@@ -1496,11 +1440,9 @@ Used in cron for RMAN full (level=0 and level=1) backups.</td>
 <td><p><pre>
 BACKUP_SCRIPT_LOCATION
 --backup-script-location
-</pre></p>
-
-</td>
-<td><user defined><br>
-<strong>/home/oracle/scripts</strong></td>
+</pre></p></td>
+<td>user defined<br>
+/home/oracle/scripts</td>
 <td>Location for storing the provided RMAN backup scripts and other provided
 database scripts.<br>
 <br>
@@ -1513,11 +1455,9 @@ minimal.</td>
 <td><p><pre>
 BACKUP_LOG_LOCATION
 --backup-log-location
-</pre></p>
-
-</td>
-<td><user defined><br>
-<strong>/home/oracle/logs</strong></td>
+</pre></p></td>
+<td>user defined<br>
+/home/oracle/logs</td>
 <td>Location for storing log and output files from the provided RMAN backup
 scripts.<br>
 <br>
@@ -1532,10 +1472,10 @@ requirements for this directory is minimal.</td>
 <table>
 <thead>
 <tr>
-<th><strong>Attribute</strong></th>
-<th><strong>Parameters</strong></th>
-<th><strong>Parameter Values</strong></th>
-<th><strong>Notes</strong></th>
+<th>Attribute</th>
+<th>Parameters</th>
+<th>Parameter Values</th>
+<th>Notes</th>
 </tr>
 </thead>
 <tbody>
@@ -1543,20 +1483,16 @@ requirements for this directory is minimal.</td>
 <td>Command help</td>
 <td><p><pre>
 --help
-</pre></p>
-
-</td>
-<td>--</td>
+</pre></p></td>
+<td></td>
 <td>Display usage and all possible command line arguments.</td>
 </tr>
 <tr>
 <td>Validate parameter definitions</td>
 <td><p><pre>
 --validate
-</pre></p>
-
-</td>
-<td>--</td>
+</pre></p></td>
+<td></td>
 <td>Validate supplied parameters for such things as conformity to expected
 input types and exit. Nothing is installed or changed on the target
 server.</td>
@@ -1565,60 +1501,48 @@ server.</td>
 <td></td>
 <td><p><pre>
 --check-instance
-</pre></p>
-
-</td>
-<td>--</td>
+</pre></p></td>
+<td></td>
 <td>Run the "check-instance.yml" playbook only.</td>
 </tr>
 <tr>
 <td></td>
 <td><p><pre>
 --prep-host
-</pre></p>
-
-</td>
-<td>--</td>
+</pre></p></td>
+<td></td>
 <td>Run the "prep-host.yml" playbook only.</td>
 </tr>
 <tr>
 <td></td>
 <td><p><pre>
 --install-sw
-</pre></p>
-
-</td>
-<td>--</td>
+</pre></p></td>
+<td></td>
 <td>Run the "install-sw.yml" playbook only.</td>
 </tr>
 <tr>
 <td></td>
 <td><p><pre>
 --no-patch
-</pre></p>
-
-</td>
-<td>--</td>
+</pre></p></td>
+<td></td>
 <td>Install without automatically patching.</td>
 </tr>
 <tr>
 <td></td>
 <td><p><pre>
 --config-db
-</pre></p>
-
-</td>
-<td>--</td>
+</pre></p></td>
+<td></td>
 <td>Run the "config-db.yml" playbook only.</td>
 </tr>
 <tr>
 <td></td>
 <td><p><pre>
 --skip-database-config
-</pre></p>
-
-</td>
-<td>--</td>
+</pre></p></td>
+<td></td>
 <td>Run all other playbooks but skip "config-db.yml", so that no database
 instance is created.</td>
 </tr>
@@ -1626,10 +1550,8 @@ instance is created.</td>
 <td></td>
 <td><p><pre>
 --debug
-</pre></p>
-
-</td>
-<td>--</td>
+</pre></p></td>
+<td></td>
 <td>Run with the Ansible debugging flag enabled.</td>
 </tr>
 </tbody>
@@ -1644,13 +1566,14 @@ following values:
 -  The Oracle release
 -  The database name
 
-For all other parameters, the default values are accepted.  
+For all other parameters, the default values are accepted.
 
 Note: Unless you specify a hostname on the INSTANCE_HOSTNAME environment
 variable or the --instance-hostname command line argument, the target hostname
 defaults to the target IP address.
 
-```$ export INSTANCE_IP_ADDR=10.150.0.42
+```bash
+$ export INSTANCE_IP_ADDR=10.150.0.42
 $ export ORA_VERSION=19.3.0.0.0
 $ export ORA_DB_NAME=PROD1
 $ ./install-oracle.sh --ora-swlib-bucket gs://oracle-software --backup-dest +RECO
@@ -1708,7 +1631,7 @@ PB_INSTALL_SW=install-sw.yml
 PB_LIST='check-instance.yml prep-host.yml install-sw.yml config-db.yml'
 PB_PREP_HOST=prep-host.yml
 
-Ansible params: 
+Ansible params:
 Found Ansible at /usr/bin/ansible-playbook
 
 Running Ansible playbook: /usr/bin/ansible-playbook -i ./inventory_files/inventory_10.150.0.42_19.3.0.0.0_PROD1 check-instance.yml
@@ -1717,7 +1640,7 @@ PLAY [all] *********************************************************************
 
 TASK [Verify that Ansible on control node meets the version requirements] ***************************************************************************
 ok: [10.150.0.42] => {
-    "changed": false, 
+    "changed": false,
     "msg": "Ansible version is 2.9.9, continuing"
 }
 
@@ -1726,22 +1649,23 @@ ok: [10.150.0.42]
 
 TASK [Abort if ping module fails] *******************************************************************************************************************
 ok: [10.150.0.42] => {
-    "changed": false, 
+    "changed": false,
     "msg": "The instance has an usable python installation, continuing"
 }
 
 TASK [Collect facts from target] ********************************************************************************************************************
 ok: [10.150.0.42]
 
-... <output truncated for brevity >
+... output truncated for brevity
 ```
 
 In the following example, command-line arguments are used to specify the Oracle
 Standard Edition and to create a non-container database.
 
-```$ ./install-oracle.sh --ora-edition SE2 --ora-db-container false \
-> --ora-swlib-bucket gs://oracle-software --backup-dest +RECO \
-> --instance-ip-addr 10.150.0.42
+```bash
+$ ./install-oracle.sh --ora-edition SE2 --ora-db-container false \
+ --ora-swlib-bucket gs://oracle-software --backup-dest +RECO \
+ --instance-ip-addr 10.150.0.42
 
 Inventory file for this execution: ./inventory_files/inventory_dbserver_19.3.0.0.0_ORCL.
 
@@ -1796,7 +1720,7 @@ PB_INSTALL_SW=install-sw.yml
 PB_LIST='check-instance.yml prep-host.yml install-sw.yml config-db.yml'
 PB_PREP_HOST=prep-host.yml
 
-Ansible params: 
+Ansible params:
 Found Ansible at /usr/bin/ansible-playbook
 
 Running Ansible playbook: /usr/bin/ansible-playbook -i ./inventory_files/inventory_dbserver_19.3.0.0.0_ORCL   check-instance.yml
@@ -1805,7 +1729,7 @@ PLAY [all] *********************************************************************
 
 TASK [Verify that Ansible on control node meets the version requirements] ***************************************************************************
 ok: [dbserver] => {
-    "changed": false, 
+    "changed": false,
     "msg": "Ansible version is 2.9.9, continuing"
 }
 
@@ -1814,7 +1738,7 @@ ok: [dbserver]
 
 TASK [Abort if ping module fails] *******************************************************************************************************************
 ok: [dbserver] => {
-    "changed": false, 
+    "changed": false,
     "msg": "The instance has an usable python installation, continuing"
 }
 
@@ -1827,7 +1751,8 @@ ok: [dbserver]
 The following example shows the error message that is received when an invalid
 parameter is specified.
 
-```$ ./install-oracle.sh --ora-version=7.3.4 --ora-swlib-bucket gs://oracle-software --backup-dest +RECO
+```bash
+$ ./install-oracle.sh --ora-version=7.3.4 --ora-swlib-bucket gs://oracle-software --backup-dest +RECO
 Incorrect parameter provided for ora-version: 7.3.4
 ```
 
@@ -1845,7 +1770,8 @@ To change the passwords, connect to the database by using a SYSDBA
 administrative connection and change the passwords by using the SQL Plus
 `password` command:
 
-```sqlplus / as sysdba
+```bash
+sqlplus / as sysdba
 
 SQL> password SYSTEM
 ```
@@ -1860,7 +1786,8 @@ are provided with the toolkit.
 You can list the devices that are used by Oracle ASM using the `asm_disks.sh`
 script, as shown in the following example:
 
-```$ /home/oracle/scripts/asm_disks.sh
+```bash
+$ /home/oracle/scripts/asm_disks.sh
 Disk device /dev/sdd1 may be an ASM disk - Disk name: DATA_0000
 Disk device /dev/sde1 may be an ASM disk - Disk name: RECO_0000
 Disk device /dev/sdf1 may be an ASM disk - Disk name: DEMO_0000
@@ -1871,8 +1798,8 @@ Disk device /dev/sdf1 may be an ASM disk - Disk name: DEMO_0000
 You can generate a report that shows the Oracle Restart cluster resources by
 using the `crs_check.sh` script, as shown in the following example:
 
-```$ /home/oracle/scripts/crs_check.sh
-
+```bash
+$ /home/oracle/scripts/crs_check.sh
 
 ***** CRS STATUS *****
 
@@ -1881,13 +1808,12 @@ Oracle High Availability Services version on the local node is [18.0.0.0.0]
 CRS-4638: Oracle High Availability Services is online
 CRS-4529: Cluster Synchronization Services is online
 
-
 NAME=ora.DATA.dg
 TYPE=ora.diskgroup.type
 TARGET=ONLINE
 STATE=ONLINE on db-host-1
 
-... <output truncated for brevity>
+... output truncated for brevity
 ```
 
 #### Verify an Oracle cluster
@@ -1900,7 +1826,7 @@ You can verify the integrity of an Oracle cluster by using the
 For a more comprehensive validation, use the utilities provided by Oracle
 Support, which are available for download from My Oracle Support:
 
--  [Autonomous Health Framework (AHF) - Including TFA and ORAchk/EXAChk (Doc ID 2550798.1)](https://support.oracle.com/epmos/faces/DocContentDisplay?id=2550798.1)
+- [Autonomous Health Framework (AHF) - Including TFA and ORAchk/EXAChk (Doc ID 2550798.1)](https://support.oracle.com/epmos/faces/DocContentDisplay?id=2550798.1)
 
 Oracle's Autonomous Health Framework (AHF) includes utilities such as Trace File
 Analyzer (TFA). TFA provides options such as `tfactl summary`, which gives
@@ -1909,7 +1835,8 @@ the Oracle documentation for more information.
 
 The following example shows the use of the Oracle Cluster Verify utility:
 
-```$ /home/oracle/scripts/cluvfy_checks.sh
+```bash
+$ /home/oracle/scripts/cluvfy_checks.sh
 
 Verifying Oracle Restart Integrity ...PASSED
 
@@ -1926,7 +1853,7 @@ Verifying Physical Memory ...
   dbserver      14.5286GB (1.523434E7KB)  8GB (8388608.0KB)         passed
 Verifying Physical Memory ...PASSED
 
-... <output truncated for brevity>
+... output truncated for brevity
 
 Verifying Users With Same UID: 0 ...PASSED
 Verifying Root user consistency ...
@@ -1943,7 +1870,6 @@ CVU home:                     /u01/app/18.0.0/grid/
 User:                         oracle
 ```
 
-
 ### Patching
 
 You can apply Oracle Release Update (RU) or Patch Set Update (PSU) patches to
@@ -1959,7 +1885,8 @@ database name, the staging location, and other optional parameters.
 
 Example:
 
-```$ ./apply-patch.sh --help
+```bash
+$ ./apply-patch.sh --help
         Usage: apply-patch.sh
          --ora-swlib-bucket <value>
          --inventory-file <value>
@@ -1973,11 +1900,11 @@ Example:
          -- [parameters sent to ansible]
 
 $ ./apply-patch.sh \
-   --ora-swlib-bucket gs://oracle-software \
-   --ora-swlib-path /u02/oracle_install \
-   --ora-staging /u02/oracle_install \
-   --ora-version 19.3.0.0.0 \
-   --ora-release 19.6.0.0.200114 \
+  --ora-swlib-bucket gs://oracle-software \
+  --ora-swlib-path /u02/oracle_install \
+  --ora-staging /u02/oracle_install \
+  --ora-version 19.3.0.0.0 \
+  --ora-release 19.6.0.0.200114 \
     --inventory-file inventory_files/inventory_toolkit-db2_19.3.0.0.0_ORCL
 
 Running with parameters from command line or environment variables:
@@ -1989,7 +1916,7 @@ ORA_SWLIB_BUCKET=gs://oracle-software
 ORA_SWLIB_PATH=/u02/oracle_install
 ORA_VERSION=19.3.0.0.0
 
-Ansible params: -i inventory_files/inventory_toolkit-db2_19.3.0.0.0_ORCL  
+Ansible params: -i inventory_files/inventory_toolkit-db2_19.3.0.0.0_ORCL
 Found Ansible at /usr/bin/ansible-playbook
 Running Ansible playbook: /usr/bin/ansible-playbook -i inventory_files/inventory_toolkit-db2_19.3.0.0.0_ORCL   patch.yml
 
@@ -2000,12 +1927,11 @@ ok: [toolkit-db2]
 
 TASK [Verify Ansible meets the version requirements] ********************************************************************************
 ok: [toolkit-db2] => {
-    "changed": false, 
+    "changed": false,
     "msg": "Ansible version is 2.9.6, continuing"
 }
 
 TASK [patch : Update OPatch in GRID_HOME]
-
 
 ... <output truncated for brevity >
 ```
@@ -2044,26 +1970,28 @@ release because it was patched during installation, the toolkit uses the Oracle
 `datapatch` utility to apply patches at the database level, which is known as _SQL
 level patching_.
 
+# BMS RAC install with latest RU
+
 The following example RAC installation command applies the PSU/RU patches, which
 is the default behavior:
 
-```-- BMS RAC install with latest RU
+```bash
 ./install-oracle.sh \
-   --ora-swlib-bucket gs://oracle-software \
-   --instance-ssh-key '~/.ssh/id_rsa' \
-   --instance-ssh-user dba-user \
-   --ora-swlib-path /u01/oracle_install \
-   --ora-staging /u01/oracle_install \
-   --backup-dest "+DATA" \
-   --ora-version 19.3.0.0.0 \
-   --ora-swlib-type gcs \
-   --compatible-rdbms "11.2.0.4.0" \
-   --ora-asm-disks bms_asm.json \
-   --ora-data-mounts bms_mounts.json \
-   --cluster-type RAC \
-   --cluster-config bms_cluster.json \
-   --ora-reco-diskgroup DATA \
-   --ora-db-name ORCL
+  --ora-swlib-bucket gs://oracle-software \
+  --instance-ssh-key '~/.ssh/id_rsa' \
+  --instance-ssh-user dba-user \
+  --ora-swlib-path /u01/oracle_install \
+  --ora-staging /u01/oracle_install \
+  --backup-dest "+DATA" \
+  --ora-version 19.3.0.0.0 \
+  --ora-swlib-type gcs \
+  --compatible-rdbms "11.2.0.4.0" \
+  --ora-asm-disks bms_asm.json \
+  --ora-data-mounts bms_mounts.json \
+  --cluster-type RAC \
+  --cluster-config bms_cluster.json \
+  --ora-reco-diskgroup DATA \
+  --ora-db-name ORCL
 ```
 
 If you do not specify a value on the `--compatible-rdbms` parameter, the
@@ -2090,38 +2018,38 @@ values or specify patches that are not included in the
 `roles/common/defaults/main.yml` file in a properly structured JSON file that
 you reference on the `--extra-vars` Ansible argument.
 
-The following example shows a JSON file that contains patch specifications for
+The following example shows a YAML file that contains patch specifications for
 both the GI and RDBMS software:
 
-```$ cat patches.json
-
+```yaml
 gi_patches:
   - { category: "RU", base: "19.3.0.0.0", release: "19.7.0.0.200414", patchnum: "30783556", patchfile: "p30783556_190000_Linux-x86-64.zip", patch_subdir: "/30899722", prereq_check: FALSE, method: "opatchauto apply", ocm: FALSE, upgrade: FALSE }
 
 rdbms_patches:
   - { category: "RU_Combo", base: "19.3.0.0.0", release: "19.7.0.0.200414", patchnum: "30783556", patchfile: "p30783556_190000_Linux-x86-64.zip", patch_subdir: "/30805684", prereq_check: TRUE, method: "opatch apply", ocm: FALSE, upgrade: TRUE }
-
-The following example shows the specification of the JSON file by using the
-`--extra-vars` Ansible parameter:
 ```
 
-```./install-oracle.sh \
-   --ora-swlib-bucket gs://oracle-software \
-   --instance-ssh-key '~/.ssh/id_rsa' \
-   --instance-ssh-user dba-user \
-   --ora-swlib-path /u01/oracle_install \
-   --ora-staging /u01/oracle_install \
-   --backup-dest "+DATA" \
-   --ora-version 19.3.0.0.0 \
-   --ora-swlib-type gcs \
-   --compatible-rdbms "11.2.0.4.0" \
-   --ora-asm-disks bms_asm.json
-   --ora-data-mounts bms_mounts.json \
-   --cluster-type RAC \
-   --cluster-config bms_cluster.json \
-   --ora-reco-diskgroup DATA \
-   --ora-db-name ORCL
-   -- "--extra-vars @patches.json"
+The following example shows the specification of the YAML file by using the
+**--extra-vars** Ansible parameter:
+
+```bash
+./install-oracle.sh \
+  --ora-swlib-bucket gs://oracle-software \
+  --instance-ssh-key '~/.ssh/id_rsa' \
+  --instance-ssh-user dba-user \
+  --ora-swlib-path /u01/oracle_install \
+  --ora-staging /u01/oracle_install \
+  --backup-dest "+DATA" \
+  --ora-version 19.3.0.0.0 \
+  --ora-swlib-type gcs \
+  --compatible-rdbms "11.2.0.4.0" \
+  --ora-asm-disks bms_asm.json
+  --ora-data-mounts bms_mounts.json \
+  --cluster-type RAC \
+  --cluster-config bms_cluster.json \
+  --ora-reco-diskgroup DATA \
+  --ora-db-name ORCL \
+  -- "--extra-vars @patches.yaml"
 ```
 
 Note: you can use the `--extra-vars` Ansible parameter to specify other things
@@ -2134,15 +2062,16 @@ major Oracle version and a specific patch release level, respectively.
 
 For example:
 
-```./apply-patch.sh \
-   --ora-swlib-bucket gs://oracle-software \
-   --inventory-file inventory_files/inventory_19.3.0.0.0_ORCL_RAC \
-   --ora-version 19.3.0.0.0 \
-   --ora-release 19.7.0.0.200414 \
-   --ora-swlib-path /u01/oracle_install \
-   --ora-staging /u01/oracle_install \
-   --ora-db-name ORCL
-   -- "--extra-vars @patches.json"
+```bash
+./apply-patch.sh \
+  --ora-swlib-bucket gs://oracle-software \
+  --inventory-file inventory_files/inventory_19.3.0.0.0_ORCL_RAC \
+  --ora-version 19.3.0.0.0 \
+  --ora-release 19.7.0.0.200414 \
+  --ora-swlib-path /u01/oracle_install \
+  --ora-staging /u01/oracle_install \
+  --ora-db-name ORCL
+  -- "--extra-vars @patches.json"
 ```
 
 ### Destructive Cleanup
@@ -2172,7 +2101,8 @@ destructive cleanup.
 defaults to `TRUE`. On the `--inventory-file` parameter, specify the location
 of the inventory file:
 
-```$ ./cleanup-oracle.sh --help
+```bash
+$ ./cleanup-oracle.sh --help
         Usage: cleanup-oracle.sh
           --ora-version <value>
           --inventory-file <value>
@@ -2183,10 +2113,11 @@ of the inventory file:
 
 Sample usage:
 
-```$ ./cleanup-oracle.sh \
-   --ora-version 18.0.0.0.0 \
-   --inventory-file ./inventory_files/inventory_oracledb1_18.0.0.0.0_ORCL \
-   --yes-i-am-sure
+```bash
+$ ./cleanup-oracle.sh \
+  --ora-version 18.0.0.0.0 \
+  --inventory-file ./inventory_files/inventory_oracledb1_18.0.0.0.0_ORCL \
+  --yes-i-am-sure
 
 Running with parameters from command line or environment variables:
 
@@ -2194,7 +2125,7 @@ INVENTORY_FILE=./inventory_files/inventory_oracledb1_18.0.0.0.0_ORCL
 ORA_ROLE_SEPARATION=TRUE
 ORA_VERSION=18.0.0.0.0
 
-Ansible params: 
+Ansible params:
 Found Ansible at /usr/bin/ansible-playbook
 
 Running Ansible playbook: /usr/bin/ansible-playbook -i ./inventory_files/inventory_oracledb1_18.0.0.0.0_ORCL  brute-cleanup.yml

@@ -1,1 +1,5 @@
+title: bms-toolkit
+description: Toolkit for installing and creating an initial database on Bare Metal Solution
 theme: jekyll-theme-cayman
+markdown: GFM
+

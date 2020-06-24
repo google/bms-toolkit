@@ -57,7 +57,7 @@ options, and usage scenarios. All commands run from the "control node".
 1. Validate media specifying GCS storage bucket and optionally database:
 
     ```bash
-    ./check-swlib.sh --ora-swlib-bucket gs://[cloud-storage-bucket-name]
+    ./check-swlib.sh --ora-swlib-bucket gs://[cloud-storage-bucket-name] \
      --ora-version 19.3.0.0.0
     ```
 
@@ -93,33 +93,33 @@ Initial steps similar to those of the Single Instance installation.
 1. Validate media specifying Cloud Storage bucket and optionally database
    version:
 
-    ```bash
+   ```bash
    ./check-swlib.sh --ora-swlib-bucket gs://[cloud-storage-bucket-name]
    --ora-version 19.3.0.0.0
-    ```
+   ```
 
 1. Validate access to target RAC nodes:
 
     ```bash
-   ssh ${INSTANCE_SSH_USER:-`whoami`}@${INSTANCE_IP_ADDR_NODE_1} sudo -u root hostname
-   ssh ${INSTANCE_SSH_USER:-`whoami`}@${INSTANCE_IP_ADDR_NODE_2} sudo -u root hostname
+    ssh ${INSTANCE_SSH_USER:-`whoami`}@${INSTANCE_IP_ADDR_NODE_1} sudo -u root hostname
+    ssh ${INSTANCE_SSH_USER:-`whoami`}@${INSTANCE_IP_ADDR_NODE_2} sudo -u root hostname
     ```
 
 1. Review optional toolkit parameters:
 
-    `./install-oracle.sh --help`
+   `./install-oracle.sh --help`
 
 1. Run installation. Only IP address of the first cluster node is required:
 
-    ```bash
-./install-oracle.sh \
---ora-swlib-bucket gs://[cloud-storage-bucket-name] \
---backup-dest "+RECO" \
---ora-swlib-path /u02/swlib/ \
---ora-swlib-type gcs \
---instance-ip-addr ${INSTANCE_IP_ADDR} \
---cluster-type RAC
-    ```
+   ```bash
+   ./install-oracle.sh \
+   --ora-swlib-bucket gs://[cloud-storage-bucket-name] \
+   --backup-dest "+RECO" \
+   --ora-swlib-path /u02/swlib/ \
+   --ora-swlib-type gcs \
+   --instance-ip-addr ${INSTANCE_IP_ADDR} \
+   --cluster-type RAC
+   ```
 
 ## Overview
 
@@ -143,8 +143,8 @@ RUs:
 - Oracle 11.2.0.4.0
 - Oracle 12.1.0.2.0
 - Oracle 12.2.0.1.0
-- Oracle 18.0.0.0.0
-- Oracle 19.3.0.0.0
+- Oracle 18c
+- Oracle 19c
 
 The toolkit does not include any Oracle software. You must obtain the
 appropriate licenses and download the Oracle software on your own. This guide
@@ -856,8 +856,6 @@ Default values for the parameters are shown in bold letters.
 
 #### Target environment parameters
 
-Top of target
-
 <table>
 <thead>
 <tr>
@@ -936,11 +934,7 @@ generates a filename.</td>
 </tbody>
 </table>
 
-Bottom of target
-
 #### Software installation parameters
-
-Top of software
 
 <table>
 <thead>
@@ -1088,11 +1082,7 @@ relying on the OS defaults.</td>
 </tbody>
 </table>
 
-Bottom of software
-
 #### Storage configuration parameters
-
-Top of storage
 
 <table>
 <thead>
@@ -1933,7 +1923,7 @@ ok: [toolkit-db2] => {
 
 TASK [patch : Update OPatch in GRID_HOME]
 
-... <output truncated for brevity >
+... output truncated for brevity
 ```
 
 ### Patching RAC databases
@@ -1948,7 +1938,7 @@ user from the GI home and, therefore, if the GI and RDBMS homes are of the same
 major release, patches both the GI and RDBMS homes in a single step.
 
 By default, if RAC GI and RDBMS homes are of the same base release, the
-**install-oracle.sh **script applies the latest RU/PSU patch to both.
+**install-oracle.sh** script applies the latest RU/PSU patch to both.
 
 You can skip all RU/PSU patching steps and install only the base software by
 specifying the command line option `--no-patch`. You can then apply patches
@@ -1970,7 +1960,7 @@ release because it was patched during installation, the toolkit uses the Oracle
 `datapatch` utility to apply patches at the database level, which is known as _SQL
 level patching_.
 
-# BMS RAC install with latest RU
+#### BMS RAC install with latest RU
 
 The following example RAC installation command applies the PSU/RU patches, which
 is the default behavior:
@@ -2071,7 +2061,7 @@ For example:
   --ora-swlib-path /u01/oracle_install \
   --ora-staging /u01/oracle_install \
   --ora-db-name ORCL
-  -- "--extra-vars @patches.json"
+  -- "--extra-vars @patches.yaml"
 ```
 
 ### Destructive Cleanup
@@ -2131,5 +2121,5 @@ Found Ansible at /usr/bin/ansible-playbook
 Running Ansible playbook: /usr/bin/ansible-playbook -i ./inventory_files/inventory_oracledb1_18.0.0.0.0_ORCL  brute-cleanup.yml
 
 PLAY [all] ************************************************************************************
-... <output truncated for brevity>
+... output truncated for brevity
 ```

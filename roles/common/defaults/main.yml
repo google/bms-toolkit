@@ -88,7 +88,7 @@ diskgroup_compatible_rdbms: "{# assign to variable c compatible parameter and se
 run_cluvfy: false
 
 # section for DR
-standby_suffix: s
+standby_suffix: _s
 
 gi_software:
   - name: 19c_gi

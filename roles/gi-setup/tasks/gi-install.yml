@@ -43,10 +43,23 @@
 
 - name: gi-install | Define GI release
   #if release set to latest then get most recent release from gi_patches array
-  #if nothing returned then set to "base"
+  #if nothing returned then set to "base" in next task
   set_fact:
-    oracle_rel: "{% if oracle_rel == 'latest' %}{{ gi_patches | json_query('[?base==`' + oracle_ver + '`].release')  | sort(reverse=true) | first | default('base', true) }}{% endif %}"
-  when: oracle_rel is defined
+    oracle_rel: "{% if not ansible_loop.first %}{% if item is version(oracle_rel, '>=') %}{{ item }}{% else %}{{ oracle_rel }}{% endif %}{% else %}{{ item }}{% endif %}"
+  loop: "{{ gi_patches | json_query('[?base==`' + oracle_ver + '`].release') }}"
+  loop_control:
+    extended: yes
+  when:
+    - oracle_rel is defined
+    - oracle_rel != "base"
+  tags: gi-setup,rel-patch
+
+- name: gi-install | Set base if no release found
+  set_fact:
+    oracle_rel: "{% if oracle_rel is search('latest') %}base{% else %}{{ oracle_rel }}{% endif %}"
+  when:
+    - oracle_rel is defined
+    - oracle_rel != "base"
   tags: gi-setup,rel-patch
 
 - name: gi-install | Copy GI patch
@@ -152,7 +165,7 @@
 
 - name: gi-install | Set mgmtdb option
   set_fact:
-    mgmt_option: "{% if oracle_ver_base in ('12.1') %}-J-Doracle.install.mgmtDB=false{% else %}-J-Doracle.install.mgmtDB=false -J-Doracle.install.mgmtDB.CDB=false -J Doracle.install.crs.enableRemoteGIMR=false{% endif %}"
+    mgmt_option: "{% if oracle_ver_base in ('12.1') %}-J-Doracle.install.mgmtDB=false{% else %}-J-Doracle.install.mgmtDB=false -J-Doracle.install.mgmtDB.CDB=false -J-Doracle.install.crs.enableRemoteGIMR=false{% endif %}"
   tags: gi-setup
 
 - name: gi-install | Set installer command
@@ -186,7 +199,7 @@
   command: "{{ installer_command }}"
   register: install_grid_software
   failed_when: "('Successfully Setup Software' not in install_grid_software.stdout) or
-                (install_grid_software.rc not in [0,6])"
+                (install_grid_software.rc not in [0,6,250])"
   tags: gi-setup
 
 - name: gi-install | Installer output

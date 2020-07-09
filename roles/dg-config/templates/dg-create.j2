@@ -1,0 +1,13 @@
+CREATE CONFIGURATION dg_{{ db_name }} AS
+PRIMARY DATABASE IS {{ db_name }}
+CONNECT IDENTIFIER IS "//{{ hostvars['primary1'].ansible_ssh_host }}:{{ listener_port | default(1521, true) }}/{{ db_name }}{{ "." + db_domain | default(omit) }}";
+
+ADD DATABASE {{ db_name }}{{ standby_suffix }}
+AS CONNECT IDENTIFIER IS "//{{ ansible_ssh_host }}:{{ listener_port | default(1521, true) }}/{{ db_name }}{{ standby_suffix }}{{ "." + db_domain | default(omit) }}";
+
+SHOW CONFIGURATION VERBOSE;
+
+ENABLE CONFIGURATION;
+
+SHOW CONFIGURATION VERBOSE;
+

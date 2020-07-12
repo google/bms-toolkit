@@ -88,6 +88,8 @@ diskgroup_compatible_rdbms: "{# assign to variable c compatible parameter and se
 run_cluvfy: false
 
 # section for DR
+# db_unique_name for standby is formed as concatenation 
+# of db_name and standby_suffix to provide uniqueness in Data Guard
 standby_suffix: _s
 
 gi_software:

@@ -95,7 +95,7 @@ ORA_EDITION="${ORA_EDITION:-EE}"
 ORA_EDITION_PARAM="^(EE|SE|SE2)$"
 
 CLUSTER_TYPE="${CLUSTER_TYPE:-NONE}"
-CLUSTER_TYPE_PARAM="NONE|RAC"
+CLUSTER_TYPE_PARAM="NONE|RAC|DG"
 
 ORA_SWLIB_BUCKET="${ORA_SWLIB_BUCKET}"
 ORA_SWLIB_BUCKET_PARAM="^.+"
@@ -205,6 +205,9 @@ BACKUP_LOG_LOCATION_PARAM="^/.+$"
 INSTANCE_IP_ADDR="${INSTANCE_IP_ADDR:-192.168.56.201}"
 INSTANCE_IP_ADDR_PARAM='^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$'
 
+PRIMARY_IP_ADDR="${PRIMARY_IP_ADDR}"
+PRIMARY_IP_ADDR_PARAM='^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$'
+
 INSTANCE_SSH_USER="${INSTANCE_SSH_USER:-`whoami`}"
 INSTANCE_SSH_USER_PARAM="^[a-z0-9]+$"
 
@@ -230,7 +233,7 @@ GETOPT_OPTIONAL="$GETOPT_OPTIONAL,ora-data-diskgroup:,ora-reco-diskgroup:,ora-as
 GETOPT_OPTIONAL="$GETOPT_OPTIONAL,ora-db-ncharset:,ora-db-container:,ora-db-type:,ora-pdb-name-prefix:,ora-pdb-count:,ora-redo-log-size:"
 GETOPT_OPTIONAL="$GETOPT_OPTIONAL,backup-redundancy:,archive-redundancy:,archive-online-days:,backup-level0-days:,backup-level1-days:"
 GETOPT_OPTIONAL="$GETOPT_OPTIONAL,backup-start-hour:,backup-start-min:,archive-backup-min:,backup-script-location:,backup-log-location:"
-GETOPT_OPTIONAL="$GETOPT_OPTIONAL,ora-swlib-type:,ora-swlib-path:,ora-swlib-credentials:,instance-ip-addr:,instance-ssh-user:"
+GETOPT_OPTIONAL="$GETOPT_OPTIONAL,ora-swlib-type:,ora-swlib-path:,ora-swlib-credentials:,instance-ip-addr:,primary-ip-addr:,instance-ssh-user:"
 GETOPT_OPTIONAL="$GETOPT_OPTIONAL,instance-ssh-key:,instance-hostname:,ntp-pref:,inventory-file:,compatible-rdbms:"
 GETOPT_OPTIONAL="$GETOPT_OPTIONAL,help,validate,check-instance,prep-host,install-sw,config-db,debug,allow-install-on-vm,skip-database-config"
 GETOPT_LONG="$GETOPT_MANDATORY,$GETOPT_OPTIONAL"
@@ -418,6 +421,10 @@ while true; do
     INSTANCE_IP_ADDR="$2"
     shift;
     ;;
+  --primary-ip-addr)
+    PRIMARY_IP_ADDR="$2"
+    shift;
+    ;;
   --instance-ssh-key)
     INSTANCE_SSH_KEY="$2"
     shift;
@@ -508,6 +515,10 @@ shopt -s nocasematch
 [[ ! "$ORA_EDITION" =~ $ORA_EDITION_PARAM ]] && {
     echo "Incorrect parameter provided for ora-edition: $ORA_EDITION"
     exit 1
+}
+[[ ! "$ORA_EDITION" =~ "EE" ]] && [[ "$CLUSTER_TYPE" =~ "DG" ]] && {
+  echo "ora-edition should be EE with cluster-type DG"
+  exit 1
 }
 [[ ! "$CLUSTER_TYPE" =~ $CLUSTER_TYPE_PARAM ]] && {
     echo "Incorrect parameter provided for cluster-type: $CLUSTER_TYPE"
@@ -653,6 +664,10 @@ shopt -s nocasematch
     echo "Incorrect parameter provided for instance-ip-addr: $INSTANCE_IP_ADDR"
     exit 1
 }
+[[ ! "$PRIMARY_IP_ADDR" =~ ${PRIMARY_IP_ADDR_PARAM} ]] && [[ "$CONFIG_TYPE" =~ "DG" ]] && {
+    echo "Incorrect parameter provided for standby-ip-addr: $PRIMARY_IP_ADDR"
+    exit 1
+}
 [[ ! "$INSTANCE_SSH_USER" =~ $INSTANCE_SSH_USER_PARAM ]] && {
     echo "Incorrect parameter provided for instance-ssh-user: $INSTANCE_SSH_USER"
     exit 1
@@ -721,7 +736,7 @@ COMMON_OPTIONS="ansible_ssh_user=${INSTANCE_SSH_USER} ansible_ssh_private_key_fi
     fi
 
     # Name of the inventory file
-    INVENTORY_FILE="${INVENTORY_FILE}_${ORA_VERSION}_${ORA_DB_NAME}_${CLUSTER_TYPE}"
+    INVENTORY_FILE="${INVENTORY_FILE}_${ORA_DB_NAME}_${CLUSTER_TYPE}"
 
     # We can now fill the inventory file with the information from the JSON file
     echo "[${INSTANCE_HOSTGROUP_NAME}]" > "${INVENTORY_FILE}"
@@ -750,11 +765,20 @@ EOF
     IFS="${OLDIFS}"
     jq -rc "${JQF}" "${CLUSTER_CONFIG}" >> "${INVENTORY_FILE}"
 
-  else   # Non RAC
-    INVENTORY_FILE="${INVENTORY_FILE}_${INSTANCE_HOSTNAME}_${ORA_VERSION}_${ORA_DB_NAME}"
+  elif [[ ! -z ${PRIMARY_IP_ADDR} ]]; then
+    INVENTORY_FILE="${INVENTORY_FILE}_${INSTANCE_HOSTNAME}_${ORA_DB_NAME}"
     cat <<EOF > ${INVENTORY_FILE}
 [${INSTANCE_HOSTGROUP_NAME}]
-${INSTANCE_HOSTNAME} "ansible_ssh_host=${INSTANCE_IP_ADDR}" ${COMMON_OPTIONS}
+${INSTANCE_HOSTNAME} ansible_ssh_host=${INSTANCE_IP_ADDR} ${COMMON_OPTIONS}
+
+[primary]
+primary1 ansible_ssh_host=${PRIMARY_IP_ADDR} ${COMMON_OPTIONS}
+EOF
+  else   # Non RAC
+    INVENTORY_FILE="${INVENTORY_FILE}_${INSTANCE_HOSTNAME}_${ORA_DB_NAME}"
+    cat <<EOF > ${INVENTORY_FILE}
+[${INSTANCE_HOSTGROUP_NAME}]
+${INSTANCE_HOSTNAME} ansible_ssh_host=${INSTANCE_IP_ADDR} ${COMMON_OPTIONS}
 EOF
   fi     # End of if RAC
 else
@@ -769,10 +793,10 @@ fi
 #
 # Build the logfile for this session
 #
-if [[ "${CLUSTER_TYPE}" = "RAC" ]]; then
-  LOG_FILE="${LOG_FILE}_${ORA_VERSION}_${ORA_DB_NAME}_${TIMESTAMP}_${CLUSTER_TYPE}.log"
+if [[ "${CLUSTER_TYPE}" = "RAC" ]] || [[ "${CLUSTER_TYPE}" = "DG" ]]; then
+  LOG_FILE="${LOG_FILE}_${ORA_DB_NAME}_${TIMESTAMP}_${CLUSTER_TYPE}.log"
 else
-  LOG_FILE="${LOG_FILE}_${INSTANCE_HOSTNAME}_${ORA_VERSION}_${ORA_DB_NAME}_${TIMESTAMP}.log"
+  LOG_FILE="${LOG_FILE}_${INSTANCE_HOSTNAME}_${ORA_DB_NAME}_${TIMESTAMP}.log"
 fi
 export ANSIBLE_LOG_PATH=${LOG_FILE}
 
@@ -806,6 +830,9 @@ export BACKUP_START_HOUR
 export BACKUP_START_MIN
 export CLUSTER_TYPE
 export CLUSTER_CONFIG
+export COMPATIBLE_RDBMS
+export INSTANCE_IP_ADDR
+export NTP_PREF
 export ORA_DATA_DISKGROUP
 export ORA_DB_CHARSET
 export ORA_DB_CONTAINER
@@ -831,12 +858,11 @@ export ORA_SWLIB_TYPE
 export ORA_SWLIB_PATH
 export ORA_VERSION
 export ORA_RELEASE
-export NTP_PREF
 export PB_LIST
-export COMPATIBLE_RDBMS
+export PRIMARY_IP_ADDR
 
 echo -e "Running with parameters from command line or environment variables:\n"
-set | egrep '^(ORA_|BACKUP_|ARCHIVE_|INSTANCE_|PB_|ANSIBLE_)' | grep -v '_PARAM='
+set | egrep '^(ORA_|BACKUP_|ARCHIVE_|INSTANCE_|PB_|ANSIBLE_|CLUSTER|PRIMARY)' | grep -v '_PARAM='
 echo
 
 ANSIBLE_PARAMS="-i ${INVENTORY_FILE} ${ANSIBLE_PARAMS}"

@@ -22,6 +22,30 @@ swlib_mount_src: "{{ lookup('env','ORA_SWLIB_BUCKET')|default('',true) | regex_r
 swlib_gcs_service_account_file: "{{ lookup('env','ORA_SWLIB_CREDENTIALS')|default('',true) }}"
 swlib_path_default: "{{ oracle_user_data_mounts|selectattr('purpose', 'match', '^software$') | map(attribute='mount_point') | list | first }}/swlib"
 
+# Installation related variables from dbasm
+oracle_user_data_mounts_default:
+  - { purpose: software, blk_device: /dev/BOGUS, fstype: xfs, mount_point: /u01, mount_opts: "defaults" }
+  - { purpose: diag, blk_device: /dev/BOGUS, fstype: xfs, mount_point: /u02, mount_opts: "defaults" }
+data_mounts_definition_file: "{{ lookup('env','ORA_DATA_MOUNTS')|default('data_mounts_config.json',true) }}"
+data_mounts_input: "{{ lookup('file',data_mounts_definition_file,errors='ignore') }}"
+oracle_user_data_mounts: "{{ data_mounts_input | default(oracle_user_data_mounts_default,true) }}"
+asm_disks_default:
+- diskgroup: "{{ data_diskgroup }}"
+  disks:
+  - name: DATA1
+    blk_device: /dev/BOGUS
+- diskgroup: "{{ reco_diskgroup }}"
+  disks:
+  - name: RECO1
+    blk_device: /dev/BOGUS
+- diskgroup: DEMO
+  disks:
+  - name: DEMO1
+    blk_device: /dev/BOGUS
+asm_definition_file: "{{ lookup('env','ORA_ASM_DISKS')|default('asm_disk_config.json',true) }}"
+asm_disk_input: "{{ lookup('file',asm_definition_file,errors='ignore') }}"
+asm_disks: "{{ asm_disk_input | default(asm_disks_default,true) }}"
+
 ## The toolkit can optionally configure swap space
 #If your RAM size is less than or equal to 2 GB, your swap size should be 1.5 times of the RAM. For example, if your RAM size is 2 GB, you should create swap space of 3GB
 #If your RAM size is between 2 GB and 16 GB, your swap size should be the same size of the RAM. For example, if your RAM size is 4 GB, you should create swap space of 4GB
@@ -51,9 +75,6 @@ charset: "{{ lookup('env','ORA_DB_CHARSET')|default('AL32UTF8',true) }}"
 ncharset: "{{ lookup('env','ORA_DB_NCHARSET')|default('AL16UTF16',true) }}"
 
 # ASM and storage related variables:
-oracle_user_data_mounts:
-  - { purpose: software, blk_device: /dev/sdb_BOGUS, fstype: xfs, mount_point: /u01, mount_opts: "defaults" }
-  - { purpose: other, blk_device: /dev/sdc_BOGUS, fstype: xfs, mount_point: /u02, mount_opts: "defaults" }
 asm_disk_management: "{{ lookup('env','ORA_DISK_MGMT')|lower|default('asmlib',true) }}"
 role_separaion: "{{ lookup('env','ORA_ROLE_SEPARATION')|lower|default('true',true) }}"
 data_diskgroup: "{{ lookup('env','ORA_DATA_DISKGROUP')|default('DATA',true) }}"
@@ -87,7 +108,7 @@ arch_bu_start_min: "{{ lookup('env','ARCHIVE_BACKUP_MIN')|default('30',true) }}"
 ## Variables for adjustment in future verions - not currently modifiable
 
 # DB configuration related variables:
-db_config_type: "{% if lookup('env','CLUSTER_TYPE')|default('NONE', true) == 'NONE' %}SI{% elif lookup('env','CLUSTER_TYPE') == 'RAC' %}RAC{% endif %}"
+db_config_type: "{% if lookup('env','CLUSTER_TYPE')|default('NONE', true) in ('NONE', 'DG') %}SI{% elif lookup('env','CLUSTER_TYPE') == 'RAC' %}RAC{% endif %}"
 instance_num: 1
 memory_pct: 45
 sga_target: "{{ (ansible_memory_mb.real.total*memory_pct)//100 }}M"
@@ -111,3 +132,4 @@ prereq_option: "-ignorePrereq"
 
 
 ## End of non-modifiable variables section
+

@@ -13,7 +13,7 @@
 # limitations under the License.
 
 ---
-- hosts: all
+- hosts: dbasm
   remote_user: "{{ grid_user }}"
   become: yes
   become_user: root
@@ -27,10 +27,10 @@
    - role: gi-setup
      when:
        - install_gi|bool
-       - cluster_type == "NONE"
+       - cluster_type in ("NONE", "DG")
   tags: gi-setup
 
-- hosts: all
+- hosts: dbasm
   remote_user: "{{ oracle_user }}"
   become: yes
   become_user: root
@@ -44,10 +44,10 @@
    - role: rdbms-setup
      when:
        - install_rdbms|bool
-       - cluster_type == "NONE"
+       - cluster_type in ("NONE", "DG")
   tags: rdbms-setup
 
-- hosts: all
+- hosts: dbasm
   serial: 1
   tasks:
     - name: rac-gi-install | defaults from common
@@ -87,7 +87,7 @@
         - cluster_type == "RAC"
   tags: rac-gi
 
-- hosts: all
+- hosts: dbasm
   serial: 1
   tasks:
     - name: rac-db-install | defaults from common

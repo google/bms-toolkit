@@ -116,9 +116,9 @@
   lineinfile:
     path: /etc/hosts
     regexp: '.*{{ ansible_fqdn }}$'
-    line: "{{ etc_hosts_ip }} {{ ansible_hostname }} {{ ansible_fqdn }}"
+    line: "{{ ansible_ssh_host }} {{ ansible_hostname }} {{ ansible_fqdn }}"
     state: present
-  when: cluster_type == "NONE"
+  when: cluster_type in ("NONE", "DG")
   tags: etchosts,fqdn
 
 - name: Add localhost to /etc/hosts if needed

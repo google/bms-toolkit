@@ -19,6 +19,8 @@
     permanent: yes
     immediate: yes
     state: enabled
+  ignore_errors: true
+  tags: lsnr-create
 
 - name: Test whether port is free
   become: yes

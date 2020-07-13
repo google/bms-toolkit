@@ -13,7 +13,7 @@
 # limitations under the License.
 
 ---
-- hosts: all
+- hosts: dbasm
   gather_facts: false
   pre_tasks:
     - name: Verify that Ansible on control node meets the version requirements

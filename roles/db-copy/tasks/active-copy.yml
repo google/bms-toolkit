@@ -13,7 +13,7 @@
 # limitations under the License.
 ---
 - name: Active-copy | Check pmon process
-  shell: "set -o pipefail; ps -ef | ( grep pmon || true ) | ( grep -i {{ db_name }} || true ) | ( grep -v grep || true ) | wc -l"
+  shell: "set -o pipefail; ps -ef | ( grep pmon || true ) | ( grep -i {{ oracle_sid }} || true ) | ( grep -v grep || true ) | wc -l"
   changed_when: false
   register: pmon_proc
   tags: active-duplicate
@@ -50,7 +50,7 @@
   lineinfile:
     path: "{{ grid_home }}/network/admin/listener.ora"
     regexp: "^SID_LIST_{{ listener_name }}"
-    line: "SID_LIST_{{ listener_name }}=(SID_LIST=(SID_DESC=(GLOBAL_DBNAME={{ oracle_sid }}{{ standby_suffix }}.{{ db_domain }})(ORACLE_HOME={{ oracle_home }})(SID_NAME={{ oracle_sid }})))"
+    line: "SID_LIST_{{ listener_name }}=(SID_LIST=(SID_DESC=(GLOBAL_DBNAME={{ oracle_sid }}{{ standby_suffix }}{% if db_domain|default('',true)|length > 0 %}.{{ db_domain }}{% endif %})(ORACLE_HOME={{ oracle_home }})(SID_NAME={{ oracle_sid }})))"
     owner: "{{ grid_user }}"
     group: "{{ oracle_group }}"
   become: yes
@@ -114,8 +114,8 @@
   shell: |
     set -o pipefail
     {{ oracle_home }}/bin/rman << EOF
-    connect target "sys/{{ sys_pass }}@//{{ lookup('env', 'PRIMARY_IP_ADDR') }}:{{ listener_port | default(1521, true) }}/{{ db_name }}{{ "." + db_domain | default(omit) }}"
-    connect auxiliary "sys/{{ sys_pass }}@//{{ lookup('env', 'INSTANCE_IP_ADDR') }}:{{ listener_port | default(1521, true) }}/{{ db_name }}{{ standby_suffix }}{{ "." + db_domain | default(omit) }}"
+    connect target "sys/{{ sys_pass }}@//{{ lookup('env', 'PRIMARY_IP_ADDR') }}:{{ listener_port | default(1521, true) }}/{{ db_name }}{% if db_domain|default('',true)|length > 0 %}.{{ db_domain }}{% endif %}"
+    connect auxiliary "sys/{{ sys_pass }}@//{{ lookup('env', 'INSTANCE_IP_ADDR') }}:{{ listener_port | default(1521, true) }}/{{ db_name }}{{ standby_suffix }}{% if db_domain|default('',true)|length > 0 %}.{{ db_domain }}{% endif %}"
     duplicate target database for standby from active database
     password file
     spfile

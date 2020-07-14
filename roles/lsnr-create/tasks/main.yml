@@ -19,6 +19,12 @@
     permanent: yes
     immediate: yes
     state: enabled
+  become: yes
+  register: firewall_output
+  failed_when:
+    - "'firewall is not currently running' not in firewall_output.msg"
+    - "'Permanent and Non-Permanent(immediate) operation' not in firewall_output.msg"
+  tags: lsnr-create
 
 - name: Test whether port is free
   become: yes

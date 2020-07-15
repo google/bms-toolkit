@@ -13,7 +13,7 @@
 # limitations under the License.
 ---
 - name: Active-copy | Check pmon process
-  shell: "set -o pipefail; ps -ef | ( grep pmon || true ) | ( grep -i {{ oracle_sid }} || true ) | ( grep -v grep || true ) | wc -l"
+  shell: "set -o pipefail; ps -ef | ( grep pmon || true ) | ( grep -i {{ oracle_sid }}$ || true ) | ( grep -v grep || true ) | wc -l"
   changed_when: false
   register: pmon_proc
   tags: active-duplicate

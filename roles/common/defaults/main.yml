@@ -87,6 +87,15 @@ diskgroup_compatible_rdbms: "{# assign to variable c compatible parameter and se
 
 run_cluvfy: false
 
+# section for DR
+
+#db_unique_name identifies uniqueness of a database in Data Guard configuration.
+#By default in the script it set to "_s" so it might be helpful to overwrite the variable
+#and set it to the suffix which identifies location of the standby database
+#(like "_sydney" for example)
+#The same suffix will be "attached" to the db name in DG configuration as well.
+standby_suffix: _s
+
 gi_software:
   - name: 19c_gi
     version: 19.3.0.0.0

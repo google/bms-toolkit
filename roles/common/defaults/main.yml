@@ -87,6 +87,9 @@ diskgroup_compatible_rdbms: "{# assign to variable c compatible parameter and se
 
 run_cluvfy: false
 
+# ignorance of prerequisites depending on version
+prereq_option: "{% if oracle_ver_base in ('11.2', '12.1') %}-ignorePrereq{% else %}-ignorePrereqFailure{% endif %}"
+
 # section for DR
 
 #db_unique_name identifies uniqueness of a database in Data Guard configuration.
@@ -95,6 +98,12 @@ run_cluvfy: false
 #(like "_sydney" for example)
 #The same suffix will be "attached" to the db name in DG configuration as well.
 standby_suffix: _s
+
+# section size to use during RMAN duplicate
+section_size: 32G
+
+# variable which defines usage of compressed backupsets for duplication
+backupset_compression: true
 
 gi_software:
   - name: 19c_gi

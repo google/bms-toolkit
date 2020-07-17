@@ -1,0 +1,5 @@
+duplicate target database for standby from active database
+spfile
+  set "db_unique_name"="{{ db_name }}{{ standby_suffix }}"
+section size {{ section_size | default('32G', true) }}
+{% if oracle_ver_base != '11.2' %}using {% if backupset_compression | default(false) | bool %}compressed{% endif %} backupset{% endif %};

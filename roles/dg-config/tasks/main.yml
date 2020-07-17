@@ -188,11 +188,14 @@
     -pwfile {{ oracle_home }}/dbs/orapw{{ db_name }} \
     -role PHYSICAL_STANDBY -startoption MOUNT -stopoption IMMEDIATE \
     -instance {{ oracle_sid }} -dbname {{ db_name }}
-    srvctl start db -d {{ db_name }}{{ standby_suffix }}
   environment:
     ORACLE_HOME: "{{ oracle_home }}"
     ORACLE_SID: "{{ oracle_sid }}"
     PATH: "{{ oracle_home }}/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin"
   become: yes
   become_user: "{{ oracle_user }}"
+  register: db_config
+  failed_when:
+    - "(db_config.rc not in [2]) or ('already exists' not in db_config.stdout)"
+    - db_config.rc not in [0]
   tags: dg-create

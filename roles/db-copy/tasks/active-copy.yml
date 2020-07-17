@@ -13,7 +13,7 @@
 # limitations under the License.
 ---
 - name: Active-copy | Check pmon process
-  shell: "set -o pipefail; ps -ef | ( grep pmon || true ) | ( grep -i {{ db_name }} || true ) | ( grep -v grep || true ) | wc -l"
+  shell: "set -o pipefail; ps -ef | ( grep pmon || true ) | ( grep -i {{ oracle_sid }}$ || true ) | ( grep -v grep || true ) | wc -l"
   changed_when: false
   register: pmon_proc
   tags: active-duplicate
@@ -30,13 +30,13 @@
 
 - name: Active-copy | Set random password
   set_fact:
-    sys_pass: "{{ lookup('password', '/dev/null length=16 chars=ascii_letters,digits') }}#_"
+    sys_pass: "{{ lookup('password', '/dev/null length=16 chars=ascii_letters,digits') }}0#_"
   tags: active-duplicate
 
-- name: Active-copy | Set sys password for primary db
+- name: Active-copy | Get primary db password file information
   shell: |
     set -o pipefail
-    {{ oracle_home }}/bin/orapwd file={{ oracle_home }}/dbs/orapw{{ db_name }} force=y password={{ sys_pass }}
+    srvctl config db -d {{ db_name }} | grep "^Password file"
   environment:
     ORACLE_HOME: "{{ oracle_home }}"
     ORACLE_SID: "{{ oracle_sid }}"
@@ -44,6 +44,56 @@
   delegate_to: primary1
   become: yes
   become_user: "{{ oracle_user }}"
+  register: srvctl_output
+  tags: active-duplicate
+
+- name: Active-copy | Password file variable
+  set_fact:
+    password_file: "{{ srvctl_output.stdout|regex_replace('^Password file:')|regex_replace('\\s') }}"
+  tags: active-duplicate
+
+- name: Active-copy | Backup password file from file system
+  copy:
+    src: "{% if password_file|length > 0 %}{{ password_file }}{% else %}{{ oracle_home }}/dbs/orapw{{ db_name }}{% endif %}"
+    dest: "{{ oracle_home }}/dbs/orapw{{ db_name }}.{{ lookup('pipe','date +%Y-%m-%d-%H-%M') }}"
+    owner: "{{ oracle_user }}"
+    group: "{{ oracle_group }}"
+    remote_src: true
+  delegate_to: primary1
+  become: yes
+  become_user: "{{ oracle_user }}"
+  when: password_file is not search('^\\+')
+  tags: active-duplicate
+
+- name: Active-copy | Backup password file from ASM
+  shell: |
+    set -o pipefail
+    asmcmd cp {{ password_file }} {{ grid_home }}/dbs/orapw{{ db_name }}.{{ lookup('pipe','date +%Y-%m-%d-%H-%M') }}
+  environment:
+    ORACLE_HOME: "{{ grid_home }}"
+    ORACLE_SID: "{{ asm_sid }}"
+    PATH: "{{ grid_home }}/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin"
+  delegate_to: primary1
+  become: yes
+  become_user: "{{ grid_user }}"
+  when: password_file is search('^\\+')
+  tags: active-duplicate
+
+- name: Active-copy | Set sys password for primary db
+  command:
+    argv:
+      - "{{ oracle_home }}/bin/orapwd"
+      - "file={{ oracle_home }}/dbs/orapw{{ db_name }}"
+      - "force=y"
+      - "password={{ sys_pass }}"
+  environment:
+    ORACLE_HOME: "{{ oracle_home }}"
+    ORACLE_SID: "{{ oracle_sid }}"
+    PATH: "{{ oracle_home }}/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin"
+  delegate_to: primary1
+  become: yes
+  become_user: "{{ oracle_user }}"
+  no_log: true
   tags: active-duplicate
 
 - name: Active-copy | Add static listener entry
@@ -75,11 +125,12 @@
   tags: active-duplicate
 
 - name: Active-copy | Create auxiliary init file
-  shell: |
-    set -o pipefail
-    (echo "db_name={{ db_name }}"; echo "db_unique_name={{ db_name }}{{ standby_suffix }}") > {{ oracle_home }}/dbs/init{{ oracle_sid }}.ora
+  template:
+    src: initaux.ora.j2
+    dest: "{{ oracle_home }}/dbs/init{{ oracle_sid }}.ora"
+    owner: "{{ oracle_user }}"
+    group: "{{ oracle_group }}"
   become: yes
-  become_user: "{{ oracle_user }}"
   tags: active-duplicate
 
 - name: Active-copy | Start auxiliary instance
@@ -99,39 +150,65 @@
   tags: active-duplicate
 
 - name: Active-copy | Set sys password for auxiliary instance
-  shell: |
-    set -o pipefail
-    {{ oracle_home }}/bin/orapwd file={{ oracle_home }}/dbs/orapw{{ db_name }} force=y password={{ sys_pass }}
+  command:
+    argv:
+      - "{{ oracle_home }}/bin/orapwd"
+      - "file={{ oracle_home }}/dbs/orapw{{ db_name }}"
+      - "force=y"
+      - "password={{ sys_pass }}"
   environment:
     ORACLE_HOME: "{{ oracle_home }}"
     ORACLE_SID: "{{ oracle_sid }}"
     PATH: "{{ oracle_home }}/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin"
+  become: yes
+  become_user: "{{ oracle_user }}"
+  no_log: true
+  tags: active-duplicate
+
+- name: Active-copy | Get duplicate script
+  template:
+    src: duplicate.cmd.j2
+    dest: "{{ oracle_home }}/dbs/duplicate.cmd"
+    owner: "{{ oracle_user }}"
+    group: "{{ oracle_group }}"
   become: yes
   become_user: "{{ oracle_user }}"
   tags: active-duplicate
 
 - name: Active-copy | Duplicate primary database
-  shell: |
-    set -o pipefail
-    {{ oracle_home }}/bin/rman << EOF
-    connect target "sys/{{ sys_pass }}@//{{ lookup('env', 'PRIMARY_IP_ADDR') }}:{{ listener_port | default(1521, true) }}/{{ db_name }}{{ "." + db_domain | default(omit) }}"
-    connect auxiliary "sys/{{ sys_pass }}@//{{ lookup('env', 'INSTANCE_IP_ADDR') }}:{{ listener_port | default(1521, true) }}/{{ db_name }}{{ standby_suffix }}{{ "." + db_domain | default(omit) }}"
-    duplicate target database for standby from active database
-    password file
-    spfile
-      set "db_unique_name"="{{ db_name }}{{ standby_suffix }}"
-    section size {{ section_size | default('32G', true) }}
-    using compressed backupset;
-    EOF
+  command:
+    argv:
+      - "{{ oracle_home }}/bin/rman"
+      - "target \"sys/{{ sys_pass }}@//{{ lookup('env', 'PRIMARY_IP_ADDR') }}:{{ listener_port | default(1521, true) }}/{{ db_name }}{% if db_domain|default('', true)|length > 0 %}.{{ db_domain }}{% endif %}\""
+      - "auxiliary \"sys/{{ sys_pass }}@//{{ lookup('env', 'INSTANCE_IP_ADDR') }}:{{ listener_port | default(1521, true) }}/{{ db_name }}{{ standby_suffix }}{% if db_domain|default('', true)|length > 0 %}.{{ db_domain }}{% endif %}\""
+      - "cmdfile={{ oracle_home }}/dbs/duplicate.cmd"
+      - "log={{ oracle_home }}/dbs/duplicate.log"
   environment:
     ORACLE_HOME: "{{ oracle_home }}"
     ORACLE_SID: "{{ oracle_sid }}"
     PATH: "{{ oracle_home }}/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin"
-  register: db_copy
   become: yes
   become_user: "{{ oracle_user }}"
+  no_log: true
   tags: active-duplicate
 
-- name: Active-copy | Duplication results
-  debug: var=db_copy.stdout_lines
+- name: Active-copy | Add Oracle Restart configuration
+  shell: |
+    set -o pipefail
+    {{ oracle_home }}/bin/sqlplus -s / as sysdba << EOF
+    shutdown immediate
+    EOF
+    srvctl add db -d {{ db_name }}{{ standby_suffix }} \
+    -oraclehome {{ oracle_home }} {% if db_domain|default('', true)|length > 0 %}-domain {{ db_domain }}{% endif %} \
+    -spfile {{ oracle_home }}/dbs/spfile{{ db_name }}.ora \
+    -pwfile {{ oracle_home }}/dbs/orapw{{ db_name }} \
+    -role PHYSICAL_STANDBY -startoption MOUNT -stopoption IMMEDIATE \
+    -instance {{ oracle_sid }} -dbname {{ db_name }}
+    srvctl start db -d {{ db_name }}{{ standby_suffix }}
+  environment:
+    ORACLE_HOME: "{{ oracle_home }}"
+    ORACLE_SID: "{{ oracle_sid }}"
+    PATH: "{{ oracle_home }}/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin"
+  become: yes
+  become_user: "{{ oracle_user }}"
   tags: active-duplicate

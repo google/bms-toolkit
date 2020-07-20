@@ -25,7 +25,7 @@
     - item.release == oracle_ver
   become: yes
   become_user: "{{ oracle_user }}"
-  tags: create_rsp
+  tags: create-rsp
 
 - name: 12.2 bug resolution - MOS (Doc ID 2401455.1)
   copy:
@@ -45,11 +45,11 @@
     tasks_from: gcscopy
   vars:
     patching_type: gi_patching
-  tags: patch_grid,sw_copy
+  tags: patch-grid,sw-copy
 
 - name: (GI) Update OPatch
   unarchive:
-    src: "{{ swlib_unzip_path }}/{{ item.patchfile }}"
+    src: "{{ swlib_path }}/{{ item.patchfile }}"
     dest: "{{ grid_home }}"
     remote_src: yes
   with_items:
@@ -59,11 +59,11 @@
     - item.category == "OPatch"
   become: yes
   become_user: "{{ grid_user }}"
-  tags: update_opatch_gi
+  tags: update-opatch-gi
 
 - name: (RDBMS) Update OPatch
   unarchive:
-    src: "{{ swlib_unzip_path }}/{{ item.patchfile }}"
+    src: "{{ swlib_path }}/{{ item.patchfile }}"
     dest: "{{ oracle_home }}"
     remote_src: yes
   with_items:
@@ -73,11 +73,11 @@
     - item.category == "OPatch"
   become: yes
   become_user: "{{ oracle_user }}"
-  tags: update_opatch_db
+  tags: update-opatch-db
 
 - name: (GI) Unzip patch
   unarchive:
-    src: "{{ swlib_unzip_path }}/{{ item.patchfile }}"
+    src: "{{ swlib_path }}/{{ item.patchfile }}"
     dest: "{{ swlib_unzip_path }}"
     remote_src: yes
   with_items:
@@ -85,7 +85,28 @@
   when: item.release == oracle_rel and item.category != "HAS_interim_patch"
   become: yes
   become_user: "{{ grid_user }}"
-  tags: patch_grid,sw_unzip
+  tags: patch-grid,sw-unzip
+
+- name: (RDBMS) Get database role
+  block:
+    - name: Get database role from sqlplus
+      shell: |
+        set -o pipefail
+        sqlplus -s / as sysdba << EOF
+        set heading off
+        select database_role from v\$database;
+        EOF
+      environment:
+        ORACLE_HOME: "{{ oracle_home }}"
+        ORACLE_SID: "{{ oracle_sid }}"
+        PATH: "{{ oracle_home }}/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin"
+      register: db_role
+      become: yes
+      become_user: "{{ oracle_user }}"
+    - name: Set boolean standby_db variable
+      set_fact:
+        standby_db: "{{ db_role.stdout is search('PHYSICAL STANDBY') | bool }}"
+  tags: patch-grid,patch-rdbms
 
 - name: (GI) Apply patch
   include_tasks: opatch_apply.yml
@@ -99,7 +120,7 @@
   loop_control:
     loop_var: patch
   when: patch.release == oracle_rel and patch.category != "HAS_interim_patch"
-  tags: patch_grid,opatch_apply
+  tags: patch-grid,opatch-apply
 
 - name: (GI) Remove unzipped patch
   file:
@@ -110,7 +131,7 @@
   when: item.release == oracle_rel and item.category != "HAS_interim_patch"
   become: yes
   become_user: root
-  tags: patch_grid,sw_remove
+  tags: patch-grid,sw-remove
 
 - name: (RDBMS) Copy patches from bucket
   import_role:
@@ -118,11 +139,11 @@
     tasks_from: gcscopy
   vars:
     patching_type: db_patching
-  tags: patch_rdbms,sw_copy
+  tags: patch-rdbms,sw-copy
 
 - name: (RDBMS) Unzip patch
   unarchive:
-    src: "{{ swlib_unzip_path }}/{{ item.patchfile }}"
+    src: "{{ swlib_path }}/{{ item.patchfile }}"
     dest: "{{ swlib_unzip_path }}"
     remote_src: yes
   with_items:
@@ -130,12 +151,13 @@
   when: item.release == oracle_rel
   become: yes
   become_user: "{{ oracle_user }}"
-  tags: patch_rdbms,sw_unzip
+  tags: patch-rdbms,sw-unzip
 
 - name: (RDBMS) remove db_state.out if it exists
   file:
     path: "{{ swlib_unzip_path }}/db_state.out"
     state: absent
+  tags: patch-rdbms
 
 - name: (RDBMS) Stop home
   command: "{{ oracle_home }}/bin/srvctl stop home -o {{ oracle_home }} -t immediate -s {{ swlib_unzip_path }}/db_state.out"
@@ -145,13 +167,13 @@
   failed_when: stop_home.rc not in [0,2]
   become: yes
   become_user: "{{ oracle_user }}"
-  tags: patch_rdbms,pre_rdbms,stop_home
+  tags: patch-rdbms,pre-rdbms,stop-home
 
 - name: (RDBMS) Stop home results
   debug:
     msg: "{{ stop_home }}"
     verbosity: 1
-  tags: patch_rdbms,stop_home
+  tags: patch-rdbms,stop-home
 
 - name: (RDBMS) Apply patch
   include_tasks: opatch_apply.yml
@@ -165,7 +187,7 @@
   loop_control:
     loop_var: patch
   when: patch.release == oracle_rel
-  tags: patch_rdbms,opatch_apply
+  tags: patch-rdbms,opatch-apply
 
 - name: (RDBMS) Remove unzipped patch
   file:
@@ -176,7 +198,7 @@
   when: item.release == oracle_rel
   become: yes
   become_user: root
-  tags: patch_rdbms,sw_remove
+  tags: patch-rdbms,sw-remove
 
 - name: (RDBMS) Start home
   command: "{{ oracle_home }}/bin/srvctl start home -o {{ oracle_home }} -s {{ swlib_unzip_path }}/db_state.out"
@@ -186,10 +208,10 @@
   failed_when: start_home.rc not in [0,2]
   become: yes
   become_user: "{{ oracle_user }}"
-  tags: patch_rdbms,start_home
+  tags: patch-rdbms,start-home
 
 - name: (RDBMS) Start home results
   debug:
     msg: "{{ start_home }}"
     verbosity: 1
-  tags: patch_rdbms,start_home
+  tags: patch-rdbms,start-home

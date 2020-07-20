@@ -38,13 +38,13 @@
   register: startup_db
   become: yes
   become_user: "{{ oracle_user }}"
-  tags: patch_rdbms,upgrade_db
+  tags: patch-rdbms,upgrade-db
 
 - name: sql_patch | DB Startup output
   debug:
     msg: "{{ startup_db }}"
     verbosity: 1
-  tags: patch_rdbms,upgrade_db
+  tags: patch-rdbms,upgrade-db
 
 - name: sql_patch | Start all PDBs
   shell: |
@@ -59,7 +59,7 @@
   become: yes
   become_user: "{{ oracle_user }}"
   when: oracle_ver != '11.2.0.4.0'
-  tags: patch_rdbms,start_pdb
+  tags: patch-rdbms,start-pdb
 
 - name: sql_patch | Start PDBs output
   debug:
@@ -79,14 +79,14 @@
   failed_when: "datapatch_output.rc != 0"
   become: yes
   become_user: "{{ oracle_user }}"
-  tags: patch_rdbms,datapatch
+  tags: patch-rdbms,datapatch
 
 - name: sql_patch | datapatch results
   debug:
     msg: "{{ datapatch_output }}"
-    #verbosity: 1
+    verbosity: 1
   when: oracle_ver != '11.2.0.4.0'
-  tags: patch_rdbms,datapatch
+  tags: patch-rdbms,datapatch
 
 - name: sql_patch | Run catbundle
   shell: |
@@ -103,14 +103,14 @@
   failed_when: "catbundle_output.rc != 0"
   become: yes
   become_user: "{{ oracle_user }}"
-  tags: patch_rdbms,catbundle
+  tags: patch-rdbms,catbundle
 
 - name: sql_patch | catbundle results
   debug:
     msg: "{{ catbundle_output }}"
-    #verbosity: 1
+    verbosity: 1
   when: oracle_ver == '11.2.0.4.0'
-  tags: patch_rdbms,catbundle
+  tags: patch-rdbms,catbundle
 
 - name: sql_patch | Re-compile invalid objects
   shell: |
@@ -122,7 +122,7 @@
     PATH: "{{ oracle_home }}/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin"
   become: yes
   become_user: "{{ oracle_user }}"
-  tags: patch_rdbms,utlrp
+  tags: patch-rdbms,utlrp
 
 - name: sql_patch | Capture registry patches
   shell: |
@@ -142,7 +142,7 @@
   register: patch_registry
   become: yes
   become_user: "{{ oracle_user }}"
-  tags: patch_rdbms
+  tags: patch-rdbms
 
 - name: sql_patch | Registry patch results
   debug:
@@ -160,10 +160,10 @@
   register: shutdown_db
   become: yes
   become_user: "{{ oracle_user }}"
-  tags: patch_rdbms,upgrade_db
+  tags: patch-rdbms,upgrade-db
 
 - name: sql_patch | Shutdown DB results
   debug:
     msg: "{{ shutdown_db }}"
     verbosity: 1
-  tags: patch_rdbms,upgrade_db
+  tags: patch-rdbms,upgrade-db

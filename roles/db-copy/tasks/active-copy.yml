@@ -13,7 +13,7 @@
 # limitations under the License.
 ---
 - name: Active-copy | Check pmon process
-  shell: "set -o pipefail; ps -ef | ( grep pmon || true ) | ( grep -i {{ db_name }} || true ) | ( grep -v grep || true ) | wc -l"
+  shell: "set -o pipefail; ps -ef | ( grep pmon || true ) | ( grep -i {{ oracle_sid }}$ || true ) | ( grep -v grep || true ) | wc -l"
   changed_when: false
   register: pmon_proc
   tags: active-duplicate
@@ -30,7 +30,7 @@
 
 - name: Active-copy | Set random password
   set_fact:
-    sys_pass: "{{ lookup('password', '/dev/null length=16 chars=ascii_letters,digits') }}#_"
+    sys_pass: "{{ lookup('password', '/dev/null length=16 chars=ascii_letters,digits') }}0#_"
   tags: active-duplicate
 
 - name: Active-copy | Set sys password for primary db
@@ -50,7 +50,7 @@
   lineinfile:
     path: "{{ grid_home }}/network/admin/listener.ora"
     regexp: "^SID_LIST_{{ listener_name }}"
-    line: "SID_LIST_{{ listener_name }}=(SID_LIST=(SID_DESC=(GLOBAL_DBNAME={{ oracle_sid }}{{ standby_suffix }}.{{ db_domain }})(ORACLE_HOME={{ oracle_home }})(SID_NAME={{ oracle_sid }})))"
+    line: "SID_LIST_{{ listener_name }}=(SID_LIST=(SID_DESC=(GLOBAL_DBNAME={{ oracle_sid }}{{ standby_suffix }}{% if db_domain|default('',true)|length > 0 %}.{{ db_domain }}{% endif %})(ORACLE_HOME={{ oracle_home }})(SID_NAME={{ oracle_sid }})))"
     owner: "{{ grid_user }}"
     group: "{{ oracle_group }}"
   become: yes
@@ -114,8 +114,8 @@
   shell: |
     set -o pipefail
     {{ oracle_home }}/bin/rman << EOF
-    connect target "sys/{{ sys_pass }}@//{{ lookup('env', 'PRIMARY_IP_ADDR') }}:{{ listener_port | default(1521, true) }}/{{ db_name }}{{ "." + db_domain | default(omit) }}"
-    connect auxiliary "sys/{{ sys_pass }}@//{{ lookup('env', 'INSTANCE_IP_ADDR') }}:{{ listener_port | default(1521, true) }}/{{ db_name }}{{ standby_suffix }}{{ "." + db_domain | default(omit) }}"
+    connect target "sys/{{ sys_pass }}@//{{ lookup('env', 'PRIMARY_IP_ADDR') }}:{{ listener_port | default(1521, true) }}/{{ db_name }}{% if db_domain|default('',true)|length > 0 %}.{{ db_domain }}{% endif %}"
+    connect auxiliary "sys/{{ sys_pass }}@//{{ lookup('env', 'INSTANCE_IP_ADDR') }}:{{ listener_port | default(1521, true) }}/{{ db_name }}{{ standby_suffix }}{% if db_domain|default('',true)|length > 0 %}.{{ db_domain }}{% endif %}"
     duplicate target database for standby from active database
     password file
     spfile
@@ -135,3 +135,22 @@
 - name: Active-copy | Duplication results
   debug: var=db_copy.stdout_lines
   tags: active-duplicate
+
+- name: Active-copy | Add Oracle Restart configuration
+  shell: |
+    set -o pipefail
+    srvctl add db -d {{ db_name }}{{ standby_suffix }} \
+    -oraclehome {{ oracle_home }} {% if db_domain|default('', true)|length > 0 %}-domain {{ db_domain }}{% endif %} \
+    -spfile {{ oracle_home }}/dbs/spfile{{ db_name }}.ora \
+    -pwfile {{ oracle_home }}/dbs/orapw{{ db_name }} \
+    -role PHYSICAL_STANDBY -startoption MOUNT -stopoption IMMEDIATE \
+    -instance {{ oracle_sid }} -dbname {{ db_name }}
+    srvctl start db -d {{ db_name }}{{ standby_suffix }}
+  environment:
+    ORACLE_HOME: "{{ oracle_home }}"
+    ORACLE_SID: "{{ oracle_sid }}"
+    PATH: "{{ oracle_home }}/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin"
+  become: yes
+  become_user: "{{ oracle_user }}"
+  tags: active-duplicate
+

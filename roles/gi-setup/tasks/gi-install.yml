@@ -16,7 +16,7 @@
 - name: gi-install | Set facts
   set_fact:
     install_unzip_path: "{{ grid_home }}"
-    installer_command: "{{ grid_home }}/gridSetup.sh"
+    installer_command: "{{ grid_home }}/gridSetup.sh {{ prereq_option }}"
     cluvfy_command: "{{ grid_home }}/runcluvfy.sh stage -pre hacfg -verbose"
   tags: gi-setup
 
@@ -24,11 +24,6 @@
   set_fact:
     install_unzip_path: "{{ swlib_unzip_path }}"
     installer_command: "{{ swlib_unzip_path }}/grid/runInstaller {{ prereq_option }} -waitforcompletion"
-  when: oracle_ver in ['11.2.0.4.0','12.1.0.2.0']
-  tags: gi-setup
-
-- name: gi-install | 11.2 and 12.1 specific cluvfg adjustments
-  set_fact:
     cluvfy_command: "{{ swlib_unzip_path }}/grid/runcluvfy.sh stage -pre hacfg -verbose"
   when: oracle_ver in ['11.2.0.4.0','12.1.0.2.0']
   tags: gi-setup
@@ -170,7 +165,7 @@
 
 - name: gi-install | Set installer command
   set_fact:
-    installer_command: "{{ grid_home }}/gridSetup.sh -silent -responseFile {{ swlib_unzip_path }}/grid_install.rsp {{ rel_patch|default('') }} {{ mgmt_option|default('') }} -ignorePrereqFailure"
+    installer_command: "{{ installer_command }} -silent -responseFile {{ swlib_unzip_path }}/grid_install.rsp {{ rel_patch|default('') }} {{ mgmt_option|default('') }}"
   tags: gi-setup
 
 - name: gi-install | Update GI OPatch

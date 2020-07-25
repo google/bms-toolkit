@@ -190,7 +190,7 @@
 
 - name: rac-gi-install | Set installer command
   set_fact:
-    installer_command: "{{ grid_home }}/gridSetup.sh -silent -responseFile {{ install_unzip_path }}/gridsetup.rsp {{ has_patch|default('') }} {{ rel_patch|default('') }} {{ mgmt_option|default('') }} -ignorePrereqFailure"
+    installer_command: "{{ grid_home }}/gridSetup.sh -silent -responseFile {{ install_unzip_path }}/gridsetup.rsp {{ has_patch|default('') }} {{ rel_patch|default('') }} {{ mgmt_option|default('') }} {{ prereq_option }}"
   tags: rac-gi,rac-gi-install
 
 - name: rac-gi-install | Information

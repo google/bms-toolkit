@@ -153,7 +153,7 @@
 
 - name: rac-db-install | Set installer command
   set_fact:
-    installer_command: "{{ runinstaller_loc }}/runInstaller -silent -waitforcompletion -responseFile {{ install_unzip_path }}/db_install.rsp {{ rel_patch | default('') }} {% if oneoff_patch_dirs|length > 0 %}-applyOneOffs {{ oneoff_patch_dirs }}{% endif %} -ignorePrereqFailure"
+    installer_command: "{{ runinstaller_loc }}/runInstaller -silent -waitforcompletion -responseFile {{ install_unzip_path }}/db_install.rsp {{ rel_patch | default('') }} {% if oneoff_patch_dirs|length > 0 %}-applyOneOffs {{ oneoff_patch_dirs }}{% endif %} {{ prereq_option }}"
   tags: rac-db,rac-db-install
 
 - name: rac-db-install | Information

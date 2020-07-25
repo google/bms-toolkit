@@ -14,7 +14,7 @@
 
 ---
 - name: OPatch Restart patch
-  hosts: all
+  hosts: dbasm
   pre_tasks:
   - name: Verify that Ansible on control node meets the version requirements
     assert:
@@ -32,7 +32,7 @@
   tags: opatch_restart
 
 - name: RAC patch apply
-  hosts: all
+  hosts: dbasm
   serial: 1
   order: inventory
   tasks:

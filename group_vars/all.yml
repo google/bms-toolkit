@@ -128,8 +128,6 @@ create_db: true
 create_listener: true
 install_gi: true
 install_rdbms: true
-prereq_option: "-ignorePrereq"
-
 
 ## End of non-modifiable variables section
 

@@ -47,13 +47,13 @@
 
   - include_role:
       name: db-copy
-      tasks_from: active-copy
+      tasks_from: main
     when:
       - create_db|bool
       - cluster_type != "RAC"
       - lookup('env', 'PRIMARY_IP_ADDR') is defined
       - lookup('env', 'PRIMARY_IP_ADDR') | length > 0
-    tags: active-duplicate
+    tags: db-duplicate
 
   - include_role:
       name: dg-config

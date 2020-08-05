@@ -16,6 +16,7 @@
 - name: swap | Create swap partition
   parted:
     device: "{{ swap_blk_device }}"
+    flags: [ swap ]
     number: 1
     state: present
   register: swapfile_register_create

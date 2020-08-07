@@ -223,6 +223,9 @@ INSTANCE_SSH_EXTRA_ARGS_PARAM="^/.+$"
 NTP_PREF="${NTP_PREF}"
 NTP_PREF_PARAM=".*"
 
+SWAP_BLK_DEVICE="${SWAP_BLK_DEVICE}"
+SWAP_BLK_DEVICE_PARAM=".*"
+
 COMPATIBLE_RDBMS="${COMPATIBLE_RDBMS:-0}"
 COMPATIBLE_RDBMS_PARAM="^[0-9][0-9]\.[0-9].*"
 
@@ -443,6 +446,10 @@ while true; do
     ;;
   --ntp-pref)
     NTP_PREF="$2"
+    shift;
+    ;;
+  --swap-blk-device)
+    SWAP_BLK_DEVICE="$2"
     shift;
     ;;
   --check-instance)
@@ -678,6 +685,10 @@ shopt -s nocasematch
 }
 [[ ! "$NTP_PREF" =~ $NTP_PREF_PARAM ]] && {
     echo "Incorrect parameter provided for ntp-pref: $NTP_PREF"
+    exit 1
+}
+[[ ! "$SWAP_BLK_DEVICE" =~ $SWAP_BLK_DEVICE_PARAM ]] && {
+    echo "Incorrect parameter provided for swap-blk-device: $SWAP_BLK_DEVICE"
     exit 1
 }
 [[ ! "$COMPATIBLE_RDBMS" =~ $COMPATIBLE_RDBMS_PARAM ]] && {

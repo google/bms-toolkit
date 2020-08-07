@@ -129,11 +129,8 @@
     state: present
   tags: etchosts
 
-- name: prep host | create swap on GCE
+- name: prep host | create swap
   include_tasks: swap.yml
   when:
-    - ansible_system_vendor == "Google"
-    - ansible_virtualization_type == "kvm"
-    - ansible_virtualization_role == "guest"
     - swap_blk_device is defined
     - swap_blk_device|length > 0

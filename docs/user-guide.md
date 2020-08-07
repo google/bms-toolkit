@@ -1079,6 +1079,17 @@ NTP_PREF
 Optional: set only if you need to manually define an NTP server, instead of
 relying on the OS defaults.</td>
 </tr>
+<tr>
+<td>Swap device</td>
+<td><p><pre>
+SWAP_BLK_DEVICE
+--swap-blk-device
+</pre></p></td>
+<td>user defined - no default</td>
+<td>Swap device to optionally create.<br>
+<br>
+Optional: set if you would like a swap partition and swap file created.</td>
+</tr>
 </tbody>
 </table>
 

@@ -75,7 +75,7 @@ charset: "{{ lookup('env','ORA_DB_CHARSET')|default('AL32UTF8',true) }}"
 ncharset: "{{ lookup('env','ORA_DB_NCHARSET')|default('AL16UTF16',true) }}"
 
 # ASM and storage related variables:
-asm_disk_management: "{{ lookup('env','ORA_DISK_MGMT')|lower|default('asmlib',true) }}"
+asm_disk_management: "{{ lookup('env','ORA_DISK_MGMT')|lower|default('udev',true) }}"
 role_separaion: "{{ lookup('env','ORA_ROLE_SEPARATION')|lower|default('true',true) }}"
 data_diskgroup: "{{ lookup('env','ORA_DATA_DISKGROUP')|default('DATA',true) }}"
 reco_diskgroup: "{{ lookup('env','ORA_RECO_DISKGROUP')|default('RECO',true) }}"

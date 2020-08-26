@@ -16,17 +16,19 @@
 - name: swap | Create swap partition
   parted:
     device: "{{ swap_blk_device }}"
-    flags: [ swap ]
     number: 1
     state: present
+  become: true
   register: swapfile_register_create
 
 - name: swap | Initialize swap file
-  command: mkswap {{ swap_blk_device }}1
+  command: mkswap -f {{ swap_blk_device }}1
+  become: true
   when: swapfile_register_create is changed
 
 - name: swap | Enable swap file
   command: swapon {{ swap_blk_device }}1
+  become: true
   when: swapfile_register_create is changed
 
 - name: swap | Manage swap file in /etc/fstab
@@ -38,3 +40,4 @@
     dump: "0"
     passno: "0"
     state: "present"
+  become: true

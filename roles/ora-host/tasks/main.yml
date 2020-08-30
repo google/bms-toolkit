@@ -141,6 +141,30 @@
   with_items: "{{ oracle_dirs }}"
   tags: os-dirs
 
+- name: Create backup directory
+  file:
+    path: "{{ backup_dest }}"
+    state: directory
+    owner: "{{ oracle_user }}"
+    group: "{{ oracle_group }}"
+    mode: "ug=rwx"
+  when: backup_dest[0:1]  == "/"
+  tags: os-dirs
+
+- name: Check ASM backup destination
+  set_fact:
+    dg_exists: "{{ asm_disks | json_query('[?diskgroup==`' + backup_dest[1:] + '`].diskgroup') }}"
+  when: backup_dest[0:1]  == "+"
+  tags: backup-dest
+
+- name: Fail if ASM backup diskgroup not defined
+  fail:
+    msg: Diskgroup assigned for backup should be defined for creation
+  when:
+    - backup_dest[0:1] == "+"
+    - dg_exists|length == 0
+  tags: backup-dest
+
 - name: tmp file configuration
   become: yes
   become_user: root

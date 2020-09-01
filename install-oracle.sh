@@ -718,7 +718,7 @@ if [ "${ORA_SWLIB_BUCKET}" = "" ]; then
 fi
 
 if [ "${BACKUP_DEST}" = "" ]; then
-  echo "Please specify a Cloud Filestore or disk group location with --backup-dest"
+  echo "Please specify a file system destination or disk group location with --backup-dest"
   exit 2
 fi
 

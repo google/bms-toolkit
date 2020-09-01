@@ -42,6 +42,8 @@
     ( kill -9 $(ps -ef|grep "agent13c" |grep -v "grep"|awk '{print $2}') ) || true
     ( kill -9 $(ps -ef|grep "PROTOCOL=beq" |grep -v "grep"|awk '{print $2}') ) || true
     ( kill -9 $(ps -ef|grep "/grid/bin/" |grep -v "grep"|awk '{print $2}') ) || true
+    ( pkill -9 -u {{ grid_user }} ) || true
+    ( pkill -9 -u {{ oracle_user }} ) || true
   register: kill_procs
   become: yes
   become_user: root
@@ -110,6 +112,7 @@
   with_subelements:
     - "{{ asm_disks }}"
     - disks
+  when: asm_disk_management == "asmlib"
   register: delete_asm_disks
   ignore_errors: true
 
@@ -120,6 +123,7 @@
     name: '*oracleasm*'
     state: absent
     lock_timeout: 180
+  when: asm_disk_management == "asmlib"
   register: remove_oracleasm
 
 - name: Unmount Oracle user data devices (including fstab)
@@ -158,20 +162,35 @@
 - name: Zero-out header in ASM disks partitions
   become: yes
   become_user: root
-  command: "dd if=/dev/zero of={{ item.1.blk_device }}1 bs=1M count=1"
-  with_subelements:
-    - "{{ asm_disks }}"
-    - disks
-  register: zero_disks
-
-- name: Zero-out header in ASM disks
-  become: yes
-  become_user: root
   command: "dd if=/dev/zero of={{ item.1.blk_device }} bs=1M count=1"
   with_subelements:
     - "{{ asm_disks }}"
     - disks
   register: zero_disks
+  ignore_errors: true
+
+- name: Disable and remove swap
+  block:
+    - name: Turn swap off
+      command: "swapoff {{ swap_blk_device }}1"
+    - name: Clean swap disk partition
+      command: "dd if=/dev/zero of={{ swap_blk_device }}1 bs=1M count=100"
+    - name: Remove swap partition
+      parted:
+        device: "{{ swap_blk_device }}"
+        number: 1
+        state: absent
+    - name: Remove fstab entry
+      lineinfile:
+        path: /etc/fstab
+        regexp: '^{{ swap_blk_device }}'
+        state: absent
+  become: yes
+  when:
+    - swap_blk_device is defined
+    - swap_blk_device|length > 0
+  ignore_errors: true
+  tags: remove-swap
 
 - name: Refresh kernel partition table view
   become: yes
@@ -179,9 +198,9 @@
   command: "blockdev --rereadpt {{ item.blk_device }}"
   with_items:
     - "{{ oracle_user_data_mounts }}"
+  ignore_errors: true
 
 - name: Delete partition all ASM disks
-  #debug: msg="{{ item }}"
   parted:
     device: "{{ item.1.blk_device }}"
     number: 1
@@ -189,6 +208,7 @@
   with_subelements:
     - "{{ asm_disks }}"
     - disks
+  ignore_errors: true
   tags: asm-disks
 
 - name: (udev) remove oracle udev rules
@@ -197,11 +217,13 @@
   file:
     path: /etc/udev/rules.d/99-oracle-asmdevices.rules
     state: absent
+  when: asm_disk_management == "udev"
 
 - name: (udev) Reload rules
   become: yes
   become_user: root
   shell: ( /sbin/udevadm control --reload-rules && /sbin/udevadm trigger )
+  when: asm_disk_management == "udev"
 
 - name: Remove users
   become: yes
@@ -250,5 +272,5 @@
   become: yes
   become_user: root
   # Not using the Ansible mount module as this is a temporary mount
-  command: "mount -t vboxsf swlib /swlib"
+  command: "mount -t vboxsf swlib {{ swlib_path }}"
   when: "('virtualbox' in ansible_virtualization_type)"

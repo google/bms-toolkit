@@ -67,9 +67,9 @@ oracle_dirs:
   - { name: "{{ oracle_base }}", owner: "{{ oracle_user }}", group: "{{ oracle_group }}", mode: "ug=rwx,o=rx" }
   - { name: "{{ oracle_inventory }}", owner: "{{ grid_user }}", group: "{{ oracle_group }}", mode: "ug=rwx,o=rx" }
   - { name: "{{ oracle_home }}", owner: "{{ oracle_user }}", group: "{{ oracle_group }}", mode: "ug=rwx,o=rx" }
-  - { name: "/home/oracle/.ansible/tmp", owner: "{{ oracle_user }}", group: "{{ oracle_group }}", mode: "ug=rwx,o=rx" }
+  - { name: "/home/{{ oracle_user }}/.ansible/tmp", owner: "{{ oracle_user }}", group: "{{ oracle_group }}", mode: "ug=rwx,o=rx" }
   - { name: "{{ grid_home }}", owner: "{{ grid_user }}", group: "{{ oracle_group }}", mode: "ug=rwx,o=rx" }
-  - { name: "/home/grid/.ansible/tmp", owner: "{{ oracle_user }}", group: "{{ oracle_group }}", mode: "ug=rwx,o=rx" }
+  - { name: "/home/{{ grid_user }}/.ansible/tmp", owner: "{{ grid_user }}", group: "{{ oracle_group }}", mode: "ug=rwx,o=rx" }
 
 pwgen_file: pwgen.sh
 pwgen_path: /usr/local/bin

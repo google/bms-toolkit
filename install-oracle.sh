@@ -170,7 +170,7 @@ CLUSTER_CONFIG_PARAM="^.*\.json$"
 CLUSTER_CONFIG_PARAM="^.*$"
 
 BACKUP_DEST="${BACKUP_DEST}"
-BACKUP_DEST_PARAM="^.*$"
+BACKUP_DEST_PARAM="^(\/|\+).*$"
 
 BACKUP_REDUNDANCY="${BACKUP_REDUNDANCY:-2}"
 BACKUP_REDUNDANCY_PARAM="^[0-9]+$"
@@ -714,11 +714,6 @@ fi
 # Mandatory options
 if [ "${ORA_SWLIB_BUCKET}" = "" ]; then
   echo "Please specify a GS bucket with --ora-swlib-bucket"
-  exit 2
-fi
-
-if [ "${BACKUP_DEST}" = "" ]; then
-  echo "Please specify a Cloud Filestore or disk group location with --backup-dest"
   exit 2
 fi
 

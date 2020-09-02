@@ -331,7 +331,7 @@
   become: yes
   become_user: root
   shell: |
-    /usr/sbin/oracleasm configure -e -u {{ grid_user }} -g {{ grid_group }} -b -s y -o "multipath sd"
+    /usr/sbin/oracleasm configure -e -u {{ grid_user }} -g {{ grid_group }} -b -s y -o "dm multipath"
     /usr/sbin/oracleasm init
     /usr/sbin/oracleasm status
     /usr/sbin/oracleasm scandisks

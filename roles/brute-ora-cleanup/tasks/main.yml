@@ -198,6 +198,7 @@
   command: "blockdev --rereadpt {{ item.blk_device }}"
   with_items:
     - "{{ oracle_user_data_mounts }}"
+  when: "'mapper' not in item.blk_device"
   ignore_errors: true
 
 - name: Delete partition all ASM disks
@@ -208,6 +209,7 @@
   with_subelements:
     - "{{ asm_disks }}"
     - disks
+  when: "'mapper' not in item.blk_device"
   ignore_errors: true
   tags: asm-disks
 

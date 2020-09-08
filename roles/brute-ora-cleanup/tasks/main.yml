@@ -209,7 +209,7 @@
   with_subelements:
     - "{{ asm_disks }}"
     - disks
-  when: "'mapper' not in item.blk_device"
+  when: "'mapper' not in item.1.blk_device"
   ignore_errors: true
   tags: asm-disks
 

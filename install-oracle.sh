@@ -667,12 +667,12 @@ shopt -s nocasematch
     echo "Incorrect parameter provided for backup-start-min: $BACKUP_LOG_LOCATION"
     exit 1
 }
-[[ ! "$INSTANCE_IP_ADDR" =~ ${INSTANCE_IP_ADDR_PARAM} ]] && {
+[[ ! "$INSTANCE_IP_ADDR" =~ ${INSTANCE_IP_ADDR_PARAM} ]] && [[ "$CLUSTER_TYPE" != "RAC" ]] && {
     echo "Incorrect parameter provided for instance-ip-addr: $INSTANCE_IP_ADDR"
     exit 1
 }
-[[ ! "$PRIMARY_IP_ADDR" =~ ${PRIMARY_IP_ADDR_PARAM} ]] && [[ "$CONFIG_TYPE" =~ "DG" ]] && {
-    echo "Incorrect parameter provided for standby-ip-addr: $PRIMARY_IP_ADDR"
+[[ ! "$PRIMARY_IP_ADDR" =~ ${PRIMARY_IP_ADDR_PARAM} ]] && [[ "$CLUSTER_TYPE" =~ "DG" ]] && {
+    echo "Incorrect parameter provided for primary-ip-addr: $PRIMARY_IP_ADDR"
     exit 1
 }
 [[ ! "$INSTANCE_SSH_USER" =~ $INSTANCE_SSH_USER_PARAM ]] && {

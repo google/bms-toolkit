@@ -35,7 +35,7 @@
   become: yes
   become_user: root
 
-- name: Kill and remaining Oracle processes
+- name: Kill and remaining Oracle processes and wait 10s
   shell: |
     ( kill -9 $(ps -ef|grep "ora_smon" |grep -v "grep"|awk '{print $2}') ) || true
     ( kill -9 $(ps -ef|grep "tnslsnr"  |grep -v "grep"|awk '{print $2}') ) || true
@@ -44,13 +44,10 @@
     ( kill -9 $(ps -ef|grep "/grid/bin/" |grep -v "grep"|awk '{print $2}') ) || true
     ( pkill -9 -u {{ grid_user }} ) || true
     ( pkill -9 -u {{ oracle_user }} ) || true
+    sleep 10
   register: kill_procs
   become: yes
   become_user: root
-
-- name: Wait for processes to die (10 seconds)
-  pause:
-    seconds: 10
 
 - name: Remove directories and files
   become: yes

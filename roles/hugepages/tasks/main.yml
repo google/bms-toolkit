@@ -127,3 +127,13 @@
     echo 'never' > /sys/kernel/mm/transparent_hugepage/enabled
     echo 'never' > /sys/kernel/mm/transparent_hugepage/defrag
   when: checkTPH.stdout == "[always] madvise never" or checkTPH.stdout == "always [madvise] never"
+
+- name: Check if THP shows as used and recommend reboot if AnonHugePages in /proc/meminfo is nonzero
+  shell: grep -q '^AnonHugePages:\ *0\ kB$' /proc/meminfo || echo reboot
+  register: checkTHPreboot
+  ignore_errors: yes
+  changed_when: False
+
+- debug:
+    msg: "WARNING: A reboot is required to disable transparent huge pages"
+  when: checkTHPreboot.stdout == "reboot"

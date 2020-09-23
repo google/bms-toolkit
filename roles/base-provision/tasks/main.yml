@@ -49,11 +49,11 @@
     lock_timeout: 180
   tags: os_packages
 
-- name: Ensure "-g" is present in /etc/sysconfig/ntpd
+- name: Update OPTIONS in /etc/sysconfig/ntpd
   lineinfile:
     dest: /etc/sysconfig/ntpd
     regexp: '^OPTIONS='
-    line: 'OPTIONS="-g"'
+    line: 'OPTIONS="{{ ntp_options }}"'
   notify: restart ntpd
 
 - name: Add ntp preferred server

@@ -4,6 +4,7 @@
 
 - [Command quick reference for single instance deployments](#command-quick-reference-for-single-instance-deployments)
 - [Command quick reference for RAC deployments](#command-quick-reference-for-rac-deployments)
+- [Command quick reference for DR deployments](#command-quick-reference-for-dr-deployments)
 - [Overview](#overview)
   - [Software Stack](#software-stack)
   - [Requirements and Prerequisites](#requirements-and-prerequisites)
@@ -109,7 +110,10 @@ Initial steps similar to those of the Single Instance installation.
 
    `./install-oracle.sh --help`
 
-1. Run installation. Only IP address of the first cluster node is required:
+1. Create cluster config file. The file `cluster_config.json` is provided as template
+   and should be updated accordingly.
+
+1. Run installation pointing to the file for planned cluster configuration:
 
    ```bash
    ./install-oracle.sh \
@@ -117,9 +121,33 @@ Initial steps similar to those of the Single Instance installation.
    --backup-dest "+RECO" \
    --ora-swlib-path /u02/swlib/ \
    --ora-swlib-type gcs \
-   --instance-ip-addr ${INSTANCE_IP_ADDR} \
-   --cluster-type RAC
+   --cluster-type RAC \
+   --cluster-config cluster_config.json
    ```
+
+## Command quick reference for DR deployments
+
+Before creation of standby database the primary host and its database should exist.
+
+The primary database creation can be performed using [Single Instance Deployments section](#command-quick-reference-for-single-instance-deployments)<br>
+without or set to NONE `--cluster-type` option.
+
+Standby database performed the same way as single instance deployment but with options:<br>
+`--primary-ip-addr` which defines the primary IP address<br>and `--cluster-type DG`.
+
+1. Run an installation
+
+   ```bash
+   ./install-oracle.sh \
+   --ora-swlib-bucket gs://[cloud-storage-bucket-name] \
+   --instance-ip-addr ${INSTANCE_IP_ADDR} \
+   --ora-swlib-path /u02/swlib/ \
+   --backup-dest "+RECO" \
+   --ora-swlib-type gcs \
+   --primary-ip-addr ${PRIMARY_IP_ADDR} \
+   --cluster-type DG
+   ```
+
 
 ## Overview
 
@@ -319,6 +347,18 @@ Support")</th>
 <tr>
 <td></td>
 <td>Patch - MOS</td>
+<td>COMBO OF OJVM RU COMPONENT 19.8.0.0.200714 + GI RU 19.8.0.0.200714</td>
+<td>p31326369_190000_Linux-x86-64.zip</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>COMBO OF OJVM RU COMPONENT 19.7.0.0.200414 + GI RU 19.7.0.0.200414</td>
+<td>p30783556_190000_Linux-x86-64.zip</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
 <td>COMBO OF OJVM RU COMPONENT 19.6.0.0.200114 GI RU 19.6.0.0.200114</td>
 <td>p30463609_190000_Linux-x86-64.zip</td>
 </tr>
@@ -356,6 +396,18 @@ href="https://support.oracle.com/epmos/faces/PatchResultsNDetails?releaseId=6000
 <tr>
 <td></td>
 <td>Patch - MOS</td>
+<td>COMBO OF OJVM RU COMPONENT 18.11.0.0.200714 + GI RU 18.11.0.0.200714</td>
+<td>p31326376_180000_Linux-x86-64.zip</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>COMBO OF OJVM RU COMPONENT 18.10.0.0.200414 GI RU 18.10.0.0.200414</td>
+<td>p30783607_180000_Linux-x86-64.zip</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
 <td>COMBO OF OJVM RU COMPONENT 18.9.0.0.200114 GI RU 18.9.0.0.200114</td>
 <td>p30463635_180000_Linux-x86-64.zip</td>
 </tr>
@@ -400,6 +452,18 @@ x86-64</td>
 <tr>
 <td></td>
 <td>Patch - MOS</td>
+<td>COMBO OF OJVM RU COMPONENT 12.2.0.1.200714 + 12.2.0.1.200714 GIJUL2020RU</td>
+<td>p31326390_122010_Linux-x86-64.zip</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>COMBO OF OJVM RU COMPONENT 12.2.0.1.200414 12.2.0.1.200414 GIAPR2020RU</td>
+<td>p30783652_122010_Linux-x86-64.zip</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
 <td>COMBO OF OJVM RU COMPONENT 12.2.0.1.200114 12.2.0.1.200114 GIJAN2020RU</td>
 <td>p30463673_122010_Linux-x86-64.zip</td>
 </tr>
@@ -462,12 +526,47 @@ V46096-01_2of2.zip</td>
 <tr>
 <td></td>
 <td>Patch - MOS</td>
+<td>COMBO OF OJVM COMPONENT 12.1.0.2.200714 DB PSU + GIPSU 12.1.0.2.200714</td>
+<td>p31326400_121020_Linux-x86-64.zip</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>COMBO OF OJVM COMPONENT 12.1.0.2.200414 DB PSU GIPSU 12.1.0.2.200414</td>
+<td>p30783882_121020_Linux-x86-64.zip</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>COMBO OF OJVM COMPONENT 12.1.0.2.200114 DB PSU GIPSU 12.1.0.2.200114</td>
+<td>p30463691_121020_Linux-x86-64.zip</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>COMBO OF OJVM COMPONENT 12.1.0.2.191015 DB PSU GIPSU 12.1.0.2.191015</td>
+<td>p30133443_121020_Linux-x86-64.zip</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>COMBO OF OJVM COMPONENT 12.1.0.2.190716 DB PSU + GIPSU 12.1.0.2.190716</td>
+<td>p29699244_121020_Linux-x86-64.zip</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>COMBO OF OJVM COMPONENT 12.1.0.2.190416 DB PSU + GIPSU 12.1.0.2.190416</td>
+<td>p29252164_121020_Linux-x86-64.zip</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
 <td>Combo OJVM PSU 12.1.0.2.190416 and Database Proactive BP 12.1.0.2.190416
 patch 29252171 for Linux x86-64</td>
 <td><a
 href="https://support.oracle.com/epmos/faces/PatchResultsNDetails?releaseId=600000000009300&patchId=29252171&languageId=0&platformId=226">p29252171_121020_Linux-x86-64.zip</a></td>
-</tr>
-<tr>
+</tr><tr>
 <td></td>
 <td></td>
 <td>GI PSU 12.1.0.2.190416 patch 29176115 for Linux x86-64</td>
@@ -502,6 +601,42 @@ href="https://support.oracle.com/epmos/faces/PatchResultsNDetails?releaseId=8011
 <tr>
 <td></td>
 <td>Patch - MOS</td>
+<td>Combo of OJVM Component 11.2.0.4.200714 DB PSU + GI PSU 11.2.0.4.200714</td>
+<td>p31326410_112040_Linux-x86-64.zip</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>COMBO OF 11.2.0.4.200414 OJVM PSU GIPSU 11.2.0.4.200414</td>
+<td>p30783890_112040_Linux-x86-64.zip</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>GRID INFRASTRUCTURE PATCH SET UPDATE 11.2.0.4.200114</td>
+<td>p30501155_112040_Linux-x86-64.zip</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>GRID INFRASTRUCTURE PATCH SET UPDATE 11.2.0.4.191015</td>
+<td>p30070097_112040_Linux-x86-64.zip</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>GRID INFRASTRUCTURE PATCH SET UPDATE 11.2.0.4.190716</td>
+<td>p29698727_112040_Linux-x86-64.zip</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>GRID INFRASTRUCTURE PATCH SET UPDATE 11.2.0.4.190416</td>
+<td>p29255947_112040_Linux-x86-64.zip</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
 <td>Combo OJVM PSU 11.2.0.4.190416 and Database PSU 11.2.0.4.190416 patch
 29252186 for Linux x86-64</td>
 <td><a

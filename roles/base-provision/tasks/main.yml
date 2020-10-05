@@ -49,12 +49,12 @@
     lock_timeout: 180
   tags: os_packages
 
-- name: Make sure ntp is running
-  service:
-    name: ntpd
-    state: started
-    enabled: yes
-  tags: ntp
+- name: Update OPTIONS in /etc/sysconfig/ntpd
+  lineinfile:
+    dest: /etc/sysconfig/ntpd
+    regexp: '^OPTIONS='
+    line: 'OPTIONS="{{ ntp_options }}"'
+  notify: restart ntpd
 
 - name: Add ntp preferred server
   blockinfile:
@@ -64,6 +64,14 @@
     block: "server {{ ntp_preferred }} prefer iburst"
     state: "{{ (ntp_preferred != \"\" ) | ternary('present', 'absent') }}"
   notify: restart ntpd
+  tags: ntp
+
+- name: Make sure ntp is running
+  service:
+    name: ntpd
+    state: started
+    enabled: yes
+  tags: ntp
 
 - name: Generate /etc/hosts
   blockinfile:

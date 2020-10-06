@@ -38,6 +38,20 @@
   register: disable_selinux_runtime
   tags: selinux
 
+- name: Ensure NOZEROCONF=yes is in /etc/sysconfig/network
+  lineinfile: 
+    dest: /etc/sysconfig/network
+    regexp: '^NOZEROCONF'
+    line: 'NOZEROCONF=yes'
+
+- name: Ensure /dev/shm is present in /etc/fstab
+  mount:
+    src: tmpfs
+    path: /dev/shm
+    fstype: tmpfs
+    opts: ro,nosuid,nodev
+    state: present
+
 - name: Stat RHEL7 base repo
   stat:
     path: /etc/yum.repos.d/redhat.repo

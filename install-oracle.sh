@@ -230,8 +230,8 @@ COMPATIBLE_RDBMS="${COMPATIBLE_RDBMS:-0}"
 COMPATIBLE_RDBMS_PARAM="^[0-9][0-9]\.[0-9].*"
 
 ###
-GETOPT_MANDATORY="ora-swlib-bucket:,backup-dest:"
-GETOPT_OPTIONAL="ora-version:,no-patch,ora-edition:,cluster-type:,cluster-config:,ora-staging:,ora-db-name:,ora-db-domain:,ora-db-charset:,ora-disk-mgmt:,ora-role-separation:"
+GETOPT_MANDATORY="ora-swlib-bucket:"
+GETOPT_OPTIONAL="backup-dest:,ora-version:,no-patch,ora-edition:,cluster-type:,cluster-config:,ora-staging:,ora-db-name:,ora-db-domain:,ora-db-charset:,ora-disk-mgmt:,ora-role-separation:"
 GETOPT_OPTIONAL="$GETOPT_OPTIONAL,ora-data-diskgroup:,ora-reco-diskgroup:,ora-asm-disks:,ora-data-mounts:,ora-listener-port:,ora-listener-name:"
 GETOPT_OPTIONAL="$GETOPT_OPTIONAL,ora-db-ncharset:,ora-db-container:,ora-db-type:,ora-pdb-name-prefix:,ora-pdb-count:,ora-redo-log-size:"
 GETOPT_OPTIONAL="$GETOPT_OPTIONAL,backup-redundancy:,archive-redundancy:,archive-online-days:,backup-level0-days:,backup-level1-days:"
@@ -623,7 +623,7 @@ shopt -s nocasematch
     echo "Incorrect parameter provided for ora-redo-log-size: $ORA_REDO_LOG_SIZE"
     exit 1
 }
-[[ ! "$BACKUP_DEST" =~ $BACKUP_DEST_PARAM ]] && {
+[[ ! "$BACKUP_DEST" =~ $BACKUP_DEST_PARAM ]] && [[ "$PB_LIST" =~ "config-db.yml" ]] && {
     echo "Incorrect parameter provided for backup-dest: $BACKUP_DEST"
     exit 1
 }

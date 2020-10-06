@@ -24,6 +24,7 @@
   failed_when:
     - "'firewall is not currently running' not in firewall_output.msg"
     - "'Permanent and Non-Permanent(immediate) operation' not in firewall_output.msg"
+  when: disable_firewall|bool is false
   tags: lsnr-firewall
 
 - name: Test whether port is free

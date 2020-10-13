@@ -110,10 +110,9 @@ Initial steps similar to those of the Single Instance installation.
 
    `./install-oracle.sh --help`
 
-1. Create cluster config file. The file `cluster_config.json` is provided as template
-   and should be updated accordingly.
+1. Create the cluster configuration file by editing the `cluster_config.json` file template that is provided with the toolkit.
 
-1. Run installation pointing to the file for planned cluster configuration:
+1. Install the database with the path to the cluster configuration file specified on the `--cluster-config` property:
 
    ```bash
    ./install-oracle.sh \
@@ -127,15 +126,15 @@ Initial steps similar to those of the Single Instance installation.
 
 ## Command quick reference for DR deployments
 
-Before creation of standby database the primary host and its database should exist.
+The primary database must exist before you can create a standby database.
 
-The primary database creation can be performed using [Single Instance Deployments section](#command-quick-reference-for-single-instance-deployments)<br>
-without or set to NONE `--cluster-type` option.
+When you create the primary database, omit the `--cluster-type` option or set it to `NONE`.<br> To create the primary database, see [Single Instance Deployments section](#command-quick-reference-for-single-instance-deployments).
 
-Standby database performed the same way as single instance deployment but with options:<br>
-`--primary-ip-addr` which defines the primary IP address<br>and `--cluster-type DG`.
+To create a standby database, add the following options to the command options that you used to create the primary database:
+- `--primary-ip-addr ${PRIMARY_IP_ADDR}`
+- `--cluster-type DG`
 
-1. Run an installation
+1. Install a standby database:
 
    ```bash
    ./install-oracle.sh \

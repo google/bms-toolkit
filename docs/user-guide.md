@@ -1014,6 +1014,19 @@ database.<br>
 Applicable for Oracle "single instance" installations.</td>
 </tr>
 <tr>
+<td>Primary server IP address</td>
+<td><p><pre>
+PRIMARY_IP_ADDR
+<br>
+--primary-ip-addr
+</pre></p>
+</td>
+<td>user defined - no default</td>
+<td>The IP address of the primary server to use as source of primary database
+for Data Guard configuration.<br>
+Applicable for Oracle "single instance" installations.</td>
+</tr>
+<tr>
 <td>Target server host name</td>
 <td><p><pre>
 INSTANCE_HOSTNAME
@@ -1434,9 +1447,12 @@ ORA_REDO_LOG_SIZE
 CLUSTER_TYPE
 --cluster-type
 </pre></p></td>
-<td>NONE<br>
-RAC</td>
-<td>Specify "RAC" to install a RAC cluster. Otherwise a "Single Instance"
+<td>
+NONE<br>
+RAC<br>
+DG
+</td>
+<td>Specify "RAC" to install a RAC cluster. Use "DG" for standby installation. Otherwise a "Single Instance"
 installation is performed.</td>
 </tr>
 <tr>

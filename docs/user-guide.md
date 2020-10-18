@@ -128,7 +128,7 @@ Initial steps similar to those of the Single Instance installation.
 
 The primary database must exist before you can create a standby database.
 
-When you create the primary database, omit the `--cluster-type` option or set it to `NONE`.<br> To create the primary database, see [Single Instance Deployments section](#command-quick-reference-for-single-instance-deployments).
+When you create the primary database, omit the `--cluster-type` option or set it to `NONE`. To create the primary database, see [Single Instance Deployments section](#command-quick-reference-for-single-instance-deployments).
 
 To create a standby database, add the following options to the command options that you used to create the primary database:
 - `--primary-ip-addr ${PRIMARY_IP_ADDR}`

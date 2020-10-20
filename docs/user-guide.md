@@ -1729,11 +1729,11 @@ $ export ORA_VERSION=19.3.0.0.0
 $ export ORA_DB_NAME=PROD1
 $ ./install-oracle.sh --ora-swlib-bucket gs://oracle-software --backup-dest +RECO
 
-Inventory file for this execution: ./inventory_files/inventory_10.150.0.42_19.3.0.0.0_PROD1.
+Inventory file for this execution: ./inventory_files/inventory_10.150.0.42_PROD1.
 
 Running with parameters from command line or environment variables:
 
-ANSIBLE_LOG_PATH=./logs/log_10.150.0.42_19.3.0.0.0_PROD1_20200610_160132.log
+ANSIBLE_LOG_PATH=./logs/log_10.150.0.42_PROD1_20200610_160132.log
 ARCHIVE_BACKUP_MIN=30
 ARCHIVE_ONLINE_DAYS=7
 ARCHIVE_REDUNDANCY=2
@@ -1745,12 +1745,14 @@ BACKUP_REDUNDANCY=2
 BACKUP_SCRIPT_LOCATION=/home/oracle/scripts
 BACKUP_START_HOUR=01
 BACKUP_START_MIN=00
+CLUSTER_CONFIG=cluster_config.json
+CLUSTER_TYPE=NONE
 INSTANCE_HOSTGROUP_NAME=dbasm
 INSTANCE_HOSTNAME=10.150.0.42
 INSTANCE_IP_ADDR=10.150.0.42
 INSTANCE_SSH_EXTRA_ARGS=''\''-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o IdentityAgent=no'\'''
 INSTANCE_SSH_KEY='~/.ssh/id_rsa'
-INSTANCE_SSH_USER=dba-user
+INSTANCE_SSH_USER=goryunov
 ORA_ASM_DISKS=asm_disk_config.json
 ORA_DATA_DISKGROUP=DATA
 ORA_DATA_MOUNTS=data_mounts_config.json
@@ -1778,14 +1780,16 @@ ORA_SWLIB_TYPE='""'
 ORA_VERSION=19.3.0.0.0
 PB_CHECK_INSTANCE=check-instance.yml
 PB_CONFIG_DB=config-db.yml
+PB_CONFIG_RAC_DB=config-rac-db.yml
 PB_INSTALL_SW=install-sw.yml
 PB_LIST='check-instance.yml prep-host.yml install-sw.yml config-db.yml'
 PB_PREP_HOST=prep-host.yml
+PRIMARY_IP_ADDR=
 
 Ansible params:
 Found Ansible at /usr/bin/ansible-playbook
 
-Running Ansible playbook: /usr/bin/ansible-playbook -i ./inventory_files/inventory_10.150.0.42_19.3.0.0.0_PROD1 check-instance.yml
+Running Ansible playbook: /usr/bin/ansible-playbook -i ./inventory_files/inventory_10.150.0.42_PROD1 check-instance.yml
 
 PLAY [all] ******************************************************************************************************************************************
 
@@ -1818,11 +1822,11 @@ $ ./install-oracle.sh --ora-edition SE2 --ora-db-container false \
  --ora-swlib-bucket gs://oracle-software --backup-dest +RECO \
  --instance-ip-addr 10.150.0.42
 
-Inventory file for this execution: ./inventory_files/inventory_dbserver_19.3.0.0.0_ORCL.
+Inventory file for this execution: ./inventory_files/inventory_dbserver_ORCL.
 
 Running with parameters from command line or environment variables:
 
-ANSIBLE_LOG_PATH=./logs/log_dbserver_19.3.0.0.0_ORCL_20200610_161259.log
+ANSIBLE_LOG_PATH=./logs/log_dbserver_ORCL_20200610_161259.log
 ARCHIVE_BACKUP_MIN=30
 ARCHIVE_ONLINE_DAYS=7
 ARCHIVE_REDUNDANCY=2
@@ -1834,12 +1838,14 @@ BACKUP_REDUNDANCY=2
 BACKUP_SCRIPT_LOCATION=/home/oracle/scripts
 BACKUP_START_HOUR=01
 BACKUP_START_MIN=00
+CLUSTER_CONFIG=cluster_config.json
+CLUSTER_TYPE=NONE
 INSTANCE_HOSTGROUP_NAME=dbasm
 INSTANCE_HOSTNAME=dbserver
 INSTANCE_IP_ADDR=10.150.0.42
 INSTANCE_SSH_EXTRA_ARGS=''\''-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o IdentityAgent=no'\'''
 INSTANCE_SSH_KEY='~/.ssh/id_rsa'
-INSTANCE_SSH_USER=dba-user
+INSTANCE_SSH_USER=goryunov
 ORA_ASM_DISKS=asm_disk_config.json
 ORA_DATA_DISKGROUP=DATA
 ORA_DATA_MOUNTS=data_mounts_config.json
@@ -1867,9 +1873,11 @@ ORA_SWLIB_TYPE='""'
 ORA_VERSION=19.3.0.0.0
 PB_CHECK_INSTANCE=check-instance.yml
 PB_CONFIG_DB=config-db.yml
+PB_CONFIG_RAC_DB=config-rac-db.yml
 PB_INSTALL_SW=install-sw.yml
 PB_LIST='check-instance.yml prep-host.yml install-sw.yml config-db.yml'
 PB_PREP_HOST=prep-host.yml
+PRIMARY_IP_ADDR=
 
 Ansible params:
 Found Ansible at /usr/bin/ansible-playbook
@@ -2056,7 +2064,7 @@ $ ./apply-patch.sh \
   --ora-staging /u02/oracle_install \
   --ora-version 19.3.0.0.0 \
   --ora-release 19.6.0.0.200114 \
-    --inventory-file inventory_files/inventory_toolkit-db2_19.3.0.0.0_ORCL
+    --inventory-file inventory_files/inventory_toolkit-db2_ORCL
 
 Running with parameters from command line or environment variables:
 
@@ -2067,9 +2075,9 @@ ORA_SWLIB_BUCKET=gs://oracle-software
 ORA_SWLIB_PATH=/u02/oracle_install
 ORA_VERSION=19.3.0.0.0
 
-Ansible params: -i inventory_files/inventory_toolkit-db2_19.3.0.0.0_ORCL
+Ansible params: -i inventory_files/inventory_toolkit-db2_ORCL
 Found Ansible at /usr/bin/ansible-playbook
-Running Ansible playbook: /usr/bin/ansible-playbook -i inventory_files/inventory_toolkit-db2_19.3.0.0.0_ORCL   patch.yml
+Running Ansible playbook: /usr/bin/ansible-playbook -i inventory_files/inventory_toolkit-db2_ORCL   patch.yml
 
 PLAY [OPatch Restart patch] ****************************************************
 
@@ -2216,7 +2224,7 @@ For example:
 ```bash
 ./apply-patch.sh \
   --ora-swlib-bucket gs://oracle-software \
-  --inventory-file inventory_files/inventory_19.3.0.0.0_ORCL_RAC \
+  --inventory-file inventory_files/inventory_ORCL_RAC \
   --ora-version 19.3.0.0.0 \
   --ora-release 19.7.0.0.200414 \
   --ora-swlib-path /u01/oracle_install \
@@ -2259,27 +2267,41 @@ $ ./cleanup-oracle.sh --help
           --inventory-file <value>
           --yes-i-am-sure
           [ --ora-role-separation <value> ]
+          [ --ora-disk-mgmt <value> ]
+          [ --ora-swlib-path <value> ]
+          [ --ora-staging <value> ]
+          [ --ora-asm-disks <value> ]
+          [ --ora-data-mounts <value> ]
           [ --help ]
 ```
 
 Sample usage:
 
 ```bash
-$ ./cleanup-oracle.sh \
-  --ora-version 18.0.0.0.0 \
-  --inventory-file ./inventory_files/inventory_oracledb1_18.0.0.0.0_ORCL \
-  --yes-i-am-sure
+$ ./cleanup-oracle.sh --ora-version 19 \
+--inventory-file ./inventory_files/inventory_oracledb1_ORCL \
+--yes-i-am-sure \
+--ora-disk-mgmt udev \
+--ora-swlib-path /u02/oracle_install \
+--ora-staging /u02/oracle_install \
+--ora-asm-disks asm_disk_config.json \
+--ora-data-mounts data_mounts_config.json
 
 Running with parameters from command line or environment variables:
 
-INVENTORY_FILE=./inventory_files/inventory_oracledb1_18.0.0.0.0_ORCL
+INVENTORY_FILE=./inventory_files/inventory_oracledb1_ORCL
+ORA_ASM_DISKS=asm_disk_config.json
+ORA_DATA_MOUNTS=data_mounts_config.json
+ORA_DISK_MGMT=udev
 ORA_ROLE_SEPARATION=TRUE
-ORA_VERSION=18.0.0.0.0
+ORA_STAGING=/u02/oracle_install
+ORA_SWLIB_PATH=/u02/oracle_install
+ORA_VERSION=19.3.0.0.0
 
 Ansible params:
 Found Ansible at /usr/bin/ansible-playbook
 
-Running Ansible playbook: /usr/bin/ansible-playbook -i ./inventory_files/inventory_oracledb1_18.0.0.0.0_ORCL  brute-cleanup.yml
+Running Ansible playbook: /usr/bin/ansible-playbook -i ./inventory_files/inventory_oracledb1_ORCL  brute-cleanup.yml
 
 PLAY [all] ************************************************************************************
 ... output truncated for brevity

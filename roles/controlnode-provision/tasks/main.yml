@@ -1,0 +1,70 @@
+# Copyright 2020 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+---
+- name: Install required base OS packages
+  yum:
+    name: "{{ packages }}"
+    state: present
+    lock_timeout: 180
+  when: install_os_packages
+  tags: os_packages
+
+- name: Install NTP server configuration
+  template:
+    src: chrony.conf.j2
+    dest: /etc/chrony.conf
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Install DNSMASQ server configuration
+  template:
+    src: dnsmasq.conf.j2
+    dest: /etc/dnsmasq.d/dnsmasq.conf
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Install DNSMASQ-specific resolv.conf 
+  template:
+    src: dnsmasq.resolv.conf.j2
+    dest: /etc/dnsmasq.resolv.conf
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Install SQUID server configuration
+  template:
+    src: squid.conf.j2
+    dest: /etc/squid/squid.conf
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Ensure required services are running and enabled
+  service:
+    name: "{{item}}"
+    state: restarted
+    enabled: yes
+  with_items: "{{running_services}}"
+
+- name: Check connectivity towards the instances
+  wait_for:
+    timeout: "{{remote_server_timeout}}"
+    host: "{{item}}"
+    port: "{{remote_server_port}}"
+    msg: "Could not connect to {{item}}:{{remote_server_port}} please check connectivity from control node"
+  with_items: "{{remote_servers}}"
+

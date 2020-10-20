@@ -40,11 +40,9 @@ ORA_STAGING="${ORA_STAGING:-""}"
 ORA_STAGING_PARAM="^/.+$"
 
 ORA_ASM_DISKS="${ORA_ASM_DISKS:-asm_disk_config.json}"
-ORA_ASM_DISKS_PARAM="^.*\.json$"
 ORA_ASM_DISKS_PARAM="^.*$"
 
 ORA_DATA_MOUNTS="${ORA_DATA_MOUNTS:-data_mounts_config.json}"
-ORA_DATA_MOUNTS_PARAM="^.*\.json$"
 ORA_DATA_MOUNTS_PARAM="^.*$"
 
 options=$(getopt --longoptions "$GETOPT_LONG" --options "$GETOPT_SHORT" -- "$@")
@@ -72,9 +70,9 @@ while true; do
         shift;
         ;;
     --inventory-file)
-      	INVENTORY_FILE="$2"
+        INVENTORY_FILE="$2"
         shift;
-      	;;
+        ;;
     --ora-role-separation)
         ORA_ROLE_SEPARATION="$2"
         shift;
@@ -211,4 +209,3 @@ for PLAYBOOK in brute-cleanup.yml ; do
 done
 
 exit 0;
-

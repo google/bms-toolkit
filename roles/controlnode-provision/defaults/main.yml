@@ -34,10 +34,10 @@ running_services:
 ntp_servers:
   - 169.254.169.254
 
-ntp_allow_from: 
+ntp_allow_from:
   - 192.168.100.0/16
 
-dnsmasq_listen_addr: 
+dnsmasq_listen_addr:
   - 127.0.0.1
 
 dnsmasq_dns_servers:

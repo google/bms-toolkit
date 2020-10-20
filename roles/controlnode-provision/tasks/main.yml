@@ -37,7 +37,7 @@
     group: root
     mode: 0644
 
-- name: Install DNSMASQ-specific resolv.conf 
+- name: Install DNSMASQ-specific resolv.conf
   template:
     src: dnsmasq.resolv.conf.j2
     dest: /etc/dnsmasq.resolv.conf

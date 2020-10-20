@@ -1,0 +1,38 @@
+# Copyright 2020 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+---
+allow_install_on_vm: false
+
+ansible_user: ansible
+
+required_cpu_cores: 4
+required_cpu_arch: x86_64
+
+required_mem_mb: 15000
+
+supported_distributions_19c:
+  - { distro: "OracleLinux", version: "7.4",  kernel_version: "4.1.12",  kernel_build: "124.19.2", kernel_tag: "el7uek" }
+  - { distro: "OracleLinux", version: "7.4",  kernel_version: "4.14.35", kernel_build: "1818.1.6", kernel_tag: "el7uek" }
+  - { distro: "OracleLinux", version: "7.5",  kernel_version: "3.10.0",  kernel_build: "862.11.6", kernel_tag: "el7"    }
+  - { distro: "RedHat",      version: "7.5",  kernel_version: "3.10.0",  kernel_build: "862.11.6", kernel_tag: "el7"    }
+supported_distributions_18c:
+  - { distro: "OracleLinux", version "7.5",  kernel_version: "4.14.35", kernel_build: "1818.5.3",  kernel_tag: "el7uek" }
+  - { distro: "OracleLinux", version "7.2",  kernel_version: "4.1.12",  kernel_build: "32.2.3",    kernel_tag: "el7uek" }
+  - { distro: "OracleLinux", version "7",    kernel_version: "3.8.13",  kernel_build: "35.3.1",    kernel_tag: "el7uek" }
+  - { distro: "OracleLinux", version "7",    kernel_version: "3.10.0",  kernel_build: "123",       kernel_tag: "el7"    }
+supported_distributions_12_2:
+  - { distro: "OracleLinux", version "7",      kernel_version: "3.8.13",  kernel_build: "35.3..1",   kernel_tag: "el7uek" }
+  - { distro: "OracleLinux", version "7.2",    kernel_version: "4.1.12",  kernel_build: "32.2.3",    kernel_tag: "el7uek" }
+  - { distro: "OracleLinux", version "7",      kernel_version: "3.10.0",  kernel_build: "123",       kernel_tag: "el7"    }
+  - { distro: "RedHat",      version "7",      kernel_version: "3.10.0",  kernel_build: "123",       kernel_tag: "el7"    }

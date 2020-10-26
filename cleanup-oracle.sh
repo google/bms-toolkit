@@ -40,10 +40,10 @@ ORA_STAGING="${ORA_STAGING:-""}"
 ORA_STAGING_PARAM="^/.+$"
 
 ORA_ASM_DISKS="${ORA_ASM_DISKS:-asm_disk_config.json}"
-ORA_ASM_DISKS_PARAM="^.*$"
+ORA_ASM_DISKS_PARAM="^.+\.json$"
 
 ORA_DATA_MOUNTS="${ORA_DATA_MOUNTS:-data_mounts_config.json}"
-ORA_DATA_MOUNTS_PARAM="^.*$"
+ORA_DATA_MOUNTS_PARAM="^.+\.json$"
 
 options=$(getopt --longoptions "$GETOPT_LONG" --options "$GETOPT_SHORT" -- "$@")
 

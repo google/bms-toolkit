@@ -1,0 +1,173 @@
+# Copyright 2020 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+---
+- name: rac-db-install | Check if software is already installed
+  become: yes
+  become_user: root
+  shell: cat "{{ oracle_inventory }}/ContentsXML/inventory.xml" 2>&1 | ( grep -w {{ oracle_home }} || true ) | wc -l
+  register: existing_dbhome
+  ignore_errors: yes
+  changed_when: false
+  failed_when: false
+  tags: rac-db
+
+- name: rac-db-install | OH Confirmation
+  debug:
+    msg: "Installing ORACLE_HOME - {{ oracle_home }}"
+  when: existing_dbhome.stdout == "0"
+  tags: rac-db
+
+- name: rac-db-install | Set facts
+  set_fact:
+    install_unzip_path: "{{ swlib_unzip_path }}"
+    runinstaller_loc: "{{ swlib_unzip_path }}/database"
+  tags: rac-db
+
+- name: rac-db-install | Installer confirmations
+  debug:
+    msg:
+      - "Installing from file : {{ swlib_path }}/{{ osw_files }}"
+      - "Unzipping into dir   : {{ install_unzip_path }}"
+      - "Using installer dir  : {{ runinstaller_loc }}"
+  tags: rac-db
+
+- name: rac-db-install | Define RDBMS release
+  #if release set to latest then get most recent release from rdbms_patches array
+  #if nothing returned then set to "base" in next task
+  set_fact:
+    oracle_rel: "{% if not ansible_loop.first %}{% if item is version(oracle_rel, '>=') %}{{ item }}{% else %}{{ oracle_rel }}{% endif %}{% else %}{{ item }}{% endif %}"
+  loop: "{{ gi_patches | json_query('[?base==`' + oracle_ver + '`].release') }}"
+  loop_control:
+    extended: yes
+  when:
+    - oracle_rel is defined
+    - oracle_rel != "base"
+  tags: rac-db,rel-patch
+
+- name: rac-db-install | Set base if no release found
+  set_fact:
+    oracle_rel: "{% if oracle_rel is search('latest') %}base{% else %}{{ oracle_rel }}{% endif %}"
+  when:
+    - oracle_rel is defined
+    - oracle_rel != "base"
+  tags: rac-db,rel-patch
+
+- name: rac-db-install | List RDBMS release
+  debug:
+    msg: "RDBMS release: {{ oracle_rel }}"
+  tags: rac-db,rel-patch
+
+- name: rac-db-install | Copy RDBMS patch
+  import_role:
+    name: swlib
+    tasks_from: gcscopy
+  vars:
+    patching_type: gi_patching
+  when: oracle_rel != "base"
+  tags: rac-db,sw-copy
+
+- name: rac-db-install | Create DB directories
+  become: yes
+  become_user: root
+  file:
+    path: "{{ install_unzip_path }}"
+    state: directory
+    owner: "{{ oracle_user }}"
+    group: "{{ oracle_group }}"
+    mode: ug=rwx,o=
+  loop: "{{ lookup('inventory_hostnames', 'dbasm', wantlist=True) }}"
+  delegate_to: "{{ item }}"
+  tags: rac-db,db-dirs
+
+- name: rac-db-install | Unzip OneOff patch
+  unarchive:
+    src: "{{ swlib_path }}/{{ item.patchfile }}"
+    dest: "{{ swlib_unzip_path }}"
+    remote_src: yes
+    owner: "{{ oracle_user }}"
+    group: "{{ oracle_group }}"
+  with_items:
+    - "{{ rdbms_patches }}"
+  when: item.release == oracle_rel
+  become: yes
+  tags: rac-db,sw-unzip
+
+- name: rac-db-install | Unzipping software
+  become: yes
+  become_user: "{{ oracle_user }}"
+  unarchive:
+    src: "{{ swlib_path }}/{{ item }}"
+    dest: "{{ install_unzip_path }}"
+    remote_src: yes
+  with_items:
+    - "{{ osw_files }}"
+  tags: rac-db,sw-unzip
+
+- name: rac-db-install | Create DB response file script
+  become: yes
+  become_user: "{{ oracle_user }}"
+  template:
+    src: db_install.rsp.{{ oracle_ver }}.j2
+    dest: "{{ install_unzip_path }}/db_install.rsp"
+  tags: rac-db,rac-db-response
+
+- name: rac-db-install | Update DB OPatch
+  unarchive:
+    src: "{{ swlib_path }}/{{ item.patchfile }}"
+    dest: "{{ oracle_home }}"
+    remote_src: yes
+  with_items:
+    - "{{ opatch_patches }}"
+  when:
+    - item.release == oracle_ver
+    - item.category == "OPatch"
+    - oracle_rel != "base"
+  become: yes
+  become_user: "{{ oracle_user }}"
+  tags: rac-db,update-opatch-db
+
+- name: rac-db-install | Set installer command
+  set_fact:
+    installer_command: "{{ runinstaller_loc }}/runInstaller -silent -waitforcompletion -responseFile {{ install_unzip_path }}/db_install.rsp {{ rel_patch | default('') }} {{ prereq_option }}"
+  tags: rac-db,rac-db-install
+
+- name: rac-db-install | Information
+  debug:
+    msg: "Using installer cmd: {{ installer_command }}"
+  tags: rac-db,rac-db-install
+
+- name: rac-db-install | Run runInstaller
+  command: "{{ installer_command }}"
+  become: yes
+  become_user: "{{ oracle_user }}"
+  register: install_rac_db
+  failed_when:
+    - "'Successfully Setup Software' not in install_rac_db.stdout"
+    - "install_rac_db.rc not in [0,6,250]"
+  tags: rac-db,rac-db-install
+
+- name: rac-db-install | Installer output
+  debug:
+    msg:
+      - "{{ install_rac_db }}"
+  tags: rac-db,rac-db-install
+
+- name: rac-db-install | Run script root.sh
+  become: yes
+  become_user: root
+  command: "{{ oracle_home }}/root.sh"
+  loop: "{{ lookup('inventory_hostnames', 'dbasm', wantlist=True) }}"
+  delegate_to: "{{ item }}"
+  tags: rac-db,root-scripts

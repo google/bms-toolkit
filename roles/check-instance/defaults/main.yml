@@ -16,7 +16,7 @@ allow_install_on_vm: false
 
 ansible_user: ansible
 
-required_cpu_cores: 4
+required_cpu_cores: 1
 required_cpu_arch: x86_64
 
 required_mem_mb: 15000

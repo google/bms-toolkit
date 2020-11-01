@@ -825,6 +825,10 @@ either the `--ora-data-mounts` command line option or the
 `ORA_DATA_MOUNTS` environment variable. The file path can be relative or
 fully qualified. The file name defaults to `data_mounts_config.json`.
 
+If different configuration for file systems needs to be defined it can be managed
+with environment variables specific for a server - `ORA_DATA_MOUNTS_<server name>`
+(if server has `-` symbols in a name all of them should be replaced with `_` in the variable).
+
 The following example shows a properly formatted JSON data mount configuration
 file:
 

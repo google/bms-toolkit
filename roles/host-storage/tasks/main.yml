@@ -24,68 +24,38 @@
     - "{{ oracle_user_data_mounts }}"
   tags: ora-mounts
 
-- name: Add filesystem on Oracle user mount raw devices
-  filesystem:
-    fstype: "{{ item.fstype }}"
-    dev: "{{ item.blk_device }}1"
-  when: "'mapper' not in item.blk_device"
-  with_items:
-    - "{{ oracle_user_data_mounts }}"
-  tags: ora-mounts
-
+# if variable ORA_DATA_MOUNTS_<hostname> defined with file for file system
+# then the file systems mounted only for the particular server
+# (if server has '-' in name variable should be defined with '_' instead of all '-' appearances
+# for example if ORA_DATA_MOUNTS_linuxserver44=mounts44.json but install-oracle runs
+# with --ora-data-mounts  mounts.json linuxserver44 host takes FS from mounts44.json
+# but other servers have defined mounts.json if there is no file mounts44.json
+# then FS taken from mounts.json as well
 - name: Add filesystem on Oracle user mount LV devices
   filesystem:
     fstype: "{{ item.fstype }}"
-    dev: "{{ item.blk_device }}"
-  when: "'mapper' in item.blk_device"
+    dev: "{{ item.blk_device }}{% if 'mapper' not in item.blk_device %}1{% endif %}"
   with_items:
-    - "{{ oracle_user_data_mounts }}"
+    - "{% if lookup_file_host %}{{ lookup_file_host }}{% else %}{{ data_mounts_input }}{% endif %}"
+  vars:
+    env_var_host: "ORA_DATA_MOUNTS_{{ ansible_hostname|replace('-', '_') }}"
+    var_host: "{{ lookup('env', env_var_host) }}"
+    file_var_host: "{% if var_host %}{{ var_host }}{% else %}{{ data_mounts_definition_file }}{% endif %}"
+    lookup_file_host: "{{ lookup('file', file_var_host, errors='ignore') }}"
   tags: ora-mounts
 
 - name: Mount Oracle user mount raw devices
   mount:
     fstype: "{{ item.fstype }}"
-    src: "{{ item.blk_device }}1"
+    src: "{{ item.blk_device }}{% if 'mapper' not in item.blk_device %}1{% endif %}"
     path: "{{ item.mount_point }}"
     opts: "{{ item.mount_opts }}"
     state: mounted
-  when: "'mapper' not in item.blk_device"
   with_items:
-    - "{{ oracle_user_data_mounts }}"
+    - "{% if lookup_file_host %}{{ lookup_file_host }}{% else %}{{ data_mounts_input }}{% endif %}"
+  vars:
+    env_var_host: "ORA_DATA_MOUNTS_{{ ansible_hostname|replace('-', '_') }}"
+    var_host: "{{ lookup('env', env_var_host) }}"
+    file_var_host: "{% if var_host %}{{ var_host }}{% else %}{{ data_mounts_definition_file }}{% endif %}"
+    lookup_file_host: "{{ lookup('file', file_var_host, errors='ignore') }}"
   tags: ora-mounts
-
-- name: Mount Oracle user mount LV devices
-  mount:
-    fstype: "{{ item.fstype }}"
-    src: "{{ item.blk_device }}"
-    path: "{{ item.mount_point }}"
-    opts: "{{ item.mount_opts }}"
-    state: mounted
-  when: "'mapper' in item.blk_device"
-  with_items:
-    - "{{ oracle_user_data_mounts }}"
-  tags: ora-mounts
-
-#- name: This iteration to get all blk_devices regardless of their diskgroup - used for partitioning all asm disks
-#  debug: msg="Running parted {{ item.1.blk_device }}"
-#  with_subelements:
-#    - "{{ asm_disks }}"
-#    - disks
-
-#- name: This iteration to create asm disks with their asm name and block_device
-#  debug: msg="Running create asmdisk {{ item.1.name }} with disk {{ item.1.blk_device }}"
-#  with_subelements:
-#    - "{{ asm_disks }}"
-#    - disks
-
-#- name: This iteration to create asm diskgroup
-#  debug:
-#    msg: |
-#      CREATE DISKGROUP DATA EXTERNAL REDUNDANCY
-#      {% for i in item.disks %}  DISK 'ORCL: {{ i.name }}'
-#      {% endfor %}
-#      ATTRIBUTE
-#         'compatible.asm'   = '"${ORACLE_VERSION}"',
-#         'compatible.rdbms' = '11.2.0.4.0';
-#  with_items:
-#    - "{{ asm_disks }}"

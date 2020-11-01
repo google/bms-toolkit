@@ -346,6 +346,12 @@ Support")</th>
 <tr>
 <td></td>
 <td>Patch - MOS</td>
+<td>COMBO OF OJVM RU COMPONENT 19.9.0.0.201020 + GI RU 19.9.0.0.201020</td>
+<td>p31720429_190000_Linux-x86-64.zip</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
 <td>COMBO OF OJVM RU COMPONENT 19.8.0.0.200714 + GI RU 19.8.0.0.200714</td>
 <td>p31326369_190000_Linux-x86-64.zip</td>
 </tr>
@@ -395,6 +401,12 @@ href="https://support.oracle.com/epmos/faces/PatchResultsNDetails?releaseId=6000
 <tr>
 <td></td>
 <td>Patch - MOS</td>
+<td>COMBO OF OJVM RU COMPONENT 18.12.0.0.201020 + GI RU 18.12.0.0.201020</td>
+<td>p31720457_180000_Linux-x86-64.zip</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
 <td>COMBO OF OJVM RU COMPONENT 18.11.0.0.200714 + GI RU 18.11.0.0.200714</td>
 <td>p31326376_180000_Linux-x86-64.zip</td>
 </tr>
@@ -451,6 +463,12 @@ x86-64</td>
 <tr>
 <td></td>
 <td>Patch - MOS</td>
+<td>COMBO OF OJVM RU COMPONENT 12.2.0.1.201020 + 12.2.0.1.201020 GIOCT2020RU</td>
+<td>p31720486_122010_Linux-x86-64.zip</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
 <td>COMBO OF OJVM RU COMPONENT 12.2.0.1.200714 + 12.2.0.1.200714 GIJUL2020RU</td>
 <td>p31326390_122010_Linux-x86-64.zip</td>
 </tr>
@@ -525,6 +543,12 @@ V46096-01_2of2.zip</td>
 <tr>
 <td></td>
 <td>Patch - MOS</td>
+<td>COMBO OF OJVM COMPONENT 12.1.0.2.201020 DB PSU + GIPSU 12.1.0.2.201020</td>
+<td>p31720761_121020_Linux-x86-64.zip</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
 <td>COMBO OF OJVM COMPONENT 12.1.0.2.200714 DB PSU + GIPSU 12.1.0.2.200714</td>
 <td>p31326400_121020_Linux-x86-64.zip</td>
 </tr>
@@ -600,6 +624,12 @@ href="https://support.oracle.com/epmos/faces/PatchResultsNDetails?releaseId=8011
 <tr>
 <td></td>
 <td>Patch - MOS</td>
+<td>Combo of OJVM Component 11.2.0.4.201020 DB PSU + GI PSU 11.2.0.4.201020</td>
+<td>p31720783_112040_Linux-x86-64.zip</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
 <td>Combo of OJVM Component 11.2.0.4.200714 DB PSU + GI PSU 11.2.0.4.200714</td>
 <td>p31326410_112040_Linux-x86-64.zip</td>
 </tr>

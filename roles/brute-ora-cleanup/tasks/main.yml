@@ -35,7 +35,7 @@
   become: yes
   become_user: root
 
-- name: Kill and remaining Oracle processes and wait 10s
+- name: Kill and remaining Oracle processes
   shell: |
     ( kill -9 $(ps -ef|grep "ora_smon" |grep -v "grep"|awk '{print $2}') ) || true
     ( kill -9 $(ps -ef|grep "tnslsnr"  |grep -v "grep"|awk '{print $2}') ) || true
@@ -44,10 +44,13 @@
     ( kill -9 $(ps -ef|grep "/grid/bin/" |grep -v "grep"|awk '{print $2}') ) || true
     ( pkill -9 -u {{ grid_user }} ) || true
     ( pkill -9 -u {{ oracle_user }} ) || true
-    sleep 10
   register: kill_procs
   become: yes
   become_user: root
+
+- name: Wait for processes to die (10 seconds)
+  pause:
+    seconds: 10
 
 - name: Remove directories and files
   become: yes
@@ -144,7 +147,7 @@
 - name: Zero-out header in Oracle user data disks
   become: yes
   become_user: root
-  command: "dd if=/dev/zero of={{ item.blk_device }}1 bs=1M count=1"
+  command: "dd if=/dev/zero of={{ item.blk_device }}1 bs=1M count=100"
   with_items:
     - "{{ oracle_user_data_mounts }}"
 
@@ -159,7 +162,7 @@
 - name: Zero-out header in ASM disks partitions
   become: yes
   become_user: root
-  command: "dd if=/dev/zero of={{ item.1.blk_device }} bs=1M count=1"
+  command: "dd if=/dev/zero of={{ item.1.blk_device }} bs=1M count=100"
   with_subelements:
     - "{{ asm_disks }}"
     - disks

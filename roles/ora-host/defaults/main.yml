@@ -14,7 +14,7 @@
 
 ---
 install_os_packages: true
-disable_firewall: false
+disable_firewall: true
 disable_selinux: true
 firewall_service: "{% if ansible_distribution_major_version|int==6%}iptables{%elif ansible_distribution_major_version|int==7 %}firewalld{% else %}0{% endif %}"
 
@@ -24,19 +24,26 @@ oracle_required_rpms:
   - compat-libcap1
   - compat-libstdc++-33
   - cpp
+  - elfutils-libelf
+  - elfutils-libelf-devel
+  - fontconfig-devel
   - gcc
   - gcc-c++
+  - glibc
   - glibc-devel
   - glibc-headers
   - gssproxy
+  - iptables-services
   - kernel-headers
   - keyutils
   - ksh
+  - libaio
   - libaio-devel
   - libbasicobjects
   - libcollection
   - libdmx
   - libevent
+  - libgcc
   - libICE
   - libini_config
   - libmpc
@@ -44,14 +51,19 @@ oracle_required_rpms:
   - libpath_utils
   - libref_array
   - libSM
+  - libstdc++
   - libstdc++-devel
   - libtirpc
   - libverto-libevent
+  - libX11
+  - libXau
+  - libxcb
   - libXi
   - libXinerama
   - libXmu
   - libXrandr
   - libXrender
+  - libXrender-devel
   - libXt
   - libXtst
   - libXv
@@ -61,7 +73,10 @@ oracle_required_rpms:
   - mailx
   - make
   - mpfr
+  - net-tools
   - nfs-utils
+  - policycoreutils
+  - policycoreutils-python
   - psmisc
   - quota
   - quota-nls

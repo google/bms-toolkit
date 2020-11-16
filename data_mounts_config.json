@@ -1,18 +1,26 @@
 [
     {
         "purpose": "software",
-	"blk_device": "/dev/BOGUS",
+	"blk_device": "/dev/mapper/<WWID>",
 	"name": "u01",
+	"num": "1",
+        "start": "0%",
+        "end": "100%",
 	"fstype":"xfs",
 	"mount_point":"/u01",
-	"mount_opts":"defaults"
+	"mount_opts":"defaults",
+	"host_name":"svr001"
     },
     {
         "purpose": "diag",
-	"blk_device": "/dev/BOGUS",
-	"name": "u02",
+	"blk_device": "/dev/mapper/<WWID>",
+	"name": "u01",
+	"num": "1",
+        "start": "0%",
+        "end": "100%",
 	"fstype":"xfs",
-	"mount_point":"/u02",
-	"mount_opts":"defaults"
+	"mount_point":"/u01",
+	"mount_opts":"defaults",
+	"host_name":"svr001"
     }
 ]

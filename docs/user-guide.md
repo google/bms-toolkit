@@ -1218,7 +1218,7 @@ ORA_STAGING
 --ora-staging
 </pre></p></td>
 <td>user defined<br>
-<ORA_SWLIB_PATH></td>
+ORA_SWLIB_PATH</td>
 <td>Working area for unzipping and staging software and installation
 files.<br>
 <br>
@@ -1400,7 +1400,7 @@ COMPATIBLE_RDBMS
 --compatible-rdbms
 </pre></p></td>
 <td>user defined<br>
-<Oracle version></td>
+Oracle version</td>
 <td>Defaults to the value of ORA_VERSION.</td>
 </tr>
 <tr>

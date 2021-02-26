@@ -3,6 +3,7 @@ description: Toolkit for installing and creating an initial database on Bare Met
 remote_theme: pages-themes/cayman
 plugins:
   - jekyll-remote-theme
+markdown: kramdown
 defaults:
   -
     scope:

@@ -1,3 +1,7 @@
+---
+published: True
+---
+
 # Toolkit for Bare Metal Solution: User Guide
 
 ## Table of Contents

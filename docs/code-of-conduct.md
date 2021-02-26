@@ -1,3 +1,7 @@
+---
+published: True
+---
+
 # Google Open Source Community Guidelines
 
 At Google, we recognize and celebrate the creativity and collaboration of open

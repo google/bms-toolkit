@@ -49,7 +49,7 @@
     src: tmpfs
     path: /dev/shm
     fstype: tmpfs
-    opts: rw,seclabel,nosuid,nodev
+    opts: rw,nosuid,nodev
     state: present
 
 - name: Stat RHEL7 base repo

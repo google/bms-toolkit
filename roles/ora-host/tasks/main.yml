@@ -50,7 +50,7 @@
     path: /dev/shm
     fstype: tmpfs
     opts: rw,nosuid,nodev
-    state: remount
+    state: remounted
 
 - name: Stat RHEL7 base repo
   stat:

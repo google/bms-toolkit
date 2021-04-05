@@ -13,6 +13,30 @@
 # limitations under the License.
 
 ---
+- name: Shut down RAC clusterware
+  # Regrettably we can't use ansible's service module, as Oracle's initscripts don't report status
+  shell:
+    service ohasd stop 
+  args:
+    warn: false
+  become: yes
+  register: srvice_stop
+  ignore_errors: true
+  when: cluster_name is defined
+
+- name: Deconfigure RAC CRS
+  shell: |
+    ( $ORACLE_HOME/crs/install/rootcrs.sh -deconfig -force ) || true
+  environment:
+    ORACLE_HOME: "{{ grid_home }}"
+    PATH: "{{ grid_home }}/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin"
+    LD_LIBRARY_PATH: "{{ grid_home }}/lib:${LD_LIBRARY_PATH}"
+  register: has_deconfig
+  ignore_errors: yes
+  become: yes
+  become_user: "{{ grid_user }}"
+  when: cluster_name is defined
+
 - name: Stop services with srvctl
   shell: |
     ( srvctl stop listener -l {{ listener_name }} -f ) || true
@@ -27,13 +51,15 @@
   ignore_errors: yes
   become: yes
   become_user: "{{ grid_user }}"
+  when: cluster_name is not defined
 
-- name: Deconfigure CRS
+- name: Deconfigure CRS (non-RAC)
   command: "{{ grid_home }}/perl/bin/perl -I {{ grid_home }}/perl/lib -I {{ grid_home }}/crs/install {{ grid_home }}/crs/install/roothas.pl -deconfig -force -verbose"
   register: has_deconfig
   ignore_errors: yes
   become: yes
   become_user: root
+  when: cluster_name is not defined
 
 - name: Kill and remaining Oracle processes
   shell: |
@@ -42,8 +68,10 @@
     ( kill -9 $(ps -ef|grep "agent13c" |grep -v "grep"|awk '{print $2}') ) || true
     ( kill -9 $(ps -ef|grep "PROTOCOL=beq" |grep -v "grep"|awk '{print $2}') ) || true
     ( kill -9 $(ps -ef|grep "/grid/bin/" |grep -v "grep"|awk '{print $2}') ) || true
+    ( pkill -9 -f tfa ) || true
     ( pkill -9 -u {{ grid_user }} ) || true
     ( pkill -9 -u {{ oracle_user }} ) || true
+  ignore_errors: yes
   register: kill_procs
   become: yes
   become_user: root
@@ -77,6 +105,7 @@
     - /usr/local/bin/coraenv
     - /etc/init.d/ohasd
     - /etc/init.d/init.ohasd
+    - /etc/init.d/init.tfa
     - /etc/oracle
     - /etc/sysconfig/oracleasm-update
     - /etc/sysconfig/oracleasm.rpmsave
@@ -126,21 +155,19 @@
   when: asm_disk_management == "asmlib"
   register: remove_oracleasm
 
-- name: Unmount Oracle user data devices (including fstab)
+- name: Lazy unmount Oracle user data devices
+  shell: |
+    umount -f -l "{{ item.mount_point }}"
+  ignore_errors: true
+  with_items:
+    - "{{ oracle_user_data_mounts }}"
+
+- name: Remove Oracle user data devices from fstab
   mount:
     fstype: "{{ item.fstype }}"
     src: "{{ item.blk_device }}1"
     path: "{{ item.mount_point }}"
     state: absent
-  with_items:
-    - "{{ oracle_user_data_mounts }}"
-
-- name: Unmount Oracle user data devices (if not already in fstab)
-  mount:
-    fstype: "{{ item.fstype }}"
-    src: "{{ item.blk_device }}1"
-    path: "{{ item.mount_point }}"
-    state: unmounted
   with_items:
     - "{{ oracle_user_data_mounts }}"
 

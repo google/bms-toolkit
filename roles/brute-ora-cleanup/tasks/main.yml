@@ -104,6 +104,7 @@
     - /usr/local/bin/oraenv
     - /usr/local/bin/coraenv
     - /etc/init.d/ohasd
+    - /etc/init.d/oracleasm
     - /etc/init.d/init.ohasd
     - /etc/init.d/init.tfa
     - /etc/oracle
@@ -116,7 +117,29 @@
     - /etc/systemd/system/multi-user.target.wants/oracleasm.service
     - /var/log/oracleasm
     - /var/log/oracleohasd
+  ignore_errors: true
   register: remove_files
+  
+- name: Clean up shared memory segments
+  become: yes
+  become_user: root
+  shell: "ipcs -m | awk '/{{ item }}/ {print $2}' | xargs -r -L1 ipcrm -m"
+  with_items:
+    - "{{ grid_user }}"
+    - "{{ oracle_user }}"
+
+- name: Clean up semaphores
+  become: yes
+  become_user: root
+  shell: "ipcs -s | awk '/{{ item }}/ {print $2}' | xargs -r -L1 ipcrm -s"
+  with_items:
+    - "{{ grid_user }}"
+    - "{{ oracle_user }}"
+
+- name: Remove oracle kernel modules
+  become: yes
+  become_user: root
+  shell: awk '/^oracle/ {print $1}' /proc/modules | sudo xargs -r modprobe -r  
 
 - name: Find /tmp/CVU directories to remove
   find:

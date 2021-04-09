@@ -104,7 +104,6 @@
     - /usr/local/bin/oraenv
     - /usr/local/bin/coraenv
     - /etc/init.d/ohasd
-    - /etc/init.d/oracleasm
     - /etc/init.d/init.ohasd
     - /etc/init.d/init.tfa
     - /etc/oracle
@@ -135,11 +134,6 @@
   with_items:
     - "{{ grid_user }}"
     - "{{ oracle_user }}"
-
-- name: Remove oracle kernel modules
-  become: yes
-  become_user: root
-  shell: awk '/^oracle/ {print $1}' /proc/modules | sudo xargs -r modprobe -r  
 
 - name: Find /tmp/CVU directories to remove
   find:
@@ -276,6 +270,11 @@
   become_user: root
   shell: ( /sbin/udevadm control --reload-rules && /sbin/udevadm trigger )
   when: asm_disk_management == "udev"
+
+- name: Remove oracle kernel modules
+  become: yes
+  become_user: root
+  shell: awk '/^oracle/ {print $1}' /proc/modules | sudo xargs -r modprobe -r  
 
 - name: Remove users
   become: yes

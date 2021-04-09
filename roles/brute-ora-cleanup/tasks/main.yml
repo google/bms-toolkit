@@ -63,14 +63,14 @@
 
 - name: Kill and remaining Oracle processes
   shell: |
-    ( kill -9 $(ps -ef|grep "ora_smon" |grep -v "grep"|awk '{print $2}') ) || true
-    ( kill -9 $(ps -ef|grep "tnslsnr"  |grep -v "grep"|awk '{print $2}') ) || true
-    ( kill -9 $(ps -ef|grep "agent13c" |grep -v "grep"|awk '{print $2}') ) || true
-    ( kill -9 $(ps -ef|grep "PROTOCOL=beq" |grep -v "grep"|awk '{print $2}') ) || true
-    ( kill -9 $(ps -ef|grep "/grid/bin/" |grep -v "grep"|awk '{print $2}') ) || true
-    ( pkill -9 -f tfa ) || true
-    ( pkill -9 -u {{ grid_user }} ) || true
-    ( pkill -9 -u {{ oracle_user }} ) || true
+    pkill -9 ora_smon
+    pkill -9 tnslsnr
+    pkill -9 agent13c
+    pkill -9 -f PROTOCOL=beq
+    pkill -9 -f /grid/bin
+    pkill -9 -f tfa
+    pkill -9 -u {{ grid_user }}
+    pkill -9 -u {{ oracle_user }}
   ignore_errors: yes
   register: kill_procs
   become: yes

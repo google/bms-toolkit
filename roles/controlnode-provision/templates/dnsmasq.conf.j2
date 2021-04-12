@@ -1,0 +1,17 @@
+# Listen on this specific port instead of the standard DNS port
+# (53). Setting this to zero completely disables DNS function,
+# leaving only DHCP and/or TFTP.
+port=53
+# Change this line if you want dns to get its upstream servers from
+# somewhere other that /etc/resolv.conf
+resolv-file=/etc/dnsmasq.resolv.conf
+# Or which to listen on by address (remember to include 127.0.0.1 if
+# you use this.)
+listen-address={% for address in dnsmasq_listen_addr %}{{ address }}{{ "," if not loop.last }}{% endfor %}
+
+# Never forward plain names (without a dot or domain part)
+domain-needed
+# Never forward addresses in the non-routed address spaces.
+bogus-priv
+# Set the cachesize here.
+cache-size=3000

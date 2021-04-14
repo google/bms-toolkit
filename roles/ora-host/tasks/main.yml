@@ -49,8 +49,8 @@
     src: tmpfs
     path: /dev/shm
     fstype: tmpfs
-    opts: ro,nosuid,nodev
-    state: present
+    opts: rw,nosuid,nodev
+    state: mounted
 
 - name: Stat RHEL7 base repo
   stat:

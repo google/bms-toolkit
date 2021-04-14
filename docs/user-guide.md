@@ -1,9 +1,14 @@
+---
+published: True
+---
+
 # Toolkit for Bare Metal Solution: User Guide
 
 ## Table of Contents
 
 - [Command quick reference for single instance deployments](#command-quick-reference-for-single-instance-deployments)
 - [Command quick reference for RAC deployments](#command-quick-reference-for-rac-deployments)
+- [Command quick reference for DR deployments](#command-quick-reference-for-dr-deployments)
 - [Overview](#overview)
   - [Software Stack](#software-stack)
   - [Requirements and Prerequisites](#requirements-and-prerequisites)
@@ -109,7 +114,9 @@ Initial steps similar to those of the Single Instance installation.
 
    `./install-oracle.sh --help`
 
-1. Run installation. Only IP address of the first cluster node is required:
+1. Create the cluster configuration file by editing the `cluster_config.json` file template that is provided with the toolkit.
+
+1. Install the database with the path to the cluster configuration file specified on the `--cluster-config` property:
 
    ```bash
    ./install-oracle.sh \
@@ -117,9 +124,33 @@ Initial steps similar to those of the Single Instance installation.
    --backup-dest "+RECO" \
    --ora-swlib-path /u02/swlib/ \
    --ora-swlib-type gcs \
-   --instance-ip-addr ${INSTANCE_IP_ADDR} \
-   --cluster-type RAC
+   --cluster-type RAC \
+   --cluster-config cluster_config.json
    ```
+
+## Command quick reference for DR deployments
+
+The primary database must exist before you can create a standby database.
+
+When you create the primary database, omit the `--cluster-type` option or set it to `NONE`. To create the primary database, see [Single Instance Deployments section](#command-quick-reference-for-single-instance-deployments).
+
+To create a standby database, add the following options to the command options that you used to create the primary database:
+- `--primary-ip-addr ${PRIMARY_IP_ADDR}`
+- `--cluster-type DG`
+
+1. Install a standby database:
+
+   ```bash
+   ./install-oracle.sh \
+   --ora-swlib-bucket gs://[cloud-storage-bucket-name] \
+   --instance-ip-addr ${INSTANCE_IP_ADDR} \
+   --ora-swlib-path /u02/swlib/ \
+   --backup-dest "+RECO" \
+   --ora-swlib-type gcs \
+   --primary-ip-addr ${PRIMARY_IP_ADDR} \
+   --cluster-type DG
+   ```
+
 
 ## Overview
 
@@ -319,6 +350,24 @@ Support")</th>
 <tr>
 <td></td>
 <td>Patch - MOS</td>
+<td>COMBO OF OJVM RU COMPONENT 19.9.0.0.201020 + GI RU 19.9.0.0.201020</td>
+<td>p31720429_190000_Linux-x86-64.zip</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>COMBO OF OJVM RU COMPONENT 19.8.0.0.200714 + GI RU 19.8.0.0.200714</td>
+<td>p31326369_190000_Linux-x86-64.zip</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>COMBO OF OJVM RU COMPONENT 19.7.0.0.200414 + GI RU 19.7.0.0.200414</td>
+<td>p30783556_190000_Linux-x86-64.zip</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
 <td>COMBO OF OJVM RU COMPONENT 19.6.0.0.200114 GI RU 19.6.0.0.200114</td>
 <td>p30463609_190000_Linux-x86-64.zip</td>
 </tr>
@@ -356,6 +405,24 @@ href="https://support.oracle.com/epmos/faces/PatchResultsNDetails?releaseId=6000
 <tr>
 <td></td>
 <td>Patch - MOS</td>
+<td>COMBO OF OJVM RU COMPONENT 18.12.0.0.201020 + GI RU 18.12.0.0.201020</td>
+<td>p31720457_180000_Linux-x86-64.zip</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>COMBO OF OJVM RU COMPONENT 18.11.0.0.200714 + GI RU 18.11.0.0.200714</td>
+<td>p31326376_180000_Linux-x86-64.zip</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>COMBO OF OJVM RU COMPONENT 18.10.0.0.200414 GI RU 18.10.0.0.200414</td>
+<td>p30783607_180000_Linux-x86-64.zip</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
 <td>COMBO OF OJVM RU COMPONENT 18.9.0.0.200114 GI RU 18.9.0.0.200114</td>
 <td>p30463635_180000_Linux-x86-64.zip</td>
 </tr>
@@ -400,6 +467,24 @@ x86-64</td>
 <tr>
 <td></td>
 <td>Patch - MOS</td>
+<td>COMBO OF OJVM RU COMPONENT 12.2.0.1.201020 + 12.2.0.1.201020 GIOCT2020RU</td>
+<td>p31720486_122010_Linux-x86-64.zip</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>COMBO OF OJVM RU COMPONENT 12.2.0.1.200714 + 12.2.0.1.200714 GIJUL2020RU</td>
+<td>p31326390_122010_Linux-x86-64.zip</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>COMBO OF OJVM RU COMPONENT 12.2.0.1.200414 12.2.0.1.200414 GIAPR2020RU</td>
+<td>p30783652_122010_Linux-x86-64.zip</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
 <td>COMBO OF OJVM RU COMPONENT 12.2.0.1.200114 12.2.0.1.200114 GIJAN2020RU</td>
 <td>p30463673_122010_Linux-x86-64.zip</td>
 </tr>
@@ -462,12 +547,53 @@ V46096-01_2of2.zip</td>
 <tr>
 <td></td>
 <td>Patch - MOS</td>
+<td>COMBO OF OJVM COMPONENT 12.1.0.2.201020 DB PSU + GIPSU 12.1.0.2.201020</td>
+<td>p31720761_121020_Linux-x86-64.zip</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>COMBO OF OJVM COMPONENT 12.1.0.2.200714 DB PSU + GIPSU 12.1.0.2.200714</td>
+<td>p31326400_121020_Linux-x86-64.zip</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>COMBO OF OJVM COMPONENT 12.1.0.2.200414 DB PSU GIPSU 12.1.0.2.200414</td>
+<td>p30783882_121020_Linux-x86-64.zip</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>COMBO OF OJVM COMPONENT 12.1.0.2.200114 DB PSU GIPSU 12.1.0.2.200114</td>
+<td>p30463691_121020_Linux-x86-64.zip</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>COMBO OF OJVM COMPONENT 12.1.0.2.191015 DB PSU GIPSU 12.1.0.2.191015</td>
+<td>p30133443_121020_Linux-x86-64.zip</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>COMBO OF OJVM COMPONENT 12.1.0.2.190716 DB PSU + GIPSU 12.1.0.2.190716</td>
+<td>p29699244_121020_Linux-x86-64.zip</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>COMBO OF OJVM COMPONENT 12.1.0.2.190416 DB PSU + GIPSU 12.1.0.2.190416</td>
+<td>p29252164_121020_Linux-x86-64.zip</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
 <td>Combo OJVM PSU 12.1.0.2.190416 and Database Proactive BP 12.1.0.2.190416
 patch 29252171 for Linux x86-64</td>
 <td><a
 href="https://support.oracle.com/epmos/faces/PatchResultsNDetails?releaseId=600000000009300&patchId=29252171&languageId=0&platformId=226">p29252171_121020_Linux-x86-64.zip</a></td>
-</tr>
-<tr>
+</tr><tr>
 <td></td>
 <td></td>
 <td>GI PSU 12.1.0.2.190416 patch 29176115 for Linux x86-64</td>
@@ -502,6 +628,48 @@ href="https://support.oracle.com/epmos/faces/PatchResultsNDetails?releaseId=8011
 <tr>
 <td></td>
 <td>Patch - MOS</td>
+<td>Combo of OJVM Component 11.2.0.4.201020 DB PSU + GI PSU 11.2.0.4.201020</td>
+<td>p31720783_112040_Linux-x86-64.zip</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>Combo of OJVM Component 11.2.0.4.200714 DB PSU + GI PSU 11.2.0.4.200714</td>
+<td>p31326410_112040_Linux-x86-64.zip</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>COMBO OF 11.2.0.4.200414 OJVM PSU GIPSU 11.2.0.4.200414</td>
+<td>p30783890_112040_Linux-x86-64.zip</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>GRID INFRASTRUCTURE PATCH SET UPDATE 11.2.0.4.200114</td>
+<td>p30501155_112040_Linux-x86-64.zip</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>GRID INFRASTRUCTURE PATCH SET UPDATE 11.2.0.4.191015</td>
+<td>p30070097_112040_Linux-x86-64.zip</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>GRID INFRASTRUCTURE PATCH SET UPDATE 11.2.0.4.190716</td>
+<td>p29698727_112040_Linux-x86-64.zip</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>GRID INFRASTRUCTURE PATCH SET UPDATE 11.2.0.4.190416</td>
+<td>p29255947_112040_Linux-x86-64.zip</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
 <td>Combo OJVM PSU 11.2.0.4.190416 and Database PSU 11.2.0.4.190416 patch
 29252186 for Linux x86-64</td>
 <td><a
@@ -880,6 +1048,19 @@ database.<br>
 Applicable for Oracle "single instance" installations.</td>
 </tr>
 <tr>
+<td>Primary server IP address</td>
+<td><p><pre>
+PRIMARY_IP_ADDR
+<br>
+--primary-ip-addr
+</pre></p>
+</td>
+<td>user defined - no default</td>
+<td>The IP address of the primary server to use as source of primary database
+for Data Guard configuration.<br>
+Applicable for Oracle "single instance" installations.</td>
+</tr>
+<tr>
 <td>Target server host name</td>
 <td><p><pre>
 INSTANCE_HOSTNAME
@@ -1041,7 +1222,7 @@ ORA_STAGING
 --ora-staging
 </pre></p></td>
 <td>user defined<br>
-<ORA_SWLIB_PATH></td>
+ORA_SWLIB_PATH</td>
 <td>Working area for unzipping and staging software and installation
 files.<br>
 <br>
@@ -1223,7 +1404,7 @@ COMPATIBLE_RDBMS
 --compatible-rdbms
 </pre></p></td>
 <td>user defined<br>
-<Oracle version></td>
+Oracle version</td>
 <td>Defaults to the value of ORA_VERSION.</td>
 </tr>
 <tr>
@@ -1300,9 +1481,12 @@ ORA_REDO_LOG_SIZE
 CLUSTER_TYPE
 --cluster-type
 </pre></p></td>
-<td>NONE<br>
-RAC</td>
-<td>Specify "RAC" to install a RAC cluster. Otherwise a "Single Instance"
+<td>
+NONE<br>
+RAC<br>
+DG
+</td>
+<td>Specify "RAC" to install a RAC cluster. Use "DG" for standby installation. Otherwise a "Single Instance"
 installation is performed.</td>
 </tr>
 <tr>
@@ -1579,11 +1763,11 @@ $ export ORA_VERSION=19.3.0.0.0
 $ export ORA_DB_NAME=PROD1
 $ ./install-oracle.sh --ora-swlib-bucket gs://oracle-software --backup-dest +RECO
 
-Inventory file for this execution: ./inventory_files/inventory_10.150.0.42_19.3.0.0.0_PROD1.
+Inventory file for this execution: ./inventory_files/inventory_10.150.0.42_PROD1.
 
 Running with parameters from command line or environment variables:
 
-ANSIBLE_LOG_PATH=./logs/log_10.150.0.42_19.3.0.0.0_PROD1_20200610_160132.log
+ANSIBLE_LOG_PATH=./logs/log_10.150.0.42_PROD1_20200610_160132.log
 ARCHIVE_BACKUP_MIN=30
 ARCHIVE_ONLINE_DAYS=7
 ARCHIVE_REDUNDANCY=2
@@ -1595,12 +1779,14 @@ BACKUP_REDUNDANCY=2
 BACKUP_SCRIPT_LOCATION=/home/oracle/scripts
 BACKUP_START_HOUR=01
 BACKUP_START_MIN=00
+CLUSTER_CONFIG=cluster_config.json
+CLUSTER_TYPE=NONE
 INSTANCE_HOSTGROUP_NAME=dbasm
 INSTANCE_HOSTNAME=10.150.0.42
 INSTANCE_IP_ADDR=10.150.0.42
 INSTANCE_SSH_EXTRA_ARGS=''\''-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o IdentityAgent=no'\'''
 INSTANCE_SSH_KEY='~/.ssh/id_rsa'
-INSTANCE_SSH_USER=dba-user
+INSTANCE_SSH_USER=goryunov
 ORA_ASM_DISKS=asm_disk_config.json
 ORA_DATA_DISKGROUP=DATA
 ORA_DATA_MOUNTS=data_mounts_config.json
@@ -1628,14 +1814,16 @@ ORA_SWLIB_TYPE='""'
 ORA_VERSION=19.3.0.0.0
 PB_CHECK_INSTANCE=check-instance.yml
 PB_CONFIG_DB=config-db.yml
+PB_CONFIG_RAC_DB=config-rac-db.yml
 PB_INSTALL_SW=install-sw.yml
 PB_LIST='check-instance.yml prep-host.yml install-sw.yml config-db.yml'
 PB_PREP_HOST=prep-host.yml
+PRIMARY_IP_ADDR=
 
 Ansible params:
 Found Ansible at /usr/bin/ansible-playbook
 
-Running Ansible playbook: /usr/bin/ansible-playbook -i ./inventory_files/inventory_10.150.0.42_19.3.0.0.0_PROD1 check-instance.yml
+Running Ansible playbook: /usr/bin/ansible-playbook -i ./inventory_files/inventory_10.150.0.42_PROD1 check-instance.yml
 
 PLAY [all] ******************************************************************************************************************************************
 
@@ -1668,11 +1856,11 @@ $ ./install-oracle.sh --ora-edition SE2 --ora-db-container false \
  --ora-swlib-bucket gs://oracle-software --backup-dest +RECO \
  --instance-ip-addr 10.150.0.42
 
-Inventory file for this execution: ./inventory_files/inventory_dbserver_19.3.0.0.0_ORCL.
+Inventory file for this execution: ./inventory_files/inventory_dbserver_ORCL.
 
 Running with parameters from command line or environment variables:
 
-ANSIBLE_LOG_PATH=./logs/log_dbserver_19.3.0.0.0_ORCL_20200610_161259.log
+ANSIBLE_LOG_PATH=./logs/log_dbserver_ORCL_20200610_161259.log
 ARCHIVE_BACKUP_MIN=30
 ARCHIVE_ONLINE_DAYS=7
 ARCHIVE_REDUNDANCY=2
@@ -1684,12 +1872,14 @@ BACKUP_REDUNDANCY=2
 BACKUP_SCRIPT_LOCATION=/home/oracle/scripts
 BACKUP_START_HOUR=01
 BACKUP_START_MIN=00
+CLUSTER_CONFIG=cluster_config.json
+CLUSTER_TYPE=NONE
 INSTANCE_HOSTGROUP_NAME=dbasm
 INSTANCE_HOSTNAME=dbserver
 INSTANCE_IP_ADDR=10.150.0.42
 INSTANCE_SSH_EXTRA_ARGS=''\''-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o IdentityAgent=no'\'''
 INSTANCE_SSH_KEY='~/.ssh/id_rsa'
-INSTANCE_SSH_USER=dba-user
+INSTANCE_SSH_USER=goryunov
 ORA_ASM_DISKS=asm_disk_config.json
 ORA_DATA_DISKGROUP=DATA
 ORA_DATA_MOUNTS=data_mounts_config.json
@@ -1717,9 +1907,11 @@ ORA_SWLIB_TYPE='""'
 ORA_VERSION=19.3.0.0.0
 PB_CHECK_INSTANCE=check-instance.yml
 PB_CONFIG_DB=config-db.yml
+PB_CONFIG_RAC_DB=config-rac-db.yml
 PB_INSTALL_SW=install-sw.yml
 PB_LIST='check-instance.yml prep-host.yml install-sw.yml config-db.yml'
 PB_PREP_HOST=prep-host.yml
+PRIMARY_IP_ADDR=
 
 Ansible params:
 Found Ansible at /usr/bin/ansible-playbook
@@ -1906,7 +2098,7 @@ $ ./apply-patch.sh \
   --ora-staging /u02/oracle_install \
   --ora-version 19.3.0.0.0 \
   --ora-release 19.6.0.0.200114 \
-    --inventory-file inventory_files/inventory_toolkit-db2_19.3.0.0.0_ORCL
+    --inventory-file inventory_files/inventory_toolkit-db2_ORCL
 
 Running with parameters from command line or environment variables:
 
@@ -1917,9 +2109,9 @@ ORA_SWLIB_BUCKET=gs://oracle-software
 ORA_SWLIB_PATH=/u02/oracle_install
 ORA_VERSION=19.3.0.0.0
 
-Ansible params: -i inventory_files/inventory_toolkit-db2_19.3.0.0.0_ORCL
+Ansible params: -i inventory_files/inventory_toolkit-db2_ORCL
 Found Ansible at /usr/bin/ansible-playbook
-Running Ansible playbook: /usr/bin/ansible-playbook -i inventory_files/inventory_toolkit-db2_19.3.0.0.0_ORCL   patch.yml
+Running Ansible playbook: /usr/bin/ansible-playbook -i inventory_files/inventory_toolkit-db2_ORCL   patch.yml
 
 PLAY [OPatch Restart patch] ****************************************************
 
@@ -2066,7 +2258,7 @@ For example:
 ```bash
 ./apply-patch.sh \
   --ora-swlib-bucket gs://oracle-software \
-  --inventory-file inventory_files/inventory_19.3.0.0.0_ORCL_RAC \
+  --inventory-file inventory_files/inventory_ORCL_RAC \
   --ora-version 19.3.0.0.0 \
   --ora-release 19.7.0.0.200414 \
   --ora-swlib-path /u01/oracle_install \
@@ -2109,27 +2301,41 @@ $ ./cleanup-oracle.sh --help
           --inventory-file <value>
           --yes-i-am-sure
           [ --ora-role-separation <value> ]
+          [ --ora-disk-mgmt <value> ]
+          [ --ora-swlib-path <value> ]
+          [ --ora-staging <value> ]
+          [ --ora-asm-disks <value> ]
+          [ --ora-data-mounts <value> ]
           [ --help ]
 ```
 
 Sample usage:
 
 ```bash
-$ ./cleanup-oracle.sh \
-  --ora-version 18.0.0.0.0 \
-  --inventory-file ./inventory_files/inventory_oracledb1_18.0.0.0.0_ORCL \
-  --yes-i-am-sure
+$ ./cleanup-oracle.sh --ora-version 19 \
+--inventory-file ./inventory_files/inventory_oracledb1_ORCL \
+--yes-i-am-sure \
+--ora-disk-mgmt udev \
+--ora-swlib-path /u02/oracle_install \
+--ora-staging /u02/oracle_install \
+--ora-asm-disks asm_disk_config.json \
+--ora-data-mounts data_mounts_config.json
 
 Running with parameters from command line or environment variables:
 
-INVENTORY_FILE=./inventory_files/inventory_oracledb1_18.0.0.0.0_ORCL
+INVENTORY_FILE=./inventory_files/inventory_oracledb1_ORCL
+ORA_ASM_DISKS=asm_disk_config.json
+ORA_DATA_MOUNTS=data_mounts_config.json
+ORA_DISK_MGMT=udev
 ORA_ROLE_SEPARATION=TRUE
-ORA_VERSION=18.0.0.0.0
+ORA_STAGING=/u02/oracle_install
+ORA_SWLIB_PATH=/u02/oracle_install
+ORA_VERSION=19.3.0.0.0
 
 Ansible params:
 Found Ansible at /usr/bin/ansible-playbook
 
-Running Ansible playbook: /usr/bin/ansible-playbook -i ./inventory_files/inventory_oracledb1_18.0.0.0.0_ORCL  brute-cleanup.yml
+Running Ansible playbook: /usr/bin/ansible-playbook -i ./inventory_files/inventory_oracledb1_ORCL  brute-cleanup.yml
 
 PLAY [all] ************************************************************************************
 ... output truncated for brevity

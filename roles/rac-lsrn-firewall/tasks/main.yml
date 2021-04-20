@@ -1,0 +1,47 @@
+# Copyright 2020 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+---
+- name: Open listener port in firewall
+  firewalld:
+    port: "{{ hostvars[groups['dbasm'].0]['scan_port'] }}/tcp"
+    permanent: yes
+    immediate: yes
+    state: enabled
+  become: yes
+  register: firewall_output
+  failed_when:
+    - "'firewall is not currently running' not in firewall_output.msg"
+    - "'Permanent and Non-Permanent(immediate) operation' not in firewall_output.msg"
+  when: disable_firewall|bool is false
+  tags: lsnr-firewall
+
+- name: Test whether port is free
+  become: yes
+  become_user: root
+  shell: "set -o pipefail; netstat -lnpt | ( grep {{ hostvars[groups['dbasm'].0]['scan_port'] }} || true ) | wc -l"
+  changed_when: false
+  when: create_listener
+  register: scan_port_check
+  tags: lsnr-firewall
+
+- name: Listener check results
+  debug:
+    msg: "{{ item }}"
+    verbosity: 1
+  with_items:
+    - "{{ scan_port_check }}"
+  when: create_listener
+  tags: lsnr-firewall
+

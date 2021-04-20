@@ -2070,7 +2070,7 @@ both the Grid Infrastructure and Database homes by using the
 `apply-patch.sh` script of the toolkit.
 
 By default, `install-oracle.sh` updates to the latest available patch.  To
-apply a specific patch instead, use the `--no-patch` option in `intall-oracle.sh`
+apply a specific patch instead, use the `--no-patch` option in `install-oracle.sh`
 to skip patching at installation time.  After installation is complete,  execute 
 `apply-patch.sh` with the `--ora-release` option.  Specify the full release name including
 timestamp;  a list of release names is available in

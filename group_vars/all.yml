@@ -57,7 +57,7 @@ ntp_preferred: "{{ lookup('env','NTP_PREF')|lower|default('',true) }}"
 
 # DB configuration related variables:
 db_name: "{{ lookup('env','ORA_DB_NAME')|default('ORCL',true) }}"
-db_domain: "{{ lookup('env','ORA_DB_DOMAIN')|default('world',true) }}"
+db_domain: "{{ lookup('env','ORA_DB_DOMAIN')|default('',true) }}"
 oracle_ver: "{{ lookup('env','ORA_VERSION')|default('19.3.0.0.0',true) }}"
 oracle_ver_base: "{{ oracle_ver | regex_replace('^(.*?\\..*?)\\..*$', '\\1') }}"
 oracle_rel: "{{ lookup('env','ORA_RELEASE')|default('latest',true) }}"

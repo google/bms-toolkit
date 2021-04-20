@@ -128,6 +128,7 @@ create_db: true
 create_listener: true
 install_gi: true
 install_rdbms: true
+disable_firewall: false
 
 ## End of non-modifiable variables section
 

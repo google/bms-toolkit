@@ -62,15 +62,30 @@
     path: /etc/yum.repos.d/rh-cloud.repo
   register: rh_cloud_repo
 
-- name: Install Oracle required packages (base/non-rhui config)
+- name: Install Oracle required packages (base/non-rhui config) for RHEL
   yum:
     name: "{{ oracle_required_rpms }}"
     state: present
     lock_timeout: 180
     enablerepo: rhel-7-server-optional-rpms
   when:
-    - install_os_packages|bool and ansible_os_family == 'RedHat'
+    - install_os_packages|bool and ansible_os_family == 'RedHat' and ansible_distribution == 'RedHat'
     - redhat_repo.stat.exists|bool
+  tags: os-packages
+
+- name: Stat OEL7 repo
+  stat:
+    path: /etc/yum.repos.d/oracle-linux-ol7.repo
+  register: oraclelinux_repo
+
+- name: Install Oracle required packages (base/non-rhui config) for OEL
+  yum:
+    name: "{{ oracle_required_rpms }}"
+    state: present
+    lock_timeout: 180
+  when:
+    - install_os_packages|bool and ansible_os_family == 'RedHat' and ansible_distribution == 'OracleLinux'
+    - oraclelinux_repo.stat.exists|bool
   tags: os-packages
 
 - name: Install Oracle required packages (rhui config)

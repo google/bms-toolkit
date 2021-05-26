@@ -47,6 +47,7 @@
        - cluster_type in ("NONE", "DG")
   tags: rdbms-setup
 
+
 - hosts: dbasm
   serial: 1
   tasks:
@@ -56,6 +57,16 @@
     - name: rac-gi-install | open firewall
       include_role:
         name: rac-lsnr-firewall
+      when:
+        - cluster_type == "RAC"
+  tags: lsnr-firewall
+
+- hosts: dbasm
+  serial: 1
+  tasks:
+    - name: rac-gi-install | defaults from common
+      include_vars:
+        dir: roles/common/defaults
     - name: rac-gi-install | setup ssh keys
       include_role:
         name: ssh-setup
@@ -75,9 +86,6 @@
     - name: rac-gi-install | defaults from common
       include_vars:
         dir: roles/common/defaults
-  #  - name: rac-gi-install | open firewall
-  #    include_role:
-  #      name: rac-lsnr-firewall
     - name: rac-gi-install | GI installation
       include_role:
         name: rac-gi-setup

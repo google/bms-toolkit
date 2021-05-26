@@ -53,6 +53,11 @@
     immediate: yes
     state: enabled
   become: yes
+  register: firewall_op_localnw
+  failed_when:
+    - "'firewall is not currently running' not in firewall_op_localnw.msg"
+    - "'Permanent and Non-Permanent(immediate) operation' not in firewall_op_localnw.msg"
+  when: not disable_firewall|bool
   with_items:
     - "{{ ansible_facts | dict2items | selectattr('value.ipv4.network', 'defined') |list }}"
   tags: lsnr-firewall
@@ -65,4 +70,9 @@
     immediate: yes
     state: enabled
   become: yes
+  register: firewall_op_haipnw
+  failed_when:
+    - "'firewall is not currently running' not in firewall_op_haipnw.msg"
+    - "'Permanent and Non-Permanent(immediate) operation' not in firewall_op_haipnw.msg"
+  when: not disable_firewall|bool
   tags: lsnr-firewall

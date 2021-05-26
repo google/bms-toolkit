@@ -49,7 +49,6 @@
 
 
 - hosts: dbasm
-  serial: 1
   tasks:
     - name: rac-gi-install | defaults from common
       include_vars:

@@ -69,7 +69,7 @@
     lock_timeout: 180
     enablerepo: rhel-7-server-optional-rpms
   when:
-    - install_os_packages|bool and ansible_distribution == 'RedHat'
+    - install_os_packages|bool and ansible_distribution == 'RedHat' and ansible_distribution_major_version == '7'
     - redhat_repo.stat.exists|bool
   tags: os-packages
 
@@ -86,7 +86,7 @@
     state: present
     lock_timeout: 180
   when:
-    - install_os_packages|bool and ansible_distribution == 'OracleLinux'
+    - install_os_packages|bool and ansible_distribution == 'OracleLinux' and ansible_distribution_major_version == '7'
     - oraclelinux_repo.stat.exists|bool
   tags: os-packages
 
@@ -97,7 +97,7 @@
     lock_timeout: 180
     enablerepo: rhui-rhel-7-server-rhui-optional-rpms
   when:
-    - install_os_packages|bool and ansible_os_family == 'RedHat'
+    - install_os_packages|bool and ansible_distribution_major_version == '7'
     - rh_cloud_repo.stat.exists|bool
     - not redhat_repo.stat.exists|bool
   tags: os-packages

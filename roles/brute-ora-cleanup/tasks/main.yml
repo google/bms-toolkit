@@ -191,15 +191,14 @@
 - name: Zero-out header in Oracle user data disks
   become: yes
   become_user: root
-  command: "dd if=/dev/zero of={{ item.blk_device }}1 bs=1M count=100"
+  command: "dd if=/dev/zero of={{ item.blk_device }} bs=1M count=100"
   with_items:
     - "{{ oracle_user_data_mounts }}"
 
-- name: Delete partition Oracle user data devices
-  parted:
-    device: "{{ item.blk_device }}"
-    number: 1
-    state: absent
+- name: Reload partition table for user data disks
+  become: yes
+  become_user: root
+  command: "partprobe {{ item.blk_device }}"
   with_items:
     - "{{ oracle_user_data_mounts }}"
 

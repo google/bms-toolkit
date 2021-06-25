@@ -98,21 +98,8 @@
 - name: gcscopy | Copy GI OPatch update files from GCS to target instance
   shell: |
     set -o pipefail
-    ssh -i {{ ansible_ssh_private_key_file }} {{ ansible_ssh_extra_args }} {{ ansible_ssh_user }}@{{ ansible_ssh_host }} \
-      "ls {{ swlib_path }}/{{ item.patchfile }}"
-    if [[ $? -eq 0 ]]
-      then
-        ssh -i {{ ansible_ssh_private_key_file }} {{ ansible_ssh_extra_args }} {{ ansible_ssh_user }}@{{ ansible_ssh_host }} \
-          "unzip -t {{ swlib_path }}/{{ item.patchfile }}"
-        if [[ $? -ne 0 ]]
-          then
-            gsutil cat gs://{{ swlib_mount_src }}/{{ item.patchfile }} | ssh -i {{ ansible_ssh_private_key_file }} {{ ansible_ssh_extra_args }} \
-              {{ ansible_ssh_user }}@{{ ansible_ssh_host }} "cat > {{ swlib_path }}/{{ item.patchfile }}"
-        fi
-      else
-        gsutil cat gs://{{ swlib_mount_src }}/{{ item.patchfile }} | ssh -i {{ ansible_ssh_private_key_file }} {{ ansible_ssh_extra_args }} \
+    gsutil cat gs://{{ swlib_mount_src }}/{{ item.patchfile }} | ssh -i {{ ansible_ssh_private_key_file }} {{ ansible_ssh_extra_args }} \
           {{ ansible_ssh_user }}@{{ ansible_ssh_host }} "cat > {{ swlib_path }}/{{ item.patchfile }}"
-    fi
   args:
     executable: /bin/bash
   with_items:
@@ -176,21 +163,8 @@
 - name: gcscopy | Copy RDBMS OPatch update files from GCS to target instance
   shell: |
     set -o pipefail
-    ssh -i {{ ansible_ssh_private_key_file }} {{ ansible_ssh_extra_args }} {{ ansible_ssh_user }}@{{ ansible_ssh_host }} \
-      "ls {{ swlib_path }}/{{ item.patchfile }}"
-    if [[ $? -eq 0 ]]
-      then
-        ssh -i {{ ansible_ssh_private_key_file }} {{ ansible_ssh_extra_args }} {{ ansible_ssh_user }}@{{ ansible_ssh_host }} \
-          "unzip -t {{ swlib_path }}/{{ item.patchfile }}"
-        if [[ $? -ne 0 ]]
-          then
-            gsutil cat gs://{{ swlib_mount_src }}/{{ item.patchfile }} | ssh -i {{ ansible_ssh_private_key_file }} {{ ansible_ssh_extra_args }} \
-              {{ ansible_ssh_user }}@{{ ansible_ssh_host }} "cat > {{ swlib_path }}/{{ item.patchfile }}"
-        fi
-      else
-        gsutil cat gs://{{ swlib_mount_src }}/{{ item.patchfile }} | ssh -i {{ ansible_ssh_private_key_file }} {{ ansible_ssh_extra_args }} \
+    gsutil cat gs://{{ swlib_mount_src }}/{{ item.patchfile }} | ssh -i {{ ansible_ssh_private_key_file }} {{ ansible_ssh_extra_args }} \
           {{ ansible_ssh_user }}@{{ ansible_ssh_host }} "cat > {{ swlib_path }}/{{ item.patchfile }}"
-    fi
   args:
     executable: /bin/bash
   with_items:

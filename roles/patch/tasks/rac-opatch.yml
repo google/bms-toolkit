@@ -204,7 +204,7 @@
   tags: rac-opatch,stop-home
 
 - name: rac-opatch | Run GI opatch apply
-  command: "{{ grid_home }}/OPatch/{{ patch.method }} {{ '-ocmrf {{ swlib_unzip_path }}/ocm.rsp' if patch.ocm else '' }}"
+  command: "{{ grid_home }}/OPatch/{{ patch.method }} {{ '-ocmrf {{ swlib_unzip_path }}/ocm.rsp' if patch.ocm else '' }} {{non_rolling_clause}}"
   args:
     chdir: "{{ swlib_unzip_path }}/{{ patch.patchnum }}{{ patch.patch_subdir }}"
   loop: "{{ gi_patches | json_query('[?release==`'+ oracle_rel +'`]') }}"

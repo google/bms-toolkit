@@ -49,6 +49,7 @@ published: True
     - [Verify an Oracle cluster](#verify-an-oracle-cluster)
     - [Oracle validation utilities](#oracle-validation-utilities)
   - [Patching](#patching)
+    - [Note on patch metadata](#note-on-patch-metadata)
   - [Patching RAC databases](#patching-rac-databases)
   - [Destructive Cleanup](#destructive-cleanup)
 
@@ -350,6 +351,23 @@ Support")</th>
 <tr>
 <td></td>
 <td>Patch - MOS</td>
+<td>COMBO OF OJVM RU COMPONENT 19.11.0.0.210420 + GI RU 19.11.0.0.210420</td>
+<td>p32578973_190000_Linux-x86-64.zip</td>
+
+
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>COMBO OF OJVM RU COMPONENT 19.10.0.0.210119 + GI RU 19.10.0.0.210119</td>
+<td>p32126842_190000_Linux-x86-64.zip</td>
+</tr>
+
+
+
+<tr>
+<td></td>
+<td></td>
 <td>COMBO OF OJVM RU COMPONENT 19.9.0.0.201020 + GI RU 19.9.0.0.201020</td>
 <td>p31720429_190000_Linux-x86-64.zip</td>
 </tr>
@@ -405,6 +423,19 @@ href="https://support.oracle.com/epmos/faces/PatchResultsNDetails?releaseId=6000
 <tr>
 <td></td>
 <td>Patch - MOS</td>
+<td>COMBO OF OJVM RU COMPONENT 18.14.0.0.210420 + GI RU 18.14.0.0.210420</td>
+<td>p32579024_180000_Linux-x86-64.zip</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>COMBO OF OJVM RU COMPONENT 18.13.0.0.210119 + GI RU 18.13.0.0.210119</td>
+<td>p32126862_180000_Linux-x86-64.zip</td>
+</tr>
+
+<tr>
+<td></td>
+<td></td>
 <td>COMBO OF OJVM RU COMPONENT 18.12.0.0.201020 + GI RU 18.12.0.0.201020</td>
 <td>p31720457_180000_Linux-x86-64.zip</td>
 </tr>
@@ -467,6 +498,18 @@ x86-64</td>
 <tr>
 <td></td>
 <td>Patch - MOS</td>
+<td>COMBO OF OJVM RU COMPONENT 12.2.0.1.210420 + 12.2.0.1.210420 GIAPR2021RU</td>
+<td>p32579057_122010_Linux-x86-64.zip</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>COMBO OF OJVM RU COMPONENT 12.2.0.1.210119 + 12.2.0.1.210119 GIJAN2021RU</td>
+<td>p32126883_122010_Linux-x86-64.zip</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
 <td>COMBO OF OJVM RU COMPONENT 12.2.0.1.201020 + 12.2.0.1.201020 GIOCT2020RU</td>
 <td>p31720486_122010_Linux-x86-64.zip</td>
 </tr>
@@ -2071,7 +2114,7 @@ both the Grid Infrastructure and Database homes by using the
 
 By default, `install-oracle.sh` updates to the latest available patch.  To
 apply a specific patch instead, use the `--no-patch` option in `install-oracle.sh`
-to skip patching at installation time.  After installation is complete,  execute 
+to skip patching at installation time.  After installation is complete,  execute
 `apply-patch.sh` with the `--ora-release` option.  Specify the full release name including
 timestamp;  a list of release names is available in
 https://github.com/google/bms-toolkit/tree/master/roles/common/defaults/main.yml
@@ -2136,6 +2179,50 @@ TASK [patch : Update OPatch in GRID_HOME]
 
 ... output truncated for brevity
 ```
+#### Note on patch metadata
+
+The patching code derives the patch metadata from the following blocks in the file role/common/default/main.yml:
+
+```
+gi_patches:
+...
+- { category: "RU", base: "19.3.0.0.0", release: "19.9.0.0.201020", patchnum: "31720429", patchfile: "p31720429_190000_Linux-x86-64.zip", patch_subdir: "/31750108", prereq_check: FALSE, method: "opatchauto apply", ocm: FALSE, upgrade: FALSE }
+
+
+rdbms_patches:
+...
+- { category: "RU_Combo", base: "19.3.0.0.0", release: "19.9.0.0.201020", patchnum: "31720429", patchfile: "p31720429_190000_Linux-x86-64.zip", patch_subdir: "/31668882", prereq_check: TRUE, method: "opatch apply", ocm: FALSE, upgrade: TRUE }
+```
+
+These metadata numbers can be taken from consulting appropriate MOS Notes, such as:
+* Master Note for Database Proactive Patch Program (Doc ID 888.1)
+* Oracle Database 19c Proactive Patch Information (Doc ID 2521164.1)
+* Database 18c Proactive Patch Information (Doc ID 2369376.1)
+* Database 12.2.0.1 Proactive Patch Information (Doc ID 2285557.1)
+
+Bearing in mind that the GI RU's patch zipfile contains the patch molecules that go both into the GI_HOME as well as the RDBMS_HOME, the Combo patch of OJVM+GI is self-contained as to the necessary patches needed to patch a given host for a given quarter. For example: the patch zipfile `p31720429_190000_Linux-x86-64.zip` contains the following patch directories:
+```
+├── 31720429
+│   ├── 31668882  <================ this is the OJVM RU for that quarter
+│   │   ├── etc
+│   │   ├── files
+│   │   ├── README.html
+│   │   └── README.txt
+│   ├── 31750108  <================ this is GI RU for the given quarter
+│   │   ├── 31771877
+│   │   ├── 31772784
+│   │   ├── 31773437
+│   │   ├── 31780966
+│   │   ├── automation
+│   │   ├── bundle.xml
+│   │   ├── README.html
+│   │   └── README.txt
+│   ├── PatchSearch.xml
+│   └── README.html
+└── PatchSearch.xml
+
+```
+Accordingly the patch_subdir values can be edited, as noted in the foregoing.
 
 ### Patching RAC databases
 

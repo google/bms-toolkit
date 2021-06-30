@@ -13,6 +13,20 @@
 # limitations under the License.
 
 ---
+- name: rac-opatch | Define GI release
+  # If release set to latest then get most recent release from gi_patches array.
+  # Fail if no matching patch can be found after executing the loop.
+  set_fact:
+    oracle_rel: "{% if not ansible_loop.first %}{% if item is version(oracle_rel, '>=') %}{{ item }}{% else %}{{ oracle_rel }}{% endif %}{% else %}{{ item }}{% endif %}"
+  loop: "{{ gi_patches | json_query('[?base==`' + oracle_ver + '`].release') }}"
+  loop_control:
+    extended: yes
+  when:
+    - oracle_rel is defined
+    - oracle_rel == "latest"
+  failed_when: oracle_rel == "latest"
+  tags: rac-opatch,sw-copy
+
 - name: rac-opatch | Create OCM response file
   script: expect_rsp.sh {{ oracle_base }} {{ oracle_home }} {{ swlib_unzip_path }}
   args:

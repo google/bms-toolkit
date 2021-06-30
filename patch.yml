@@ -17,22 +17,13 @@
   hosts: dbasm
   gather_facts: false
   tasks:
-    - name: include defaults
+    - name: Patch | include defaults
       include_vars:
         file: roles/common/defaults/main.yml
 
-    - name: printing oracle_rel
-      debug:
-        msg:
-          - "oracle_rel b4 is : {{ oracle_rel }}"
-
-    - name: printing gi_patches piped into json_query
-      debug:
-        msg:
-          - "Loop variables are: {{ gi_patches | json_query('[?base==`' + oracle_ver + '`].release') }}"
-
-    - name: Get the highest version number from gi_patches array
+    - name: Patch | Get the highest version number from gi_patches array
       set_fact:
+        # Using expression from bms-toolkit/roles/rac-db-setup/tasks/rac-db-install.yml Line 46
         highest_version_num: "{% if not ansible_loop.first %}{% if item is version(highest_version_num, '>=') %}{{ item }}{% else %}{{ highest_version_num }}{% endif %}{% else %}{{ item }}{% endif %}"
       loop: "{{ gi_patches | json_query('[?base==`' + oracle_ver + '`].release') }}"
       loop_control:
@@ -41,25 +32,16 @@
         - oracle_rel is defined
         - oracle_rel != "base"
 
-    - name: printing highest_version_num
-      debug:
-        msg:
-          - "highest_version_num is : {{ highest_version_num }}"
-
-    - name: Set oracle_rel to highest_version_num if oracle_rel == 'latest'
+    - name: Patch | Set oracle_rel to highest_version_num if oracle_rel == 'latest'
       set_fact:
         oracle_rel: "{{ highest_version_num }}"
       when:
         - oracle_rel == 'latest'
 
-    - name: set fact is this is a single node inventory - needed for RAC patching (MOS note 2336186.1)
-      set_fact:
-        non_rolling_clause: "{{ ' -nonrolling' if groups['dbasm'] | length==1 else ' '}}"
-
-    - name: printing oracle_rel and num_nodes_clstr
+    - name: Patch | Printing the Oracle Release that will be installed
       debug:
         msg:
-          - "oracle_rel is : {{ oracle_rel }} and non_rolling_clause is {{ non_rolling_clause }}"
+          - "The Oracle Release that will be installed is : {{ oracle_rel }}"
 
 - name: OPatch Restart patch
   hosts: dbasm
@@ -102,5 +84,3 @@
       db_config_type: RAC
     when: hostvars[groups['dbasm'].0]['cluster_name']|default('', true)|length > 0
   tags: rac-dbpatch
-
-

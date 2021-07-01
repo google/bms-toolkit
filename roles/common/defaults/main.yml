@@ -233,7 +233,8 @@ gi_patches:
   - { category: "PSU", base: "12.1.0.2.0", release: "12.1.0.2.200414", patchnum: "30783882", patchfile: "p30783882_121020_Linux-x86-64.zip", patch_subdir: "/30805421", prereq_check: FALSE, method: "opatchauto apply", ocm: FALSE, upgrade: FALSE }
   - { category: "PSU", base: "12.1.0.2.0", release: "12.1.0.2.200714", patchnum: "31326400", patchfile: "p31326400_121020_Linux-x86-64.zip", patch_subdir: "/31305174", prereq_check: FALSE, method: "opatchauto apply", ocm: FALSE, upgrade: FALSE }
   - { category: "PSU", base: "12.1.0.2.0", release: "12.1.0.2.201020", patchnum: "31720761", patchfile: "p31720761_121020_Linux-x86-64.zip", patch_subdir: "/31718737", prereq_check: FALSE, method: "opatchauto apply", ocm: FALSE, upgrade: FALSE }
-# Not including JAN/APR 2021 RUs for 12.1.0.2, since some customers, when they try to download 2021 RUs, may get: You do not have privileges to download Software Extended Support patches.
+  - { category: "PSU", base: "12.1.0.2.0", release: "12.1.0.2.210119", patchnum: "32126899", patchfile: "p32126899_121020_Linux-x86-64.zip", patch_subdir: "/32131261", prereq_check: FALSE, method: "opatchauto apply", ocm: FALSE, upgrade: FALSE }
+  - { category: "PSU", base: "12.1.0.2.0", release: "12.1.0.2.210420", patchnum: "32579077", patchfile: "p32579077_121020_Linux-x86-64.zip", patch_subdir: "/32495126", prereq_check: FALSE, method: "opatchauto apply", ocm: FALSE, upgrade: FALSE }
 # 12.2.0.1 OJVM + GI RU patch but GI RU used from it
   - { category: "RU", base: "12.2.0.1.0", release: "12.2.0.1.190416", patchnum: "29252072", patchfile: "p29252072_122010_Linux-x86-64.zip", patch_subdir: "/29301687", prereq_check: FALSE, method: "opatchauto apply", ocm: FALSE, upgrade: FALSE }
   - { category: "RU", base: "12.2.0.1.0", release: "12.2.0.1.190716", patchnum: "29699173", patchfile: "p29699173_122010_Linux-x86-64.zip", patch_subdir: "/29708720", prereq_check: FALSE, method: "opatchauto apply", ocm: FALSE, upgrade: FALSE }
@@ -266,7 +267,6 @@ gi_patches:
 #  - { category: "RU", base: "19.3.0.0.0", release: "19.10.0.0.210119", patchnum: "32126842", patchfile: "p32126842_190000_Linux-x86-64.zip", patch_subdir: "/32226239", prereq_check: FALSE, method: "opatchauto apply", ocm: FALSE, upgrade: FALSE }
 #  - { category: "RU", base: "19.3.0.0.0", release: "19.11.0.0.210420", patchnum: "32578973", patchfile: "p32578973_190000_Linux-x86-64.zip", patch_subdir: "/32545008", prereq_check: FALSE, method: "opatchauto apply", ocm: FALSE, upgrade: FALSE }
 
-# data structure "rdbms_patches" contains the OJVM RU patch sub_dir that's derived from combo OJVM patchnum
 rdbms_patches:
 # 11.2.0.4 OJVM packages from Combo
   - { category: "PSU_Combo", base: "11.2.0.4.0", release: "11.2.0.4.190115", patchnum: "28729262", patchfile: "p28729262_112040_Linux-x86-64.zip", patch_subdir: "", prereq_check: FALSE, method: "opatch apply", ocm: TRUE, upgrade: FALSE }
@@ -281,6 +281,8 @@ rdbms_patches:
   - { category: "PSU_Combo", base: "12.1.0.2.0", release: "12.1.0.2.200414", patchnum: "30783882", patchfile: "p30783882_121020_Linux-x86-64.zip", patch_subdir: "/30805558", prereq_check: FALSE, method: "opatch apply", ocm: FALSE, upgrade: TRUE }
   - { category: "PSU_Combo", base: "12.1.0.2.0", release: "12.1.0.2.200714", patchnum: "31326400", patchfile: "p31326400_121020_Linux-x86-64.zip", patch_subdir: "/31219939", prereq_check: FALSE, method: "opatch apply", ocm: FALSE, upgrade: TRUE }
   - { category: "PSU_Combo", base: "12.1.0.2.0", release: "12.1.0.2.201020", patchnum: "31720761", patchfile: "p31720761_121020_Linux-x86-64.zip", patch_subdir: "/31668915", prereq_check: FALSE, method: "opatch apply", ocm: FALSE, upgrade: TRUE }
+  - { category: "PSU_Combo", base: "12.1.0.2.0", release: "12.1.0.2.210119", patchnum: "32126899", patchfile: "p32126899_121020_Linux-x86-64.zip", patch_subdir: "/32119956", prereq_check: FALSE, method: "opatch apply", ocm: FALSE, upgrade: TRUE }
+  - { category: "PSU_Combo", base: "12.1.0.2.0", release: "12.1.0.2.210420", patchnum: "32579077", patchfile: "p32579077_121020_Linux-x86-64.zip", patch_subdir: "/32473164", prereq_check: FALSE, method: "opatch apply", ocm: FALSE, upgrade: TRUE }
 # 12.2.0.1 OJVM packages from Combo
   - { category: "RU_Combo", base: "12.2.0.1.0", release: "12.2.0.1.190416", patchnum: "29252072", patchfile: "p29252072_122010_Linux-x86-64.zip", patch_subdir: "/29249637", prereq_check: TRUE, method: "opatch apply", ocm: FALSE, upgrade: TRUE }
   - { category: "RU_Combo", base: "12.2.0.1.0", release: "12.2.0.1.190716", patchnum: "29699173", patchfile: "p29699173_122010_Linux-x86-64.zip", patch_subdir: "/29774415", prereq_check: TRUE, method: "opatch apply", ocm: FALSE, upgrade: TRUE }

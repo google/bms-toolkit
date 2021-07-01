@@ -99,7 +99,7 @@
   shell: |
     set -o pipefail
     gsutil cat gs://{{ swlib_mount_src }}/{{ item.patchfile }} | ssh -i {{ ansible_ssh_private_key_file }} {{ ansible_ssh_extra_args }} \
-          {{ ansible_ssh_user }}@{{ ansible_ssh_host } "cat > {{ swlib_path }}/{{ item.patchfile }}"
+          {{ ansible_ssh_user }}@{{ ansible_ssh_host }} "cat > {{ swlib_path }}/{{ item.patchfile }}"
   args:
     executable: /bin/bash
   with_items:

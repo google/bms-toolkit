@@ -2181,7 +2181,7 @@ TASK [patch : Update OPatch in GRID_HOME]
 ```
 #### A note on patch metadata
 
-See [docs/quarterly_RU_update.md](docs/quarterly_RU_update.md) for details on
+See [patching-metadata.md](./patching-metadata.md) for details on
 updating quarterly Release Update metadata.
 
 ### Patching RAC databases

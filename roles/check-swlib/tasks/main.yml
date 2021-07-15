@@ -1,0 +1,118 @@
+# Copyright 2020 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+---
+- name: check-swlib | Look up Oracle release
+  #if release set to latest then get most recent release from rdbms_patches array
+  #if nothing returned then set to "base"
+  set_fact:
+    oracle_rel: "{% if oracle_rel == 'latest' %}{{ gi_patches | json_query('[?base==`' + oracle_ver + '`].release')  | sort(reverse=true) | first | default('base', true) }}{% elif oracle_rel == 'base' %}{% else %}{{ oracle_rel }}{% endif %}"
+  when: oracle_rel is defined
+
+- name: check-swlib| Set base if no release found
+  set_fact:
+    oracle_rel: "{% if oracle_rel is search('latest') %}base{% else %}{{ oracle_rel }}{% endif %}"
+  when:
+    - oracle_rel is defined
+    - oracle_rel != "base"
+
+- name: check-swlib | Show resolved Oracle release
+  debug:
+    var: oracle_rel
+
+- name: check-swlib | Validate base software release
+  shell: |
+    set -o pipefail
+    {% for i in item.files %}
+      gsutil ls -L gs://{{ swlib_mount_src }}/{{ i }} | \
+        awk '/md5/ { print $3 }'
+    {% endfor %}
+  args:
+    executable: /bin/bash
+  failed_when: item.md5sum != base_repo_files.stdout_lines
+  changed_when: false
+  ignore_errors: true
+  with_items:
+    - "{{ gi_software }}"
+    - "{{ gi_interim_patches }}"
+    - "{{ rdbms_software }}"
+  when: item.version == oracle_ver
+  register: base_repo_files
+
+- name: check-swlib | Validate patchesets
+  shell: |
+    set -o pipefail
+    gsutil ls -L gs://{{ swlib_mount_src }}/{{ item.patchfile }} | \
+      awk '/md5/ { print $3 }'
+  args:
+    executable: /bin/bash
+  failed_when: item.md5sum != patch_repo_files.stdout
+  changed_when: false
+  ignore_errors: true
+  with_items:
+    - "{{ gi_patches }}"
+    - "{{ rdbms_patches }}"
+  when: item.base == oracle_ver and item.release == oracle_rel
+  register: patch_repo_files
+
+# We can't reliably check hashes for opatch, as the same file name
+# can have different values based on version.
+- name: check-swlib | Validate opatch patches
+  shell: |
+    set -o pipefail
+    gsutil ls -L gs://{{ swlib_mount_src }}/{{ item.patchfile }} | \
+      awk '/Content-Length/ { print $2 }'
+  args:
+    executable: /bin/bash
+  failed_when: opatch_repo_files.stdout <= "0"
+  changed_when: false
+  ignore_errors: true
+  with_items:
+    - "{{ opatch_patches }}"
+  when: item.release == oracle_ver
+  register: opatch_repo_files
+
+- name: check-swlib | Report gsutil failures (base)
+  fail:
+    msg: "ERROR locating {{ item.item.name }} {{ item.item.files }}: {{ item.stderr_lines }}"
+  when: item.rc is defined and item.rc != 0
+  with_items:
+    - "{{ base_repo_files.results }}"
+
+- name: check-swlib | Report gsutil failures (patch)
+  fail:
+    msg: "ERROR locating {{ item.item.category }} patch {{ item.item.patchfile }}: {{ item.stderr_lines }}"
+  when: item.rc is defined and item.rc != 0
+  with_items:
+    - "{{ patch_repo_files.results }}"
+    - "{{ opatch_repo_files.results }}"
+
+- name: check-swlib | Report MD5 mismatches (base)
+  fail:
+    msg: |
+      MD5 mismatch: expected {{ item.item.md5sum }} got {{ item.stdout_lines }}
+      for {{ item.item.name }} {{ item.item.files }}
+  when:  item.failed is defined and item.failed == true
+  with_items:
+    - "{{ base_repo_files.results }}"
+
+- name: check-swlib | Report MD5 mismatches (patch)
+  fail:
+    msg: |
+      MD5 mismatch: expected {{ item.item.md5sum }} got {{ item.stdout_lines }}
+      for {{ item.item.category }} patch {{ item.item.patchfile }}
+  when:  item.failed is defined and item.failed == true
+  with_items:
+    - "{{ patch_repo_files.results }}"
+    - "{{ opatch_repo_files.results }}"

@@ -33,7 +33,7 @@ ORA_EDITION="${ORA_EDITION:-EE}"
 ORA_EDITION_PARAM="^(EE|SE|SE2)$"
 
 ORA_SWLIB_BUCKET="${ORA_SWLIB_BUCKET}"
-ORA_SWLIB_BUCKET_PARAM='^gs://.+$'
+ORA_SWLIB_BUCKET_PARAM='^gs://.+[^/]$'
 
 GETOPT_MANDATORY="ora-swlib-bucket:"
 GETOPT_OPTIONAL="ora-version:,ora-release:,ora-edition:,no-patch,cluster_type:"
@@ -105,6 +105,7 @@ done
 }
 [[ ! "$ORA_SWLIB_BUCKET" =~ $ORA_SWLIB_BUCKET_PARAM ]] && {
     echo "Incorrect parameter provided for ora-swlib-bucket: $ORA_SWLIB_BUCKET"
+    echo "Example: gs://my-gcs-bucket"
     exit 1
 }
 

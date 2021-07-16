@@ -41,7 +41,7 @@
   #if nothing returned then set to "base" in next task
   set_fact:
     oracle_rel: "{% if not ansible_loop.first %}{% if item is version(oracle_rel, '>=') %}{{ item }}{% else %}{{ oracle_rel }}{% endif %}{% else %}{{ item }}{% endif %}"
-  loop: "{{ gi_patches | json_query('[?base==`' + oracle_ver + '`].release') }}"
+  loop: "{{ gi_patches | selectattr('base', '==', oracle_ver) | map(attribute='release') | list }}"
   loop_control:
     extended: yes
   when:

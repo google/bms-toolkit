@@ -20,7 +20,7 @@
   - include_role:
       name: patch
       tasks_from: patch_vars.yml
-  tags: populate_variables
+  tags: patch_vars
 
 - name: OPatch Restart patch
   hosts: dbasm

@@ -1,0 +1,39 @@
+# Copyright 2020 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+---
+- name: patch_vars | Get the highest version number from gi_patches array
+  set_fact:
+    # Using expression from bms-toolkit/roles/rac-db-setup/tasks/rac-db-install.yml Line 46
+    highest_version_num: "{% if not ansible_loop.first %}{% if item is version(highest_version_num, '>=') %}{{ item }}{% else %}{{ highest_version_num }}{% endif %}{% else %}{{ item }}{% endif %}"
+  loop: "{{ gi_patches | json_query('[?base==`' + oracle_ver + '`].release') }}"
+  loop_control:
+    extended: yes
+  when:
+    - oracle_rel is defined
+    - oracle_rel != "base"
+  tags: patch_vars
+
+- name: patch_vars | Set oracle_rel to highest_version_num if oracle_rel == 'latest'
+  set_fact:
+    oracle_rel: "{{ highest_version_num }}"
+  when:
+    - oracle_rel == 'latest'
+  tags: patch_vars
+
+- name: patch_vars | Printing the Oracle Release that will be installed
+  debug:
+    msg:
+      - "The Oracle Release that will be installed is : {{ oracle_rel }}"
+  tags: patch_vars

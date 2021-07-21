@@ -13,11 +13,7 @@
 # limitations under the License.
 
 ---
-- name: Patch | include defaults
-  include_vars:
-    file: roles/common/defaults/main.yml
-
-- name: Patch | Get the highest version number from gi_patches array
+- name: patch | Get the highest version number from gi_patches array
   set_fact:
     # Using expression from bms-toolkit/roles/rac-db-setup/tasks/rac-db-install.yml Line 46
     highest_version_num: "{% if not ansible_loop.first %}{% if item is version(highest_version_num, '>=') %}{{ item }}{% else %}{{ highest_version_num }}{% endif %}{% else %}{{ item }}{% endif %}"
@@ -27,14 +23,17 @@
   when:
     - oracle_rel is defined
     - oracle_rel != "base"
+  tags: patch_vars
 
-- name: Patch | Set oracle_rel to highest_version_num if oracle_rel == 'latest'
+- name: patch | Set oracle_rel to highest_version_num if oracle_rel == 'latest'
   set_fact:
     oracle_rel: "{{ highest_version_num }}"
   when:
     - oracle_rel == 'latest'
+  tags: patch_vars
 
-- name: Patch | Printing the Oracle Release that will be installed
+- name: patch | Printing the Oracle Release that will be installed
   debug:
     msg:
       - "The Oracle Release that will be installed is : {{ oracle_rel }}"
+  tags: patch_vars

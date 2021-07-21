@@ -14,7 +14,7 @@
 
 ---
 - name: Set correct RDBMS release 
-  hosts: localhost
+  hosts: dbasm
   gather_facts: false
   tasks:
   - include_role:

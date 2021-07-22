@@ -39,7 +39,7 @@
   tags: selinux
 
 - name: Ensure NOZEROCONF=yes is in /etc/sysconfig/network
-  lineinfile: 
+  lineinfile:
     dest: /etc/sysconfig/network
     regexp: '^NOZEROCONF'
     line: 'NOZEROCONF=yes'
@@ -270,36 +270,16 @@
      - asm_disk_input {{ asm_disk_input }}
   tags: asm-disks
 
-- name: (udev) Add ASM disk rules on virtualbox
+- name: (udev) Add ASM disk rules (non-multipath)
   become: yes
   become_user: root
   blockinfile:
-    block: "KERNEL==\"sd?1\", SUBSYSTEM==\"block\", PROGRAM==\"/usr/lib/udev/scsi_id -g -u -d /dev/$parent\", RESULT==\"1{{ hostvars[inventory_hostname]['ansible_device_links']['ids']['%s' | format( item.1.blk_device | regex_replace('/dev/') )][0] | regex_replace('ata-','ATA_') }}\", SYMLINK+=\"{{ path_udev }}/{{ item.1.name }}\", OWNER=\"{{ grid_user }}\", GROUP=\"{{ grid_group }}\", MODE=\"0660\""
+    block: "KERNEL==\"sd?1\", SUBSYSTEM==\"block\", PROGRAM==\"/usr/lib/udev/scsi_id -g -u -d /dev/$parent\", RESULT==\"{{ hostvars[inventory_hostname]['ansible_device_links']['ids']['%s' | format( item.1.blk_device | regex_replace('/dev/') )] | select('match','scsi-') | first | regex_replace('scsi-') }}\", SYMLINK+=\"{{ path_udev }}/{{ item.1.name }}\", OWNER=\"{{ grid_user }}\", GROUP=\"{{ grid_group }}\", MODE=\"0660\""
     dest: "/etc/udev/rules.d/99-oracle-asmdevices.rules"
     marker: "# {mark} ASM disk udev rules for {{ item.1.name }}:"
     create: yes
   register: udevRules
   when:
-    - ansible_virtualization_type == "virtualbox"
-    - asm_disk_management == "udev"
-    - "'mapper' not in item.1.blk_device"
-  with_subelements:
-    - "{{ asm_disks }}"
-    - disks
-  tags: asm-disks
-
-- name: (udev) Add ASM disk rules on baremetal (not mpath)
-  become: yes
-  become_user: root
-  blockinfile:
-    block: "KERNEL==\"sd?1\", SUBSYSTEM==\"block\", PROGRAM==\"/usr/lib/udev/scsi_id -g -u -d /dev/$parent\", RESULT==\"{{ hostvars[inventory_hostname]['ansible_device_links']['ids']['%s' | format( item.1.blk_device | regex_replace('/dev/') )][0] | regex_replace('scsi-') }}\", SYMLINK+=\"{{ path_udev }}/{{ item.1.name }}\", OWNER=\"{{ grid_user }}\", GROUP=\"{{ grid_group }}\", MODE=\"0660\""
-    dest: "/etc/udev/rules.d/99-oracle-asmdevices.rules"
-    marker: "# {mark} ASM disk udev rules for {{ item.1.name }}:"
-    create: yes
-  register: udevRules
-  when:
-    - ansible_virtualization_type == "kvm"
-    - ansible_virtualization_role == "host"
     - asm_disk_management == "udev"
     - "'mapper' not in item.1.blk_device"
   with_subelements:
@@ -349,26 +329,6 @@
   with_items:
     - "{{ uuid_result.keys() }}"
   tags: udev_mpath
-
-- name: (udev) Add ASM disk rules on GCE
-  become: yes
-  become_user: root
-  blockinfile:
-    block: "KERNEL==\"sd?1\", SUBSYSTEM==\"block\", PROGRAM==\"/usr/lib/udev/scsi_id -g -u -d /dev/$parent\", RESULT==\"{{ hostvars[inventory_hostname]['ansible_device_links']['ids']['%s' | format( item.1.blk_device | regex_replace('/dev/') )][1] | regex_replace('scsi-') }}\", SYMLINK+=\"{{ path_udev }}/{{ item.1.name }}\", OWNER=\"{{ grid_user }}\", GROUP=\"{{ grid_group }}\", MODE=\"0660\""
-    dest: "/etc/udev/rules.d/99-oracle-asmdevices.rules"
-    marker: "# {mark} ASM disk udev rules for {{ item.1.name }}:"
-    create: yes
-  register: udevRules
-  when:
-    - ansible_system_vendor == "Google"
-    - ansible_virtualization_type == "kvm"
-    - ansible_virtualization_role == "guest"
-    - asm_disk_management == "udev"
-    - "'mapper' not in item.1.blk_device"
-  with_subelements:
-    - "{{ asm_disks }}"
-    - disks
-  tags: asm-disks
 
 - name: (udev) reload rules
   become: yes

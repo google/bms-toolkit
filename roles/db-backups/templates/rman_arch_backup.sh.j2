@@ -32,6 +32,25 @@ source oraenv <<< "${ora_inst_name}" > /dev/null 2>&1
 outfile="${log_dir}/rman_${start_ts}_${type}.out"
 logfile="${log_dir}/rman_${start_ts}_${type}.log"
 #
+# Check if $log_dir exists; if not, we create it
+#
+if [[ ! -d "${log_dir}" ]]; then
+  if mkdir -p "${log_dir}"; then
+    printf "\n\t%s\n\n" "INFO -- $($ts) -- ${log_dir} successfully created."
+  else
+    printf "\n\t%s\n\n" "ERROR -- $($ts) -- Impossible to create ${log_dir}; we wont be able to log this backup."
+  fi
+fi
+if [[ $backup_dest == "/"* ]]; then
+  # Filesystem destination
+  autobackup_format="${backup_dest}/${ora_inst_name}_%F"
+  channel_format="${backup_dest}/${ora_inst_name}_${type}_level_${rman_level}_%U"
+else
+  # ASM destination;  no need for format specifiers
+  autobackup_format="${backup_dest}"
+  channel_format="${backup_dest}"
+fi
+#
 # Do the backup
 #
 if "${ORACLE_HOME}/bin/rman" >> "${outfile}" << EOF

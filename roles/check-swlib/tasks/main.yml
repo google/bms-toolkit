@@ -13,29 +13,6 @@
 # limitations under the License.
 
 ---
-- name: check-swlib | Define Oracle release
-  #if release set to latest then get most recent release from gi_patches array
-  #if nothing returned then set to "base" in next task
-  set_fact:
-    oracle_rel: "{% if not ansible_loop.first %}{% if item is version(oracle_rel, '>=') %}{{ item }}{% else %}{{ oracle_rel }}{% endif %}{% else %}{{ item }}{% endif %}"
-  loop: "{{ gi_patches | selectattr('base', 'match', oracle_ver) | map(attribute='release') | list }}"
-  loop_control:
-    extended: yes
-  when:
-    - oracle_rel is defined
-    - oracle_rel != "base"
-
-- name: check-swlib| Set base if no release found
-  set_fact:
-    oracle_rel: "{% if oracle_rel is search('latest') %}base{% else %}{{ oracle_rel }}{% endif %}"
-  when:
-    - oracle_rel is defined
-    - oracle_rel != "base"
-
-- name: check-swlib | Show resolved Oracle release
-  debug:
-    var: oracle_rel
-
 - name: check-swlib | Validate base software release
   shell: |
     set -o pipefail

@@ -1,4 +1,5 @@
-- hosts: localhost
+- name: Set correct RDBMS release
+  hosts: localhost
   connection: local
   gather_facts: false
   pre_tasks:
@@ -7,6 +8,16 @@
         that: "ansible_version.full is version_compare('2.8', '>=')"
         fail_msg: "You must update Ansible to at least 2.8 to use these playbooks"
         success_msg: "Ansible version is {{ ansible_version.full }}, continuing"
+  tasks:
+  - include_role:
+      name: patch
+      tasks_from: patch_vars.yml
+  tags: patch-vars
+
+- name: Check swlib
+  hosts: localhost
+  connection: local
+  gather_facts: false
   tasks:
   - include_role:
       name: check-swlib

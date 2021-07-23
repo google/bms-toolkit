@@ -36,7 +36,7 @@ ORA_SWLIB_BUCKET="${ORA_SWLIB_BUCKET}"
 ORA_SWLIB_BUCKET_PARAM='^gs://.+[^/]$'
 
 GETOPT_MANDATORY="ora-swlib-bucket:"
-GETOPT_OPTIONAL="ora-version:,ora-release:,ora-edition:,no-patch,cluster_type:"
+GETOPT_OPTIONAL="ora-version:,ora-release:,ora-edition:,no-patch,cluster_type:,help"
 
 GETOPT_LONG="$GETOPT_MANDATORY,$GETOPT_OPTIONAL"
 GETOPT_SHORT="h"

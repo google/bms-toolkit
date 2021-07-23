@@ -95,24 +95,14 @@
   when: item.release == oracle_rel and patching_type == "gi_patching"
   failed_when: shell_result.stderr != ""
 
+# overwrite opatch zipfile on BMS host from gcs every time that may be cached currently in {{ swlib_path }}
+# reason to overwrite is that the opatch zipfile in MOS is named the same, example: p6880880_190000_Linux-x86-64.zip
+# this change downloads OPatch from GCS bucket every time with neglible overhead as opatch zip file is typically ~120M
 - name: gcscopy | Copy GI OPatch update files from GCS to target instance
   shell: |
     set -o pipefail
-    ssh -i {{ ansible_ssh_private_key_file }} {{ ansible_ssh_extra_args }} {{ ansible_ssh_user }}@{{ ansible_ssh_host }} \
-      "ls {{ swlib_path }}/{{ item.patchfile }}"
-    if [[ $? -eq 0 ]]
-      then
-        ssh -i {{ ansible_ssh_private_key_file }} {{ ansible_ssh_extra_args }} {{ ansible_ssh_user }}@{{ ansible_ssh_host }} \
-          "unzip -t {{ swlib_path }}/{{ item.patchfile }}"
-        if [[ $? -ne 0 ]]
-          then
-            gsutil cat gs://{{ swlib_mount_src }}/{{ item.patchfile }} | ssh -i {{ ansible_ssh_private_key_file }} {{ ansible_ssh_extra_args }} \
-              {{ ansible_ssh_user }}@{{ ansible_ssh_host }} "cat > {{ swlib_path }}/{{ item.patchfile }}"
-        fi
-      else
-        gsutil cat gs://{{ swlib_mount_src }}/{{ item.patchfile }} | ssh -i {{ ansible_ssh_private_key_file }} {{ ansible_ssh_extra_args }} \
+    gsutil cat gs://{{ swlib_mount_src }}/{{ item.patchfile }} | ssh -i {{ ansible_ssh_private_key_file }} {{ ansible_ssh_extra_args }} \
           {{ ansible_ssh_user }}@{{ ansible_ssh_host }} "cat > {{ swlib_path }}/{{ item.patchfile }}"
-    fi
   args:
     executable: /bin/bash
   with_items:
@@ -173,24 +163,14 @@
   when: item.version == oracle_ver and patching_type is not defined
   failed_when: shell_result.stderr != ""
 
+# overwrite opatch zipfile on BMS host from gcs every time that may be cached currently in {{ swlib_path }}
+# reason to overwrite is that the opatch zipfile in MOS is named the same, example: p6880880_190000_Linux-x86-64.zip
+# this change downloads OPatch from GCS bucket every time with neglible overhead as opatch zip file is typically ~120M
 - name: gcscopy | Copy RDBMS OPatch update files from GCS to target instance
   shell: |
     set -o pipefail
-    ssh -i {{ ansible_ssh_private_key_file }} {{ ansible_ssh_extra_args }} {{ ansible_ssh_user }}@{{ ansible_ssh_host }} \
-      "ls {{ swlib_path }}/{{ item.patchfile }}"
-    if [[ $? -eq 0 ]]
-      then
-        ssh -i {{ ansible_ssh_private_key_file }} {{ ansible_ssh_extra_args }} {{ ansible_ssh_user }}@{{ ansible_ssh_host }} \
-          "unzip -t {{ swlib_path }}/{{ item.patchfile }}"
-        if [[ $? -ne 0 ]]
-          then
-            gsutil cat gs://{{ swlib_mount_src }}/{{ item.patchfile }} | ssh -i {{ ansible_ssh_private_key_file }} {{ ansible_ssh_extra_args }} \
-              {{ ansible_ssh_user }}@{{ ansible_ssh_host }} "cat > {{ swlib_path }}/{{ item.patchfile }}"
-        fi
-      else
-        gsutil cat gs://{{ swlib_mount_src }}/{{ item.patchfile }} | ssh -i {{ ansible_ssh_private_key_file }} {{ ansible_ssh_extra_args }} \
+    gsutil cat gs://{{ swlib_mount_src }}/{{ item.patchfile }} | ssh -i {{ ansible_ssh_private_key_file }} {{ ansible_ssh_extra_args }} \
           {{ ansible_ssh_user }}@{{ ansible_ssh_host }} "cat > {{ swlib_path }}/{{ item.patchfile }}"
-    fi
   args:
     executable: /bin/bash
   with_items:

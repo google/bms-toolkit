@@ -24,8 +24,8 @@ swlib_path_default: "{{ oracle_user_data_mounts|selectattr('purpose', 'match', '
 
 # Installation related variables from dbasm
 oracle_user_data_mounts_default:
-  - { purpose: software, blk_device: /dev/BOGUS, fstype: xfs, mount_point: /u01, mount_opts: "defaults" }
-  - { purpose: diag, blk_device: /dev/BOGUS, fstype: xfs, mount_point: /u02, mount_opts: "defaults" }
+  - { purpose: software, blk_device: /dev/BOGUS, fstype: xfs, mount_point: /u01, mount_opts: "nofail" }
+  - { purpose: diag, blk_device: /dev/BOGUS, fstype: xfs, mount_point: /u02, mount_opts: "nofail" }
 data_mounts_definition_file: "{{ lookup('env','ORA_DATA_MOUNTS')|default('data_mounts_config.json',true) }}"
 data_mounts_input: "{{ lookup('file',data_mounts_definition_file,errors='ignore') }}"
 oracle_user_data_mounts: "{{ data_mounts_input | default(oracle_user_data_mounts_default,true) }}"

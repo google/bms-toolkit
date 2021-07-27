@@ -49,6 +49,7 @@ published: True
     - [Verify an Oracle cluster](#verify-an-oracle-cluster)
     - [Oracle validation utilities](#oracle-validation-utilities)
   - [Patching](#patching)
+    - [A note on patch metadata](#a-note-on-patch-metadata)
   - [Patching RAC databases](#patching-rac-databases)
   - [Destructive Cleanup](#destructive-cleanup)
 
@@ -350,6 +351,23 @@ Support")</th>
 <tr>
 <td></td>
 <td>Patch - MOS</td>
+<td>COMBO OF OJVM RU COMPONENT 19.11.0.0.210420 + GI RU 19.11.0.0.210420</td>
+<td>p32578973_190000_Linux-x86-64.zip</td>
+
+
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>COMBO OF OJVM RU COMPONENT 19.10.0.0.210119 + GI RU 19.10.0.0.210119</td>
+<td>p32126842_190000_Linux-x86-64.zip</td>
+</tr>
+
+
+
+<tr>
+<td></td>
+<td></td>
 <td>COMBO OF OJVM RU COMPONENT 19.9.0.0.201020 + GI RU 19.9.0.0.201020</td>
 <td>p31720429_190000_Linux-x86-64.zip</td>
 </tr>
@@ -405,6 +423,19 @@ href="https://support.oracle.com/epmos/faces/PatchResultsNDetails?releaseId=6000
 <tr>
 <td></td>
 <td>Patch - MOS</td>
+<td>COMBO OF OJVM RU COMPONENT 18.14.0.0.210420 + GI RU 18.14.0.0.210420</td>
+<td>p32579024_180000_Linux-x86-64.zip</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>COMBO OF OJVM RU COMPONENT 18.13.0.0.210119 + GI RU 18.13.0.0.210119</td>
+<td>p32126862_180000_Linux-x86-64.zip</td>
+</tr>
+
+<tr>
+<td></td>
+<td></td>
 <td>COMBO OF OJVM RU COMPONENT 18.12.0.0.201020 + GI RU 18.12.0.0.201020</td>
 <td>p31720457_180000_Linux-x86-64.zip</td>
 </tr>
@@ -467,6 +498,18 @@ x86-64</td>
 <tr>
 <td></td>
 <td>Patch - MOS</td>
+<td>COMBO OF OJVM RU COMPONENT 12.2.0.1.210420 + 12.2.0.1.210420 GIAPR2021RU</td>
+<td>p32579057_122010_Linux-x86-64.zip</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>COMBO OF OJVM RU COMPONENT 12.2.0.1.210119 + 12.2.0.1.210119 GIJAN2021RU</td>
+<td>p32126883_122010_Linux-x86-64.zip</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
 <td>COMBO OF OJVM RU COMPONENT 12.2.0.1.201020 + 12.2.0.1.201020 GIOCT2020RU</td>
 <td>p31720486_122010_Linux-x86-64.zip</td>
 </tr>
@@ -870,7 +913,7 @@ file:
         "name": "u01",
         "fstype":"xfs",
         "mount_point":"/u01",
-        "mount_opts":"defaults"
+        "mount_opts":"nofail"
     },
     {
         "purpose": "diag",
@@ -878,7 +921,7 @@ file:
         "name": "u02",
         "fstype":"xfs",
         "mount_point":"/u02",
-        "mount_opts":"defaults"
+        "mount_opts":"nofail"
     }
 ]
 ```
@@ -2071,7 +2114,7 @@ both the Grid Infrastructure and Database homes by using the
 
 By default, `install-oracle.sh` updates to the latest available patch.  To
 apply a specific patch instead, use the `--no-patch` option in `install-oracle.sh`
-to skip patching at installation time.  After installation is complete,  execute 
+to skip patching at installation time.  After installation is complete,  execute
 `apply-patch.sh` with the `--ora-release` option.  Specify the full release name including
 timestamp;  a list of release names is available in
 https://github.com/google/bms-toolkit/tree/master/roles/common/defaults/main.yml
@@ -2136,6 +2179,10 @@ TASK [patch : Update OPatch in GRID_HOME]
 
 ... output truncated for brevity
 ```
+#### A note on patch metadata
+
+See [patching-metadata.md](./patching-metadata.md) for details on
+updating quarterly Release Update metadata.
 
 ### Patching RAC databases
 

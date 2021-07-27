@@ -13,7 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
+echo Command used:
+echo "$0 $@"
+echo
 
 GETOPT_MANDATORY="ora-version:,inventory-file:,yes-i-am-sure"
 GETOPT_OPTIONAL="ora-role-separation:,ora-disk-mgmt:,ora-swlib-path:,ora-staging:,ora-asm-disks:,ora-data-mounts:,help"

@@ -35,7 +35,7 @@ Toolkit for installing and creating an initial Oracle database on Bare Metal Sol
             "name": "u01",
             "fstype":"xfs",
             "mount_point":"/u01",
-            "mount_opts":"defaults"
+            "mount_opts":"nofail"
         }
     ]
     ```

@@ -14,5 +14,5 @@
 
 ---
 oracle_user_data_mounts:
-  - { purpose: software, blk_device: /dev/sdb, fstype: xfs, mount_point: /u01, mount_opts: default }
-  - { purpose: other, blk_device: /dev/sdc, fstype: xfs, mount_point: /u02 , mount_opts: default}
+  - { purpose: software, blk_device: /dev/sdb, fstype: xfs, mount_point: /u01, mount_opts: nofail }
+  - { purpose: other, blk_device: /dev/sdc, fstype: xfs, mount_point: /u02 , mount_opts: nofail }

@@ -913,7 +913,7 @@ file:
         "name": "u01",
         "fstype":"xfs",
         "mount_point":"/u01",
-        "mount_opts":"defaults"
+        "mount_opts":"nofail"
     },
     {
         "purpose": "diag",
@@ -921,7 +921,7 @@ file:
         "name": "u02",
         "fstype":"xfs",
         "mount_point":"/u02",
-        "mount_opts":"defaults"
+        "mount_opts":"nofail"
     }
 ]
 ```

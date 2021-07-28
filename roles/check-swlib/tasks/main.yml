@@ -32,7 +32,7 @@
   when: item.version == oracle_ver
   register: base_repo_files
 
-- name: check-swlib | Validate patchesets
+- name: check-swlib | Validate patchsets
   shell: |
     set -o pipefail
     gsutil ls -L gs://{{ swlib_mount_src }}/{{ item.patchfile }} | \

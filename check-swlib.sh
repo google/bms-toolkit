@@ -13,6 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+echo Command used:
+echo "$0 $@"
+echo
+
 shopt -s nocasematch
 
 # Check if we're using the Mac stock getopt and fail if true

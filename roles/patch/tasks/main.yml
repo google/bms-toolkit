@@ -39,14 +39,6 @@
   become: yes
   become_user: root
 
-- name: (GI) Copy patches from bucket
-  import_role:
-    name: swlib
-    tasks_from: gcscopy
-  vars:
-    patching_type: gi_patching
-  tags: patch-grid,sw-copy
-
 - name: (GI) Update OPatch
   unarchive:
     src: "{{ swlib_path }}/{{ item.patchfile }}"
@@ -132,14 +124,6 @@
   become: yes
   become_user: root
   tags: patch-grid,sw-remove
-
-- name: (RDBMS) Copy patches from bucket
-  import_role:
-    name: swlib
-    tasks_from: gcscopy
-  vars:
-    patching_type: db_patching
-  tags: patch-rdbms,sw-copy
 
 - name: (RDBMS) Unzip patch
   unarchive:

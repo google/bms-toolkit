@@ -17,7 +17,7 @@
 # Installation related variables:
 swlib_path: "{{ lookup('env','ORA_SWLIB_PATH')|lower|default(swlib_path_default,true) }}"
 swlib_unzip_path: "{{ lookup('env','ORA_STAGING')|lower|default(swlib_path,true) }}"
-swlib_mount_type: "{{ lookup('env','ORA_SWLIB_TYPE')|lower|default('',true) }}" #absent for gcsfuse or nfs
+swlib_mount_type: "{{ lookup('env','ORA_SWLIB_TYPE')|lower|default('gcs',true) }}" #absent for gcsfuse or nfs
 swlib_mount_src: "{{ lookup('env','ORA_SWLIB_BUCKET')|default('',true) | regex_replace ('^gs://') }}"
 swlib_gcs_service_account_file: "{{ lookup('env','ORA_SWLIB_CREDENTIALS')|default('',true) }}"
 swlib_path_default: "{{ oracle_user_data_mounts|selectattr('purpose', 'match', '^software$') | map(attribute='mount_point') | list | first }}/swlib"
@@ -131,4 +131,3 @@ install_rdbms: true
 disable_firewall: false
 
 ## End of non-modifiable variables section
-

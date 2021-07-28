@@ -10,9 +10,9 @@
         success_msg: "Ansible version is {{ ansible_version.full }}, continuing"
   tasks:
   - include_role:
-      name: patch
-      tasks_from: patch_vars.yml
-  tags: patch-vars
+      name: common
+      tasks_from: populate-vars.yml
+  tags: check-swlib
 
 - name: Check swlib
   hosts: localhost

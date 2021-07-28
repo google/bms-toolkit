@@ -1,0 +1,41 @@
+# Copyright 2020 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+---
+- name: populate-vars | Resolve software release
+  #if release set to latest then get most recent release from gi_patches array
+  #if nothing returned then set to "base" in next task
+  set_fact:
+    oracle_rel: "{% if not ansible_loop.first %}{% if item is version(oracle_rel, '>=') %}{{ item }}{% else %}{{ oracle_rel }}{% endif %}{% else %}{{ item }}{% endif %}"
+  loop: "{{ gi_patches | selectattr('base', 'match', oracle_ver) | map(attribute='release') | list }}"
+  loop_control:
+    extended: yes
+  when:
+    - oracle_rel is defined
+    - oracle_rel != "base"
+  tags: oracle-rel
+
+- name: populate-vars | Set base if no release found
+  set_fact:
+    oracle_rel: "{% if oracle_rel is search('latest') %}base{% else %}{{ oracle_rel }}{% endif %}"
+  when:
+    - oracle_rel is defined
+    - oracle_rel != "base"
+  tags: oracle-rel
+
+- name: populate-vars | Show resolved release
+  debug:
+    var:
+      oracle_rel
+  tags: oracle-rel

@@ -43,41 +43,6 @@
       - "Using installer dir  : {{ runinstaller_loc }}"
   tags: rac-db
 
-- name: rac-db-install | Define RDBMS release
-  #if release set to latest then get most recent release from rdbms_patches array
-  #if nothing returned then set to "base" in next task
-  set_fact:
-    oracle_rel: "{% if not ansible_loop.first %}{% if item is version(oracle_rel, '>=') %}{{ item }}{% else %}{{ oracle_rel }}{% endif %}{% else %}{{ item }}{% endif %}"
-  loop: "{{ gi_patches | json_query('[?base==`' + oracle_ver + '`].release') }}"
-  loop_control:
-    extended: yes
-  when:
-    - oracle_rel is defined
-    - oracle_rel != "base"
-  tags: rac-db,rel-patch
-
-- name: rac-db-install | Set base if no release found
-  set_fact:
-    oracle_rel: "{% if oracle_rel is search('latest') %}base{% else %}{{ oracle_rel }}{% endif %}"
-  when:
-    - oracle_rel is defined
-    - oracle_rel != "base"
-  tags: rac-db,rel-patch
-
-- name: rac-db-install | List RDBMS release
-  debug:
-    msg: "RDBMS release: {{ oracle_rel }}"
-  tags: rac-db,rel-patch
-
-- name: rac-db-install | Copy RDBMS patch
-  import_role:
-    name: swlib
-    tasks_from: gcscopy
-  vars:
-    patching_type: gi_patching
-  when: oracle_rel != "base"
-  tags: rac-db,sw-copy
-
 - name: rac-db-install | Create DB directories
   become: yes
   become_user: root

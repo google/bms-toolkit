@@ -39,14 +39,6 @@
   become: yes
   become_user: root
 
-- name: rac-opatch | Copy patches from bucket
-  import_role:
-    name: swlib
-    tasks_from: gcscopy
-  vars:
-    patching_type: gi_patching
-  tags: rac-opatch,sw-copy
-
 - name: rac-opatch | Update GI OPatch
   unarchive:
     src: "{{ swlib_path }}/{{ item.patchfile }}"
@@ -249,14 +241,6 @@
   delegate_to: localhost
   when: oracle_ver in ['12.1.0.2.0','12.2.0.1.0'] and home_type == 'GRID'
   tags: rac-opatch
-
-- name: rac-opatch | Copy RDBMS patches
-  import_role:
-    name: swlib
-    tasks_from: gcscopy
-  vars:
-    patching_type: db_patching
-  tags: rac-opatch,sw-copy
 
 - name: rac-opatch | Unzip RDBMS patch
   unarchive:

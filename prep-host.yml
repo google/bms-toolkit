@@ -13,6 +13,15 @@
 # limitations under the License.
 
 ---
+
+- name: Populate variables
+  hosts: dbasm
+  tasks:
+  - include_role:
+      name: common
+      tasks_from: populate-vars.yml
+  tags: populate-vars
+
 - hosts: dbasm
   become: yes
   become_user: root
@@ -26,5 +35,9 @@
     - { role: base-provision, tags: base-provision }
     - { role: host-storage, tags: host-storage }
     - { role: ora-host, tags: ora-host }
-    - { role: swlib, tags: swlib }
     - { role: hugepages, tags: hugepages }
+
+- hosts: dbasm[0]
+  become: no
+  roles:
+    - { role: swlib, tags: swlib }

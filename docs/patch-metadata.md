@@ -22,7 +22,7 @@ These metadata numbers can be taken from consulting appropriate MOS Notes, such 
 The md5sum can be determined by listing the file once in a GCS bucket:
 
 ```
-$ gsutil ls -L gs://example-buckeet/p32578973_190000_Linux-x86-64.zip | grep md5
+$ gsutil ls -L gs://example-bucket/p32578973_190000_Linux-x86-64.zip | grep md5
     Hash (md5):             YLEOruyjCOdDvUOMBUazNQ==
 ```
 

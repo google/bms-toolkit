@@ -2121,7 +2121,7 @@ https://github.com/google/bms-toolkit/tree/master/roles/common/defaults/main.yml
 under `gi-patches` and `rdbms-patches`.
 
 A digest of the required patch files, including checksum hashes is provided in
-the file `oracle-swlib.csv`.
+the file `roles/common/defaults/main.yml`.
 
 To apply patches, you need to specify the location of the software library. You
 can optionally specify the base database version, the release to patch to, the

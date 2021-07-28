@@ -102,7 +102,7 @@ CLUSTER_TYPE="${CLUSTER_TYPE:-NONE}"
 CLUSTER_TYPE_PARAM="NONE|RAC|DG"
 
 ORA_SWLIB_BUCKET="${ORA_SWLIB_BUCKET}"
-ORA_SWLIB_BUCKET_PARAM="^.+"
+ORA_SWLIB_BUCKET_PARAM="^.+[^/]"
 
 ORA_SWLIB_TYPE="${ORA_SWLIB_TYPE:-\"\"}"
 ORA_SWLIB_TYPE_PARAM="^(\"\"|GCS|GCSFUSE|NFS)$"
@@ -534,6 +534,7 @@ shopt -s nocasematch
 }
 [[ ! "$ORA_SWLIB_BUCKET" =~ $ORA_SWLIB_BUCKET_PARAM ]] && {
     echo "Incorrect parameter provided for ora-swlib-bucket: $ORA_SWLIB_BUCKET"
+    echo "Example: gs://my-gcs-bucket"
     exit 1
 }
 [[ ! "$ORA_SWLIB_TYPE" =~ $ORA_SWLIB_TYPE_PARAM ]] && {

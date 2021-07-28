@@ -5,12 +5,12 @@ The patching code derives the patch metadata from the following blocks in the fi
 ```
 gi_patches:
 ...
-- { category: "RU", base: "19.3.0.0.0", release: "19.9.0.0.201020", patchnum: "31720429", patchfile: "p31720429_190000_Linux-x86-64.zip", patch_subdir: "/31750108", prereq_check: FALSE, method: "opatchauto apply", ocm: FALSE, upgrade: FALSE }
+- { category: "RU", base: "19.3.0.0.0", release: "19.9.0.0.201020", patchnum: "31720429", patchfile: "p31720429_190000_Linux-x86-64.zip", patch_subdir: "/31750108", prereq_check: FALSE, method: "opatchauto apply", ocm: FALSE, upgrade: FALSE, md5sum: "tTZDYSasdnt7lrNJ/MYm1g==" }
 
 
 rdbms_patches:
 ...
-- { category: "RU_Combo", base: "19.3.0.0.0", release: "19.9.0.0.201020", patchnum: "31720429", patchfile: "p31720429_190000_Linux-x86-64.zip", patch_subdir: "/31668882", prereq_check: TRUE, method: "opatch apply", ocm: FALSE, upgrade: TRUE }
+- { category: "RU_Combo", base: "19.3.0.0.0", release: "19.9.0.0.201020", patchnum: "31720429", patchfile: "p31720429_190000_Linux-x86-64.zip", patch_subdir: "/31668882", prereq_check: TRUE, method: "opatch apply", ocm: FALSE, upgrade: TRUE, md5sum: "tTZDYSasdnt7lrNJ/MYm1g==" }
 ```
 
 These metadata numbers can be taken from consulting appropriate MOS Notes, such as:
@@ -18,6 +18,13 @@ These metadata numbers can be taken from consulting appropriate MOS Notes, such 
 * Oracle Database 19c Proactive Patch Information (Doc ID 2521164.1)
 * Database 18c Proactive Patch Information (Doc ID 2369376.1)
 * Database 12.2.0.1 Proactive Patch Information (Doc ID 2285557.1)
+
+The md5sum can be determined by listing the file once in a GCS bucket:
+
+```
+$ gsutil ls -L gs://example-bucket/p32578973_190000_Linux-x86-64.zip | grep md5
+    Hash (md5):             YLEOruyjCOdDvUOMBUazNQ==
+```
 
 Bearing in mind that the GI RU's patch zipfile contains the patch molecules that go both into the GI_HOME as well as the RDBMS_HOME, the Combo patch of OJVM+GI is self-contained as to the necessary patches needed to patch a given host for a given quarter. For example: the patch zipfile `p31720429_190000_Linux-x86-64.zip` contains the following patch directories:
 ```

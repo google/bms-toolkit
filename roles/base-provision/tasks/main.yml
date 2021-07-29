@@ -42,6 +42,18 @@
     state: absent
   tags: ntp
 
+- name: Disable avahi daemon
+  systemd:
+    name: "{{ item }}"
+    enabled: false
+    state: stopped
+  when:
+    cluster_name is defined
+  with_items:
+    - avahi-daemon.socket
+    - avahi-daemon.service
+  tags: cvu
+
 - name: Install required base OS packages
   package:
     name: "{{ packages }}"

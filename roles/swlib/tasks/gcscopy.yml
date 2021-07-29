@@ -17,35 +17,12 @@
   shell: |
     set -o pipefail
     {% for i in item.files %}
-    ssh -i {{ ansible_ssh_private_key_file }} {{ ansible_ssh_extra_args }} {{ ansible_ssh_user }}@{{ ansible_ssh_host }} \
-      "ls {{ swlib_path }}/{{ i }}"
-    if [[ $? -eq 0 ]]
+    if ! ssh -i {{ ansible_ssh_private_key_file }} {{ ansible_ssh_extra_args }} {{ ansible_ssh_user }}@{{ ansible_ssh_host }} \
+      "unzip -l {{ swlib_path }}/{{ i }}"
       then
-        ssh -i {{ ansible_ssh_private_key_file }} {{ ansible_ssh_extra_args }} {{ ansible_ssh_user }}@{{ ansible_ssh_host }} \
-          "unzip -t {{ swlib_path }}/{{ i }}"
-        if [[ $? -ne 0 ]]
-          then
-            gsutil cat gs://{{ swlib_mount_src }}/{{ i }} | ssh -i {{ ansible_ssh_private_key_file }} {{ ansible_ssh_extra_args }} \
-              {{ ansible_ssh_user }}@{{ ansible_ssh_host }} "cat > {{ swlib_path }}/{{ i }}"
-        fi
-       else
-         gsutil cat gs://{{ swlib_mount_src }}/{{ i }} | ssh -i {{ ansible_ssh_private_key_file }} {{ ansible_ssh_extra_args }} \
-           {{ ansible_ssh_user }}@{{ ansible_ssh_host }} "cat > {{ swlib_path }}/{{ i }}"
+        gsutil cat gs://{{ swlib_mount_src }}/{{ i }} | ssh -i {{ ansible_ssh_private_key_file }} {{ ansible_ssh_extra_args }} \
+          {{ ansible_ssh_user }}@{{ ansible_ssh_host }} "cat > {{ swlib_path }}/{{ i }}"
     fi
-        {% endfor %}
-  args:
-    executable: /bin/bash
-  with_items:
-    - "{{ gi_software }}"
-    - "{{ gi_interim_patches }}"
-  when: item.version == oracle_ver and patching_type is not defined
-  delegate_to: 127.0.0.1
-
-- name: gcscopy | Verify GI software zipfile integrity
-  shell: |
-    set -o pipefail
-    {% for i in item.files %}
-    unzip -t {{ swlib_path }}/{{ i }} > /dev/null
         {% endfor %}
   register: shell_result
   args:
@@ -54,46 +31,26 @@
     - "{{ gi_software }}"
     - "{{ gi_interim_patches }}"
   when: item.version == oracle_ver and patching_type is not defined
-  failed_when: shell_result.stderr != ""
+  changed_when: "'Date    Time    Name' not in shell_result.stdout"
+  delegate_to: 127.0.0.1
 
-- name: gcscopy | Copy GI patch software from GCS to target instance
+- name: gcscopy | Copy GI patches from GCS to target instance
   shell: |
     set -o pipefail
-    ssh -i {{ ansible_ssh_private_key_file }} {{ ansible_ssh_extra_args }} {{ ansible_ssh_user }}@{{ ansible_ssh_host }} \
-      "ls {{ swlib_path }}/{{ item.patchfile }}"
-    if [[ $? -eq 0 ]]
+    if ! ssh -i {{ ansible_ssh_private_key_file }} {{ ansible_ssh_extra_args }} {{ ansible_ssh_user }}@{{ ansible_ssh_host }} \
+      "unzip -l {{ swlib_path }}/{{ item.patchfile }}"
       then
-        ssh -i {{ ansible_ssh_private_key_file }} {{ ansible_ssh_extra_args }} {{ ansible_ssh_user }}@{{ ansible_ssh_host }} \
-          "unzip -t {{ swlib_path }}/{{ item.patchfile }}"
-        if [[ $? -ne 0 ]]
-          then
-            gsutil cat gs://{{ swlib_mount_src }}/{{ item.patchfile }} | ssh -i {{ ansible_ssh_private_key_file }} {{ ansible_ssh_extra_args }} \
-              {{ ansible_ssh_user }}@{{ ansible_ssh_host }} "cat > {{ swlib_path }}/{{ item.patchfile }}"
-        fi
-      else
         gsutil cat gs://{{ swlib_mount_src }}/{{ item.patchfile }} | ssh -i {{ ansible_ssh_private_key_file }} {{ ansible_ssh_extra_args }} \
           {{ ansible_ssh_user }}@{{ ansible_ssh_host }} "cat > {{ swlib_path }}/{{ item.patchfile }}"
     fi
-  args:
-    executable: /bin/bash
-  with_items:
-    - "{{ gi_patches }}"
-  when: item.release == oracle_rel and patching_type == "gi_patching"
-  delegate_to: 127.0.0.1
-
-- name: gcscopy | Verify GI patch software zipfile integrity
-  shell: |
-    set -o pipefail
-    {% for i in item.patchfile %}
-    unzip -t {{ swlib_path }}/{{ i }} > /dev/null
-        {% endfor %}
   register: shell_result
   args:
     executable: /bin/bash
   with_items:
     - "{{ gi_patches }}"
   when: item.release == oracle_rel and patching_type == "gi_patching"
-  failed_when: shell_result.stderr != ""
+  changed_when: "'Date    Time    Name' not in shell_result.stdout"
+  delegate_to: 127.0.0.1
 
 # overwrite opatch zipfile on BMS host from gcs every time that may be cached currently in {{ swlib_path }}
 # reason to overwrite is that the opatch zipfile in MOS is named the same, example: p6880880_190000_Linux-x86-64.zip
@@ -102,92 +59,50 @@
   shell: |
     set -o pipefail
     gsutil cat gs://{{ swlib_mount_src }}/{{ item.patchfile }} | ssh -i {{ ansible_ssh_private_key_file }} {{ ansible_ssh_extra_args }} \
-          {{ ansible_ssh_user }}@{{ ansible_ssh_host }} "cat > {{ swlib_path }}/{{ item.patchfile }}"
-  args:
-    executable: /bin/bash
-  with_items:
-    - "{{ opatch_patches }}"
-  when: item.release == oracle_ver and patching_type is defined
-  delegate_to: 127.0.0.1
-
-- name: gcscopy | Verify GI OPatch update zipfile integrity
-  shell: |
-    set -o pipefail
-    unzip -t {{ swlib_path }}/{{ item.patchfile }} > /dev/null
+      {{ ansible_ssh_user }}@{{ ansible_ssh_host }} "cat > {{ swlib_path }}/{{ item.patchfile }}"
   register: shell_result
   args:
     executable: /bin/bash
   with_items:
     - "{{ opatch_patches }}"
-  when: item.release == oracle_ver and patching_type is defined
-  failed_when: shell_result.stderr != ""
+  when: item.release == oracle_ver and oracle_rel != "base" and patching_type is defined
+  changed_when: "'Date    Time    Name' not in shell_result.stdout"
+  delegate_to: 127.0.0.1
 
 - name: gcscopy | Copy RDBMS software from GCS to target instance
   shell: |
     set -o pipefail
     {% for i in item.files %}
-    ssh -i {{ ansible_ssh_private_key_file }} {{ ansible_ssh_extra_args }} {{ ansible_ssh_user }}@{{ ansible_ssh_host }} \
-      "ls {{ swlib_path }}/{{ i }}"
-    if [[ $? -eq 0 ]]
+    if ! ssh -i {{ ansible_ssh_private_key_file }} {{ ansible_ssh_extra_args }} {{ ansible_ssh_user }}@{{ ansible_ssh_host }} \
+      "unzip -l {{ swlib_path }}/{{ i }}"
       then
-        ssh -i {{ ansible_ssh_private_key_file }} {{ ansible_ssh_extra_args }} {{ ansible_ssh_user }}@{{ ansible_ssh_host }} \
-          "unzip -t {{ swlib_path }}/{{ i }}"
-        if [[ $? -ne 0 ]]
-          then
-            gsutil cat gs://{{ swlib_mount_src }}/{{ i }} | ssh -i {{ ansible_ssh_private_key_file }} {{ ansible_ssh_extra_args }} \
-              {{ ansible_ssh_user }}@{{ ansible_ssh_host }} "cat > {{ swlib_path }}/{{ i }}"
-        fi
-       else
-         gsutil cat gs://{{ swlib_mount_src }}/{{ i }} | ssh -i {{ ansible_ssh_private_key_file }} {{ ansible_ssh_extra_args }} \
-           {{ ansible_ssh_user }}@{{ ansible_ssh_host }} "cat > {{ swlib_path }}/{{ i }}"
+        gsutil cat gs://{{ swlib_mount_src }}/{{ i }} | ssh -i {{ ansible_ssh_private_key_file }} {{ ansible_ssh_extra_args }} \
+          {{ ansible_ssh_user }}@{{ ansible_ssh_host }} "cat > {{ swlib_path }}/{{ i }}"
     fi
         {% endfor %}
-  args:
-    executable: /bin/bash
-  with_items:
-    - "{{ rdbms_software }}"
-  when: item.version == oracle_ver and patching_type is not defined
-  delegate_to: 127.0.0.1
-
-- name: gcscopy | Verify RDBMS software zipfile integrity
-  shell: |
-    set -o pipefail
-    {% for i in item.files %}
-    unzip -t {{ swlib_path }}/{{ i }} > /dev/null
-        {% endfor %}
   register: shell_result
   args:
     executable: /bin/bash
   with_items:
     - "{{ rdbms_software }}"
   when: item.version == oracle_ver and patching_type is not defined
-  failed_when: shell_result.stderr != ""
+  changed_when: "'Date    Time    Name' not in shell_result.stdout"
+  delegate_to: 127.0.0.1
 
-# overwrite opatch zipfile on BMS host from gcs every time that may be cached currently in {{ swlib_path }}
-# reason to overwrite is that the opatch zipfile in MOS is named the same, example: p6880880_190000_Linux-x86-64.zip
-# this change downloads OPatch from GCS bucket every time with neglible overhead as opatch zip file is typically ~120M
-- name: gcscopy | Copy RDBMS OPatch update files from GCS to target instance
+- name: gcscopy | Copy RDBMS patches from GCS to target instance
   shell: |
     set -o pipefail
-    gsutil cat gs://{{ swlib_mount_src }}/{{ item.patchfile }} | ssh -i {{ ansible_ssh_private_key_file }} {{ ansible_ssh_extra_args }} \
+    if ! ssh -i {{ ansible_ssh_private_key_file }} {{ ansible_ssh_extra_args }} {{ ansible_ssh_user }}@{{ ansible_ssh_host }} \
+      "unzip -l {{ swlib_path }}/{{ item.patchfile }}"
+      then
+        gsutil cat gs://{{ swlib_mount_src }}/{{ item.patchfile }} | ssh -i {{ ansible_ssh_private_key_file }} {{ ansible_ssh_extra_args }} \
           {{ ansible_ssh_user }}@{{ ansible_ssh_host }} "cat > {{ swlib_path }}/{{ item.patchfile }}"
-  args:
-    executable: /bin/bash
-  with_items:
-    - "{{ rdbms_patches }}"
-  when: item.release == oracle_rel and patching_type == "db_patching"
-  delegate_to: 127.0.0.1
-
-- name: gcscopy | Verify RDBMS OPatch update zipfile integrity
-  shell: |
-    set -o pipefail
-    {% for i in item.patchfile %}
-    unzip -t {{ swlib_path }}/{{ i }} > /dev/null
-        {% endfor %}
+    fi
   register: shell_result
   args:
     executable: /bin/bash
   with_items:
     - "{{ rdbms_patches }}"
   when: item.release == oracle_rel and patching_type == "db_patching"
-  failed_when: shell_result.stderr != ""
+  changed_when: "'Date    Time    Name' not in shell_result.stdout"
+  delegate_to: 127.0.0.1

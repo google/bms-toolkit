@@ -62,7 +62,7 @@
   when: cluster_name is not defined
 
 - name: Kill (SIGTERM) any remaining Oracle processes
-  command: "/bin/pkill -f {{ item }}"
+  command: "pkill -f {{ item }}"
   with_items:
     - ora_smon
     - tnslsnr
@@ -89,7 +89,7 @@
     seconds: 10
 
 - name: Kill (SIGKILL) any remaining Oracle processes
-  command: "/bin/pkill -9 -f {{ item }}"
+  command: "pkill -9 -f {{ item }}"
   with_items:
     - ora_smon
     - tnslsnr

@@ -48,6 +48,7 @@ ORA_DB_NAME_PARAM="^[a-zA-Z0-9_$]+$"
 #
 INVENTORY_FILE="${INVENTORY_FILE:-./inventory_files/inventory}"
 
+# Suppress displaying hosts if a "when" condition isn't satisfied, to reduce overall output file size.
 export ANSIBLE_DISPLAY_SKIPPED_HOSTS=false
 ###
 GETOPT_MANDATORY="ora-swlib-bucket:,inventory-file:"

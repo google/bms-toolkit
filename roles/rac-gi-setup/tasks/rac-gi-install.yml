@@ -27,36 +27,6 @@
       - "Using cluvfy cmd     : {{ cluvfy_command }}"
   tags: rac-gi
 
-- name: rac-gi-install | Define GI release
-  #if release set to latest then get most recent release from gi_patches array
-  #if nothing returned then set to "base" in next task
-  set_fact:
-    oracle_rel: "{% if not ansible_loop.first %}{% if item is version(oracle_rel, '>=') %}{{ item }}{% else %}{{ oracle_rel }}{% endif %}{% else %}{{ item }}{% endif %}"
-  loop: "{{ gi_patches | json_query('[?base==`' + oracle_ver + '`].release') }}"
-  loop_control:
-    extended: yes
-  when:
-    - oracle_rel is defined
-    - oracle_rel != "base"
-  tags: rac-gi,rel-patch
-
-- name: gi-install | Set base if no release found
-  set_fact:
-    oracle_rel: "{% if oracle_rel is search('latest') %}base{% else %}{{ oracle_rel }}{% endif %}"
-  when:
-    - oracle_rel is defined
-    - oracle_rel != "base"
-  tags: gi-setup,rel-patch
-
-- name: rac-gi-install | Copy GI patch
-  import_role:
-    name: swlib
-    tasks_from: gcscopy
-  vars:
-    patching_type: gi_patching
-  when: oracle_rel != "base"
-  tags: rac-gi,sw-copy
-
 - name: rac-gi-install | Unzip GI patch
   unarchive:
     src: "{{ swlib_path }}/{{ item.patchfile }}"

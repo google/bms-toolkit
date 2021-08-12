@@ -91,7 +91,7 @@
 
 - name: rac-db-create | Create DBCA response file
   become: yes
-  become_user: "{{ oracle_user }}"
+  become_user: root
   template:
     src: rac-dbca.rsp{% if oracle_ver == '11.2.0.4.0' %}.{{ oracle_ver }}{% endif %}.sh.j2
     dest: "{{ swlib_unzip_path }}/dbca_{{ db_name }}.rsp.sh"

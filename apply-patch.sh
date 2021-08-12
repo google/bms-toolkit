@@ -48,6 +48,8 @@ ORA_DB_NAME_PARAM="^[a-zA-Z0-9_$]+$"
 #
 INVENTORY_FILE="${INVENTORY_FILE:-./inventory_files/inventory}"
 
+# Suppress displaying hosts if a "when" condition isn't satisfied, to reduce overall output file size.
+export ANSIBLE_DISPLAY_SKIPPED_HOSTS=false
 ###
 GETOPT_MANDATORY="ora-swlib-bucket:,inventory-file:"
 GETOPT_OPTIONAL="ora-version:,ora-release:,ora-swlib-path:,ora-staging:,ora-db-name:"
@@ -70,6 +72,12 @@ while true; do
     case "$1" in
     --ora-version)
         ORA_VERSION="$2"
+        if [[ "${ORA_VERSION}" = "19" ]]   ; then ORA_VERSION="19.3.0.0.0"; fi
+        if [[ "${ORA_VERSION}" = "18" ]]   ; then ORA_VERSION="18.0.0.0.0"; fi
+        if [[ "${ORA_VERSION}" = "12" ]]   ; then ORA_VERSION="12.2.0.1.0"; fi
+        if [[ "${ORA_VERSION}" = "12.2" ]] ; then ORA_VERSION="12.2.0.1.0"; fi
+        if [[ "${ORA_VERSION}" = "12.1" ]] ; then ORA_VERSION="12.1.0.2.0"; fi
+        if [[ "${ORA_VERSION}" = "11" ]]   ; then ORA_VERSION="11.2.0.4.0"; fi
         shift;
         ;;
     --ora-release)

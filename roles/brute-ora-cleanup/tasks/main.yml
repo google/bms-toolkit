@@ -16,7 +16,7 @@
 - name: Shut down RAC clusterware
   # Regrettably we can't use ansible's service module, as Oracle's initscripts don't report status
   shell:
-    service ohasd stop 
+    service ohasd stop
   args:
     warn: false
   become: yes
@@ -61,24 +61,55 @@
   become_user: root
   when: cluster_name is not defined
 
-- name: Kill and remaining Oracle processes
-  shell: |
-    pkill -9 ora_smon
-    pkill -9 tnslsnr
-    pkill -9 agent13c
-    pkill -9 -f PROTOCOL=beq
-    pkill -9 -f /grid/bin
-    pkill -9 -f tfa
-    pkill -9 -u {{ grid_user }}
-    pkill -9 -u {{ oracle_user }}
+- name: Kill (SIGTERM) any remaining Oracle processes
+  command: "pkill -f {{ item }}"
+  with_items:
+    - ora_smon
+    - tnslsnr
+    - agent13c
+    - ohasd
+    - OSWatcher
+    - PROTOCOL=beq
+    - '\\+ASM'
+    - /grid/bin
+    - /grid/jdk
+    - "-u {{ grid_user }}"
+    - "-u {{ oracle_user }}"
   ignore_errors: yes
   register: kill_procs
+  changed_when: kill_procs.rc == 0
+  failed_when:
+    - kill_procs.rc != 0
+    - kill_procs.rc != 1
   become: yes
   become_user: root
 
 - name: Wait for processes to die (10 seconds)
   pause:
     seconds: 10
+
+- name: Kill (SIGKILL) any remaining Oracle processes
+  command: "pkill -9 -f {{ item }}"
+  with_items:
+    - ora_smon
+    - tnslsnr
+    - agent13c
+    - ohasd
+    - OSWatcher
+    - PROTOCOL=beq
+    - '\\+ASM'
+    - /grid/bin
+    - /grid/jdk
+    - "-u {{ grid_user }}"
+    - "-u {{ oracle_user }}"
+  ignore_errors: yes
+  register: kill_procs
+  changed_when: kill_procs.rc == 0
+  failed_when:
+    - kill_procs.rc != 0
+    - kill_procs.rc != 1
+  become: yes
+  become_user: root
 
 - name: Remove directories and files
   become: yes
@@ -118,7 +149,7 @@
     - /var/log/oracleohasd
   ignore_errors: true
   register: remove_files
-  
+
 - name: Clean up shared memory segments
   become: yes
   become_user: root
@@ -273,7 +304,7 @@
 - name: Remove oracle kernel modules
   become: yes
   become_user: root
-  shell: awk '/^oracle/ {print $1}' /proc/modules | sudo xargs -r modprobe -r  
+  shell: awk '/^oracle/ {print $1}' /proc/modules | sudo xargs -r modprobe -r
 
 - name: Remove users
   become: yes

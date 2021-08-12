@@ -30,7 +30,7 @@
   with_items:
     - "{{ gi_software }}"
     - "{{ gi_interim_patches }}"
-  when: item.version == oracle_ver and patching_type is not defined
+  when: item.version == oracle_ver and patch_only is not defined
   changed_when: "'Date    Time    Name' not in shell_result.stdout"
   delegate_to: 127.0.0.1
 
@@ -48,7 +48,7 @@
     executable: /bin/bash
   with_items:
     - "{{ gi_patches }}"
-  when: item.release == oracle_rel and patching_type == "gi_patching"
+  when: item.release == oracle_rel
   changed_when: "'Date    Time    Name' not in shell_result.stdout"
   delegate_to: 127.0.0.1
 
@@ -65,7 +65,7 @@
     executable: /bin/bash
   with_items:
     - "{{ opatch_patches }}"
-  when: item.release == oracle_ver and oracle_rel != "base" and patching_type is defined
+  when: item.release == oracle_ver and oracle_rel != "base"
   changed_when: "'Date    Time    Name' not in shell_result.stdout"
   delegate_to: 127.0.0.1
 
@@ -85,7 +85,7 @@
     executable: /bin/bash
   with_items:
     - "{{ rdbms_software }}"
-  when: item.version == oracle_ver and patching_type is not defined
+  when: item.version == oracle_ver and patch_only is not defined
   changed_when: "'Date    Time    Name' not in shell_result.stdout"
   delegate_to: 127.0.0.1
 
@@ -103,6 +103,6 @@
     executable: /bin/bash
   with_items:
     - "{{ rdbms_patches }}"
-  when: item.release == oracle_rel and patching_type == "db_patching"
+  when: item.release == oracle_rel
   changed_when: "'Date    Time    Name' not in shell_result.stdout"
   delegate_to: 127.0.0.1

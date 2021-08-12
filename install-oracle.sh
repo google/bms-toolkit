@@ -104,7 +104,7 @@ CLUSTER_TYPE_PARAM="NONE|RAC|DG"
 ORA_SWLIB_BUCKET="${ORA_SWLIB_BUCKET}"
 ORA_SWLIB_BUCKET_PARAM="^.+[^/]"
 
-ORA_SWLIB_TYPE="${ORA_SWLIB_TYPE:-\"\"}"
+ORA_SWLIB_TYPE="${ORA_SWLIB_TYPE:-GCS}"
 ORA_SWLIB_TYPE_PARAM="^(\"\"|GCS|GCSFUSE|NFS)$"
 
 ORA_SWLIB_PATH="${ORA_SWLIB_PATH:-/u01/swlib}"
@@ -230,6 +230,7 @@ SWAP_BLK_DEVICE_PARAM=".*"
 COMPATIBLE_RDBMS="${COMPATIBLE_RDBMS:-0}"
 COMPATIBLE_RDBMS_PARAM="^[0-9][0-9]\.[0-9].*"
 
+export ANSIBLE_DISPLAY_SKIPPED_HOSTS=false
 ###
 GETOPT_MANDATORY="ora-swlib-bucket:"
 GETOPT_OPTIONAL="backup-dest:,ora-version:,no-patch,ora-edition:,cluster-type:,cluster-config:,ora-staging:,ora-db-name:,ora-db-domain:,ora-db-charset:,ora-disk-mgmt:,ora-role-separation:"
@@ -467,6 +468,7 @@ while true; do
     ;;
   --debug)
     export ANSIBLE_DEBUG=1
+    export ANSIBLE_DISPLAY_SKIPPED_HOSTS=true
     ;;
   --allow-install-on-vm)
     ANSIBLE_PARAMS="${ANSIBLE_PARAMS} -e allow_install_on_vm=true"

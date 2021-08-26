@@ -1,0 +1,46 @@
+# Copyright 2020 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+---
+- name: Create ansible user
+  user:
+    name: "ansible"
+    uid: "1600"
+    comment: "Ansible oracle toolkit automation"
+    groups: wheel
+    append: yes
+  tags: host-provision
+
+
+
+# - name: Mount Oracle user mount raw devices
+#   mount:
+#     fstype: "{{ item.fstype }}"
+#     src: "{{ item.blk_device }}1"
+#     path: "{{ item.mount_point }}"
+#     opts: "{{ item.mount_opts }}"
+#     state: mounted
+#   when: "'mapper' not in item.blk_device"
+#   with_items:
+#     - "{{ oracle_user_data_mounts }}"
+#   tags: ora-mounts
+
+- name: Write out static public key
+  authorized_key:
+    user: ansible
+    state: present
+    key: |
+            ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC7fsF9i+6h6BAc/jjtp0OikuZaDsCgx60X4XV+CL0RlT/vniQSJysSOcXYwhfRWLYzrbuzYXk6llWvGb7UJ0WyfJH87z4HxM0f7C8Rh+RVtxGya9Uww0fA90h77/OobM9PZTLgn2Q7y0oiCp0/sj9QhCEc5a5Z0I90mNQAD0XWiZXr7JW+H8/J/NbodpIrEMv0gh7yE9kW2erAeOXafsWKUU6+yyAmaXgVi/3USWncTG6NZllQOfr0dk0hrVkaIDf4KPIhm8CILqGMQRYdze+4yv4c5UTnhLAFQ5SrsnkspTbcFFENg9Kl/xBqTEx+sEJC1oyxyWeEiIf+MNp6qeZf mfielding@control-node
+
+

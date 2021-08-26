@@ -1,0 +1,8 @@
+- name: Create ansible user
+  user:
+    name: "ansible"
+    uid: "1600"
+    comment: "Ansible oracle toolkit automation"
+    groups: wheel
+    append: yes
+  tags: host-provision

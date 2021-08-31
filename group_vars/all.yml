@@ -131,3 +131,6 @@ install_rdbms: true
 disable_firewall: false
 
 ## End of non-modifiable variables section
+
+## host provision variables
+hostprovision_ansible_user: "{{ lookup('env','ORA_HOSTPROVISION_ANSIBLE_USER')|lower|default('ansible',true) }}"

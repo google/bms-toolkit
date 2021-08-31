@@ -14,15 +14,27 @@
 
 ---
 
-# - name: Populate variables
-#   hosts: dbasm
-#   tasks:
-#   - include_role:
-#       name: common
-#       tasks_from: populate-vars.yml
-#   tags: populate-vars
+# Assumption: 
+# First time connection is not through public private key pair
+# FIrst time connection is always through customeradmin credentials password authentication
+# Consequentially, to start with, inventory file will not have details about SSH private key
 
-- name: Create user and set up ssh equivalence
+# Logic: 
+# First using the customeradmin credentials, keypair is generated
+# The tasks in host provisioning will be done using customeradmin
+# For running subsequent install-oracle.sh, customer can then ssh using the ansible user created
+# Inventory file may be updated with: ansible_ssh_private_key_file and ansible_ssh_user=ansible
+# Prior to calling the next steps (i.e.: install-oracle.sh)
+
+- name: Create private public key pair locally
+  hosts: localhost
+  tasks:
+  - include_role:
+      name: host-provision
+      tasks_from: ssh-keygen.yml
+  tags: host-provision
+
+- name: Create user and transfer public key to set up ssh equivalence
   hosts: dbasm
   vars_prompt:
     - name: ansible_password
@@ -41,46 +53,10 @@
   remote_user: "customeradmin"
   tags: host-provision
 
-  # roles:
-  #   # - { role: base-provision, tags: base-provision }
-  #   # - { role: host-storage, tags: host-storage }
-  #   # - { role: ora-host, tags: ora-host }
-  #   # - { role: hugepages, tags: hugepages }
-  #   - { role: host-provision, tags: host-provision }
-
-# - hosts: dbasm[0]
-#   become: no
-#   roles:
-#     - { role: swlib, tags: swlib }
-
-# ---
-# - name: OPatch Restart patch
-#   hosts: dbasm
-#   pre_tasks:
-#   - name: Verify that Ansible on control node meets the version requirements
-#     assert:
-#       that: "ansible_version.full is version_compare('2.8', '>=')"
-#       fail_msg: "You must update Ansible to at least 2.8 to use these playbooks"
-#       success_msg: "Ansible version is {{ ansible_version.full }}, continuing"
-#   tasks:
-#   - include_role:
-#       name: patch
-#       tasks_from: main.yml
-#     when: hostvars[groups['dbasm'].0]['cluster_name']|default('', true)|length == 0
-#   remote_user: "{{ oracle_user }}"
-#   become: yes
-#   become_user: root
-#   tags: opatch_restart
-
-# - name: RAC patch apply
-#   hosts: dbasm
-#   serial: 1
-#   order: inventory
-#   tasks:
-#   - include_role:
-#       name: patch
-#       tasks_from: rac-opatch.yml
-#     vars:
-#       db_config_type: RAC
-#     when: hostvars[groups['dbasm'].0]['cluster_name']|default('', true)|length > 0
-#   tags: rac-opatch
+- name: Validate ssh equivalence (passwordless connection) and sudo escalation for new user
+  hosts: dbasm
+  remote_user: "{{ hostprovision_ansible_user }}"
+  become: yes
+  tasks:
+    - action: ping
+  tags: host-provision

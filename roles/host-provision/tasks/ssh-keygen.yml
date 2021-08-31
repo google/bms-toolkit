@@ -27,8 +27,10 @@
 
 - name: ssh-keygen | Copy pvt key to home directory
   copy:
-    src: "/tmp/id_rsa_ansible_host_provision"
+    src: "{{ item }}"
     dest: "~/.ssh"
     mode: 0600
+  with_fileglob:
+    - "/tmp/id_rsa_ansible_host_provision*"
   tags: host-provision
 

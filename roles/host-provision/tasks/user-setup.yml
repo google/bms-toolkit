@@ -25,7 +25,7 @@
   authorized_key:
     user: "{{ hostprovision_ansible_user }}"
     state: present
-    key: "{{ lookup('file','/tmp/id_rsa_ansible.pub') }}"
+    key: "{{ lookup('file','/tmp/id_rsa_ansible_host_provision.pub') }}"
   tags: host-provision
 
 - name: user-setup | Add sudoers file for ansible

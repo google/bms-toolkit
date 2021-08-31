@@ -55,6 +55,8 @@
 
 - name: Validate ssh equivalence (passwordless connection) and sudo escalation for new user
   hosts: dbasm
+  vars:
+    ansible_ssh_private_key_file: "~/.ssh/id_rsa_ansible_host_provision"
   remote_user: "{{ hostprovision_ansible_user }}"
   become: yes
   tasks:

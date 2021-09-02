@@ -27,15 +27,12 @@ if [ $? != 4 ]; then
   exit
 fi
 
-GETOPT_MANDATORY="dbhost_ip:"
+GETOPT_MANDATORY="instance-ip-addr:"
 GETOPT_OPTIONAL="instance-ssh-user:,help"
 GETOPT_LONG="${GETOPT_MANDATORY},${GETOPT_OPTIONAL}"
 GETOPT_SHORT="h"
 
-
-INVENTORY_FILE="${INVENTORY_FILE:-./inventory_files/inventory}"
 INSTANCE_SSH_USER="${INSTANCE_SSH_USER:-'ansible'}"
-
 
 options=$(getopt --longoptions "$GETOPT_LONG" --options "$GETOPT_SHORT" -- "$@")
 
@@ -54,7 +51,7 @@ while true; do
         INSTANCE_SSH_USER="$2"
         shift;
         ;;
-    --dbhost_ip)
+    --instance-ip-addr)
         ORA_CS_HOSTS="$2"
         shift;
         ;;

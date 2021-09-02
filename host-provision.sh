@@ -27,7 +27,7 @@ if [ $? != 4 ]; then
   exit
 fi
 
-GETOPT_MANDATORY="comma-separated-dbhosts:"
+GETOPT_MANDATORY="dbhost_ip:"
 GETOPT_OPTIONAL="instance-ssh-user:,help"
 GETOPT_LONG="${GETOPT_MANDATORY},${GETOPT_OPTIONAL}"
 GETOPT_SHORT="h"
@@ -54,7 +54,7 @@ while true; do
         INSTANCE_SSH_USER="$2"
         shift;
         ;;
-    --comma-separated-dbhosts)
+    --dbhost_ip)
         ORA_CS_HOSTS="$2"
         shift;
         ;;

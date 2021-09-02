@@ -27,15 +27,14 @@ if [ $? != 4 ]; then
   exit
 fi
 
-# set -x
-GETOPT_MANDATORY="inventory-file:"
-# GETOPT_OPTIONAL="ora-role-separation:,ora-disk-mgmt:,ora-swlib-path:,ora-staging:,ora-asm-disks:,ora-data-mounts:,help"
-GETOPT_OPTIONAL="hostprovision-ansible-user:,help"
+GETOPT_MANDATORY="comma-separated-dbhosts:"
+GETOPT_OPTIONAL="instance-ssh-user:,help"
 GETOPT_LONG="${GETOPT_MANDATORY},${GETOPT_OPTIONAL}"
 GETOPT_SHORT="h"
 
 
 INVENTORY_FILE="${INVENTORY_FILE:-./inventory_files/inventory}"
+INSTANCE_SSH_USER="${INSTANCE_SSH_USER:-'ansible'}"
 
 
 options=$(getopt --longoptions "$GETOPT_LONG" --options "$GETOPT_SHORT" -- "$@")
@@ -51,12 +50,12 @@ eval set -- "$options"
 
 while true; do
     case "$1" in
-    --inventory-file)
-        INVENTORY_FILE="$2"
+    --instance-ssh-user)
+        INSTANCE_SSH_USER="$2"
         shift;
         ;;
-    --hostprovision-ansible-user)
-        ORA_HOSTPROVISION_ANSIBLE_USER="$2"
+    --comma-separated-dbhosts)
+        ORA_CS_HOSTS="$2"
         shift;
         ;;
     --help|-h)
@@ -74,16 +73,12 @@ while true; do
 done
 
 
-if [[ ! -s ${INVENTORY_FILE} ]]; then
-    echo "Please specify the inventory file using --inventory-file <file_name>"
-    exit 2
-fi
-
-
-export ORA_HOSTPROVISION_ANSIBLE_USER
+export INSTANCE_SSH_USER
+export ORA_CS_HOSTS
+export INVENTORY_FILE="$ORA_CS_HOSTS,"
 
 echo -e "Running with parameters from command line or environment variables:\n"
-set | egrep '^(ORA_|INVENTORY_)' | grep -v '_PARAM='
+set | egrep '^(ORA_|INVENTORY_|INSTANCE_)' | grep -v '_PARAM='
 echo
 
 ANSIBLE_PARAMS="-i ${INVENTORY_FILE} ${ANSIBLE_PARAMS}"

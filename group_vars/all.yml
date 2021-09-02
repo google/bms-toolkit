@@ -133,4 +133,6 @@ disable_firewall: false
 ## End of non-modifiable variables section
 
 ## host provision variables
-hostprovision_ansible_user: "{{ lookup('env','ORA_HOSTPROVISION_ANSIBLE_USER')|lower|default('ansible',true) }}"
+hostprovision_ansible_user: "{{ lookup('env','INSTANCE_SSH_USER')|lower|default('ansible',true) }}"
+hostprovision_firsttime_connect_user: "customeradmin"
+hostprovision_key_file: "~/.ssh/id_rsa_bms_toolkit"

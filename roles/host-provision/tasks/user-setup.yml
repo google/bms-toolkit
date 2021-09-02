@@ -15,17 +15,31 @@
 - name: user-setup | Create ansible user
   user:
     name: "{{ hostprovision_ansible_user }}"
-    uid: "2468"
-    comment: "Ansible toolkit host-provision automation"
-    groups: wheel
-    append: yes
+    comment: "User created for bms-toolkit github.com/bms-toolkit"
+  tags: host-provision
+
+
+# the following 2 tasks are required so as not to hard code the public key file path 
+# and derive it from group_vars.yml's: hostprovision_key_file: "~/.ssh/id_rsa_bms_toolkit"
+- name: user-setup | Slurp public key contents 
+  slurp:
+    src: "{{ hostprovision_key_file }}.pub"
+  register: public_key_content_scrambled
+  delegate_to: localhost
+  connection: local
+  become: no
+  tags: host-provision
+
+- name: user-setup | Store public key contents to be transferred from control node  to DB hosts
+  set_fact:
+    public_key_content: "{{ public_key_content_scrambled['content'] | b64decode  }}"
   tags: host-provision
 
 - name: user-setup | Transfer public key from control node to DB hosts
   authorized_key:
     user: "{{ hostprovision_ansible_user }}"
     state: present
-    key: "{{ lookup('file','~/.ssh/id_rsa_ansible_host_provision.pub') }}"
+    key: "{{ public_key_content }}"
   tags: host-provision
 
 - name: user-setup | Add sudoers file for ansible
@@ -33,3 +47,4 @@
     src: hostprovision_ansible_user.j2
     dest: "/etc/sudoers.d/{{ hostprovision_ansible_user }}"
   tags: host-provision
+

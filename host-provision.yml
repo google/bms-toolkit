@@ -38,7 +38,7 @@
   hosts: all
   vars_prompt:
     - name: ansible_password
-      prompt: Enter firsttime_connect_user password
+      prompt: Enter customeradmin password
   vars:
     #ansible_ssh_extra_args can be input as a command line or the following reasonable default may be used:    
     ansible_ssh_extra_args: '-o IdentityAgent=no'

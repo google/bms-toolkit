@@ -1,0 +1,71 @@
+# Copyright 2020 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+---
+
+# Assumption: 
+# First time connection is not through public private key pair
+# First time connection is always through {{ firsttime_connect_user }} credentials password authentication
+# Consequentially, to start with, inventory file will not have details about SSH private key
+
+# Logic: 
+# First using the {{ firsttime_connect_user }} credentials, keypair is generated
+# The tasks in host provisioning will be done using {{ firsttime_connect_user }}
+# For running subsequent install-oracle.sh, customer can then ssh using the ansible user created
+# Inventory file may be updated with: ansible_ssh_private_key_file and ansible_ssh_user=ansible
+# Prior to calling the next steps (i.e.: install-oracle.sh)
+
+- name: Create private public key pair locally
+  hosts: localhost
+  tasks:
+  - include_role:
+      name: host-provision
+      tasks_from: ssh-keygen.yml
+  tags: host-provision
+
+- name: Create user and transfer public key to set up ssh equivalence
+  hosts: all
+  vars_prompt:
+    - name: ansible_password
+      prompt: Enter customeradmin password
+  vars:
+    #ansible_ssh_extra_args can be input as a command line or the following reasonable default may be used:    
+    ansible_ssh_extra_args: '-o IdentityAgent=no'
+  become: yes
+  pre_tasks:
+    - name: Verify that Ansible on control node meets the version requirements
+      assert:
+        that: "ansible_version.full is version_compare('2.8', '>=')"
+        fail_msg: "You must update Ansible to at least 2.8 to use these playbooks"
+        success_msg: "Ansible version is {{ ansible_version.full }}, continuing"
+  tasks:
+  - include_role:
+      name: host-provision
+      tasks_from: user-setup.yml
+  remote_user: "{{ firsttime_connect_user }}"
+  tags: host-provision
+
+- name: Perform config tasks (SSH equivalence validation, LVM setup, etc)
+  hosts: all
+  vars:
+    ansible_ssh_private_key_file: "{{ control_node_key_file }}"
+    #ansible_ssh_extra_args can be input as a command line or the following reasonable default may be used:    
+    ansible_ssh_extra_args: '-o IdentityAgent=no'
+  become: yes
+  tasks:
+  - include_role:
+      name: host-provision
+      tasks_from: config-tasks.yml
+  remote_user: "{{ instance_ssh_user }}"
+  tags: host-provision

@@ -131,3 +131,8 @@ install_rdbms: true
 disable_firewall: false
 
 ## End of non-modifiable variables section
+
+## host provision variables
+instance_ssh_user: "{{ lookup('env','INSTANCE_SSH_USER')|lower|default('ansible',true) }}"
+firsttime_connect_user: "customeradmin"
+control_node_key_file: "~/.ssh/id_rsa_bms_toolkit"

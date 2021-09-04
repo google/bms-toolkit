@@ -1,0 +1,92 @@
+# Copyright 2020 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+
+- name: proxy | Set fact
+  set_fact:
+    proxy_ip: "{{ ansible_env['SSH_CLIENT'].split() | first }}"
+  # debug:
+  #   var: proxy_ip
+  tags: host-provision
+
+- name: proxy | Validate proxy connectivity
+  uri:
+    url: https://www.google.com
+    status_code: 200
+  environment:
+    https_proxy: "http://{{ proxy_ip }}:3128"
+  tags: host-provision
+
+- name: proxy | Add gateway instance to /etc/hosts
+  become: true
+  lineinfile:
+    dest: /etc/hosts
+    regexp: '.*gateway-instance.*'
+    line: "{{ proxy_ip }} gateway-instance gateway-instance."
+    backup: yes    
+  tags: host-provision
+
+- name: proxy | Add proxy to /etc/profile.d
+  become: true
+  copy:
+    dest: /etc/profile.d/proxy.sh
+    content: |
+            export http_proxy="http://gateway-instance:3128"
+            export https_proxy="http://gateway-instance:3128"
+            export ftp_proxy="http://gateway-instance:3128"
+    backup: yes
+  tags: host-provision
+
+- name: proxy | Update proxy in sudoers
+  become: true
+  lineinfile:
+    dest: /etc/sudoers
+    regexp: ".*env_keep.*proxy.*"
+    line: 'Defaults env_keep += "ftp_proxy http_proxy https_proxy no_proxy"'
+    validate: 'visudo -cf %s'
+    backup: yes
+  tags: host-provision
+
+- name: proxy | Add repo
+  become: true
+  yum_repository:
+    name: epel
+    description: EPEL YUM repo added by bms toolkit
+    mirrorlist: https://mirrors.fedoraproject.org/metalink?repo=epel-7&arch=$basearch
+    enabled: no
+  tags: host-provision
+
+- name: proxy | Add EPEL GPG key
+  become: true
+  rpm_key:
+    key: "https://dl.fedoraproject.org/pub/epel/RPM-GPG-KEY-EPEL-{{ ansible_distribution_major_version }}"
+    state: present
+  tags: host-provision
+
+- name: proxy | Install useful packages
+  become: true
+  yum:
+    name: "{{ packages }}"
+    enablerepo: "epel"
+  vars:
+    packages:
+    - strace
+    - tcpdump
+    - traceroute
+    - perf
+    - lsof
+    - mlocate
+    - iotop
+    - iftop
+  tags: host-provision

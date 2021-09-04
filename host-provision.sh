@@ -28,7 +28,7 @@ if [ $? != 4 ]; then
 fi
 
 GETOPT_MANDATORY="instance-ip-addr:"
-GETOPT_OPTIONAL="instance-ssh-user:,help"
+GETOPT_OPTIONAL="instance-ssh-user:,proxy-setup:,u01-lun:,help"
 GETOPT_LONG="${GETOPT_MANDATORY},${GETOPT_OPTIONAL}"
 GETOPT_SHORT="h"
 
@@ -47,6 +47,14 @@ eval set -- "$options"
 
 while true; do
     case "$1" in
+    --u01-lun)
+        ORA_U01_LUN="$2"
+        shift;
+        ;;
+    --proxy-setup)
+        ORA_PROXY_SETUP="$2"
+        shift;
+        ;;
     --instance-ssh-user)
         INSTANCE_SSH_USER="$2"
         shift;
@@ -72,6 +80,8 @@ done
 
 export INSTANCE_SSH_USER
 export ORA_CS_HOSTS
+export ORA_PROXY_SETUP
+export ORA_U01_LUN
 export INVENTORY_FILE="$ORA_CS_HOSTS,"
 
 echo -e "Running with parameters from command line or environment variables:\n"

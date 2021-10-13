@@ -12,25 +12,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-- name: config-tasks | Validate internet connectivity via control node
+- name: rhel-config-tasks | Validate internet connectivity via control node
   uri:
     url: https://www.google.com
     status_code: 200
   tags: host-provision
 
-- name: config-tasks | Get current registration status
+- name: rhel-config-tasks | Get current registration status
   become: true
   shell: |
     /sbin/subscription-manager list |grep Status: |awk '{print $2}'
   register: rhsm_status
   tags: host-provision
 
-- name: config-tasks | Print current RHSM status
+- name: rhel-config-tasks | Print current RHSM status
   debug:
     var: rhsm_status.stdout
   tags: host-provision    
 
-- name: config-tasks | Get RHEL username
+- name: rhel-config-tasks | Get RHEL username
   pause:
     prompt: Enter username for RHEL support
   register: rhel_username
@@ -38,7 +38,7 @@
     - rhsm_status.stdout !='Subscribed'
   tags: host-provision
 
-- name: config-tasks | Get RHEL password
+- name: rhel-config-tasks | Get RHEL password
   pause:
     prompt: Enter password for RHEL support
     echo: no
@@ -47,7 +47,7 @@
     - rhsm_status.stdout !='Subscribed'  
   tags: host-provision
 
-- name: config-tasks | Register host
+- name: rhel-config-tasks | Register host
   become: true
   redhat_subscription:
     state: present

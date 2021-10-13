@@ -13,50 +13,28 @@
 # limitations under the License.
 
 
-- name: Validate ssh equivalence (passwordless connection) and sudo escalation for new user
+- name: config-tasks | Validate ssh equivalence (passwordless connection) and sudo escalation for new user
   ping:
   tags: host-provision
 
-
-# Not including ntp set up, as we already have code path built into `base-provision` role
-# that processes the commmand line switch: `--ntp-pref`
-
-
 # LVM creation
 # The net result will be that `/dev/mapper/db-sw` can be input into `install-oracle.sh` for local u01 storage
-- name: config-tasks | Create LVM layer
-  # vgcreate <VG> <block device WWID>
-  shell: vgcreate db {{ u01_lun }}
+- name: config-tasks | Create LVM layer - vgcreate
+  # added vgremove for idempotency of the script
+  # vgremove -y <VG>
+  # vgcreate -y <VG> <block device WWID>
+  shell: |
+    vgremove -y db 
+    vgcreate -y db {{ u01_lun }}
   when:
-    - u01_lun | length > 0    
+    - u01_lun | length > 0
+  ignore_errors: yes #to ignore when vgremove tries to remove non-existent vg the very first time this is run
   tags: host-provision
 
-- name: Create logical volume
+- name: config-tasks | Create LVM layer - lvcreate
   # lvcreate -l 100%FREE -n <LV> <VG>
   shell: lvcreate -l 100%FREE -n sw db
   when:
     - u01_lun | length > 0    
   tags: host-provision
 
-
-# RHEL specific: subscription manager
-- name: Remove registrations
-  become: true
-  redhat_subscription:
-    state: absent
-  when:
-    - ansible_distribution == 'RedHat'
-  tags: host-provision
-
-- name: Register host
-  become: true
-  redhat_subscription:
-    state: present
-    username: "{{ rhel_username }}"
-    password: "{{ rhel_password }}"
-    auto_attach: true
-  # we ignore when: "This system is already registered" is in the output
-  ignore_errors: yes
-  when:
-    - ansible_distribution == 'RedHat'
-  tags: host-provision

@@ -12,15 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# The tasks in this file are dependent on the fact that the control-node
+# has a HTTP proxy server like Squid installed and can act as the gateway
+# For more background, please refer:
+# https://cloud.google.com/vpc/docs/special-configurations#proxyvm
 
-- name: proxy | Set fact
+- name: proxy | Get control node IP
   set_fact:
     proxy_ip: "{{ ansible_env['SSH_CLIENT'].split() | first }}"
   # debug:
   #   var: proxy_ip
   tags: host-provision
 
-- name: proxy | Validate proxy connectivity
+- name: proxy | Validate proxy connectivity via control node
   uri:
     url: https://www.google.com
     status_code: 200
@@ -28,7 +32,7 @@
     https_proxy: "http://{{ proxy_ip }}:3128"
   tags: host-provision
 
-- name: proxy | Add gateway instance to /etc/hosts
+- name: proxy | Add control node as gateway-instance to /etc/hosts
   become: true
   lineinfile:
     dest: /etc/hosts
@@ -37,7 +41,7 @@
     backup: yes    
   tags: host-provision
 
-- name: proxy | Add proxy to /etc/profile.d
+- name: proxy | Add client side proxy environment variables to /etc/profile.d
   become: true
   copy:
     dest: /etc/profile.d/proxy.sh
@@ -58,35 +62,3 @@
     backup: yes
   tags: host-provision
 
-- name: proxy | Add repo
-  become: true
-  yum_repository:
-    name: epel
-    description: EPEL YUM repo added by bms toolkit
-    mirrorlist: https://mirrors.fedoraproject.org/metalink?repo=epel-7&arch=$basearch
-    enabled: no
-  tags: host-provision
-
-- name: proxy | Add EPEL GPG key
-  become: true
-  rpm_key:
-    key: "https://dl.fedoraproject.org/pub/epel/RPM-GPG-KEY-EPEL-{{ ansible_distribution_major_version }}"
-    state: present
-  tags: host-provision
-
-- name: proxy | Install useful packages
-  become: true
-  yum:
-    name: "{{ packages }}"
-    enablerepo: "epel"
-  vars:
-    packages:
-    - strace
-    - tcpdump
-    - traceroute
-    - perf
-    - lsof
-    - mlocate
-    - iotop
-    - iftop
-  tags: host-provision

@@ -58,12 +58,6 @@
 
 - name: Perform config tasks (SSH equivalence validation, LVM setup, etc)
   hosts: all
-  vars_prompt:
-    - name: rhel_username
-      prompt: Enter username for RHEL support
-      private: no
-    - name: rhel_password
-      prompt: Enter password for RHEL support
   vars:
     ansible_ssh_private_key_file: "{{ control_node_key_file }}"
     #ansible_ssh_extra_args can be input as a command line or the following reasonable default may be used:    
@@ -76,9 +70,9 @@
   remote_user: "{{ instance_ssh_user }}"
   tags: host-provision
 
-# Not clubbing  the following play inside the previous play that performs all config tasks
+# Not clubbing this play inside the main play that performs all config tasks
 # Reason: need to first connect as a non-sudo user (become: no) to get to the fact ansible_env['SSH_CLIENT']
-- name: Proxy setup and epel rpm installs [optional]
+- name: Proxy setup [optional]
   hosts: all
   vars:
     ansible_ssh_private_key_file: "{{ control_node_key_file }}"
@@ -90,5 +84,21 @@
       name: host-provision
       tasks_from: proxy.yml
     when: proxy_setup|bool
+  remote_user: "{{ instance_ssh_user }}"
+  tags: host-provision
+
+- name: Perform RHEL-specific config tasks (subscription-manager, etc)
+  hosts: all
+  vars:
+    ansible_ssh_private_key_file: "{{ control_node_key_file }}"
+    #ansible_ssh_extra_args can be input as a command line or the following reasonable default may be used:    
+    ansible_ssh_extra_args: '-o IdentityAgent=no'
+  become: yes
+  tasks:
+  - include_role:
+      name: host-provision
+      tasks_from: rhel-config-tasks.yml
+    when:
+      - ansible_distribution == 'RedHat'
   remote_user: "{{ instance_ssh_user }}"
   tags: host-provision

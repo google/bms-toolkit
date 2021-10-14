@@ -12,23 +12,26 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-- name: rhel-config-tasks | Validate internet connectivity via control node
+- name: rhel-config-tasks | Get control node IP
+  set_fact:
+    proxy_ip: "{{ ansible_env['SSH_CLIENT'].split() | first }}"
+  tags: host-provision
+
+- name: rhel-config-tasks | Validate proxy connectivity via control node
   uri:
     url: https://www.google.com
     status_code: 200
-  tags: host-provision
+  environment:
+    https_proxy: "http://{{ proxy_ip }}:3128"
 
+# We check and evaluate subscription status 
+# Only if the system is not subscribed (Status: Unknown), then we prompt for RedHat credentials
 - name: rhel-config-tasks | Get current registration status
   become: true
   shell: |
     /sbin/subscription-manager list |grep Status: |awk '{print $2}'
   register: rhsm_status
   tags: host-provision
-
-- name: rhel-config-tasks | Print current RHSM status
-  debug:
-    var: rhsm_status.stdout
-  tags: host-provision    
 
 - name: rhel-config-tasks | Get RHEL username
   pause:

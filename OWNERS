@@ -1,3 +1,6 @@
+# See the OWNERS docs at https://go.k8s.io/owners
+# bms-toolkit leverages the above to interact with prow
+
 approvers:
 - mfielding
 - jcnars

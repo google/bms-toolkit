@@ -1,0 +1,56 @@
+# Copyright 2020 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# We check and evaluate subscription status 
+# Only if the system is not subscribed (Status: Unknown), then we prompt for RedHat credentials
+- name: rhel-config-tasks | Get current registration status
+  become: true
+  shell: |
+    /sbin/subscription-manager list
+  register: rhsm_status
+  tags: host-provision
+
+- name: rhel-config-tasks | Print current RHSM status
+  debug:
+    var: rhsm_status.stdout
+  tags: host-provision    
+
+- name: rhel-config-tasks | Get RHEL username
+  pause:
+    prompt: Enter username for RHEL support
+  register: rhel_username
+  when:
+    - '"Status:         Subscribed" not in rhsm_status.stdout'
+  tags: host-provision
+
+- name: rhel-config-tasks | Get RHEL password
+  pause:
+    prompt: Enter password for RHEL support
+    echo: no
+  register: rhel_password
+  when:
+    - '"Status:         Subscribed" not in rhsm_status.stdout'
+  tags: host-provision
+
+- name: rhel-config-tasks | Register host
+  become: true
+  redhat_subscription:
+    state: present
+    username: "{{ rhel_username.user_input }}"
+    password: "{{ rhel_password.user_input }}"
+    auto_attach: yes
+    force_register: yes
+  when:
+    - '"Status:         Subscribed" not in rhsm_status.stdout'
+  tags: host-provision

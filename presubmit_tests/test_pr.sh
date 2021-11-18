@@ -19,9 +19,9 @@
 
 # set up ssh from pod to BMX host
 # using sydney for initial testing
-mkdir /root/.ssh
-chmod 0700 /root/.ssh
-ssh-keyscan -tecdsa 172.16.30.1 > /root/.ssh/known_hosts
+bms_host=172.16.30.1
+install -d -m 0700 ~/.ssh
+ssh-keyscan "${bms_host}" > ~/.ssh/known_hosts
 
 # install pre-reqs
 pip install jmespath

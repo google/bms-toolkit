@@ -192,12 +192,12 @@ fi
 
 export ANSIBLE_NOCOWS=1
 
-ANSIBLE_PLAYBOOK=`which ansible-playbook 2> /dev/null`
-if [ $? -ne 0 ]; then
-    echo "Ansible executable not found in path"
-    exit 3
+ANSIBLE_PLAYBOOK="ansible-playbook"
+if ! type ansible-playbook > /dev/null 2>&1; then
+  echo "Ansible executable not found in path"
+  exit 3
 else
-    echo "Found Ansible at $ANSIBLE_PLAYBOOK"
+  echo "Found Ansible: `type ansible-playbook`"
 fi
 
 # exit on any error from the following scripts

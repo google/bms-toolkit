@@ -13,14 +13,28 @@
 # limitations under the License.
 
 
-- name: Validate ssh equivalence (passwordless connection) and sudo escalation for new user
+- name: config-tasks | Validate ssh equivalence (passwordless connection) and sudo escalation for new user
   ping:
   tags: host-provision
 
-# Placeholder for the core config tasks to be executed by the host-provision.sh utility
-# - name: config-tasks | Create LVM layer
-# ...
+# LVM creation
+# The net result will be that `/dev/mapper/db-sw` can be input into `install-oracle.sh` for local u01 storage
+- name: config-tasks | Create LVM layer - vgcreate
+  # added vgremove for idempotency of the script
+  # vgremove -y <VG>
+  # vgcreate -y <VG> <block device WWID>
+  shell: |
+    vgremove -y db 
+    vgcreate -y db {{ u01_lun }}
+  when:
+    - u01_lun | length > 0
+  ignore_errors: yes #to ignore when vgremove tries to remove non-existent vg the very first time this is run
+  tags: host-provision
 
+- name: config-tasks | Create LVM layer - lvcreate
+  # lvcreate -l 100%FREE -n <LV> <VG>
+  shell: lvcreate -l 100%FREE -n sw db
+  when:
+    - u01_lun | length > 0    
+  tags: host-provision
 
-# - name: config-tasks | For RHEL, subscription manager
-# ...

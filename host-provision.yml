@@ -69,3 +69,36 @@
       tasks_from: config-tasks.yml
   remote_user: "{{ instance_ssh_user }}"
   tags: host-provision
+
+# Not clubbing this play inside the main play that performs all config tasks
+# Reason: need to first connect as a non-sudo user (become: no) to get to the fact ansible_env['SSH_CLIENT']
+- name: Proxy setup [optional]
+  hosts: all
+  vars:
+    ansible_ssh_private_key_file: "{{ control_node_key_file }}"
+    #ansible_ssh_extra_args can be input as a command line or the following reasonable default may be used:    
+    ansible_ssh_extra_args: '-o IdentityAgent=no'
+  become: no
+  tasks:
+  - include_role:
+      name: host-provision
+      tasks_from: proxy.yml
+    when: proxy_setup|bool
+  remote_user: "{{ instance_ssh_user }}"
+  tags: host-provision
+
+- name: Perform RHEL-specific config tasks (subscription-manager, etc)
+  hosts: all
+  vars:
+    ansible_ssh_private_key_file: "{{ control_node_key_file }}"
+    #ansible_ssh_extra_args can be input as a command line or the following reasonable default may be used:    
+    ansible_ssh_extra_args: '-o IdentityAgent=no'
+  become: yes
+  tasks:
+  - include_role:
+      name: host-provision
+      tasks_from: rhel-config-tasks.yml
+    when:
+      - ansible_distribution == 'RedHat'
+  remote_user: "{{ instance_ssh_user }}"
+  tags: host-provision

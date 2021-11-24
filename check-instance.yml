@@ -66,7 +66,7 @@
 
     - name: Fail if unable to sudo to root on target
       assert:
-        that: "rawrc.stdout_lines[0] == 'root'"
+        that: "'root' in rawrc.stdout_lines"
         fail_msg: "The account {{ ansible_user }} used to connect does not have sudo privileges to root"
         success_msg: "The account {{ ansible_user }} used to connect has sudo root privileges, continuing"
 

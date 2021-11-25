@@ -30,7 +30,7 @@ that the subsequent install scripts can be run in quick succession.
 
 ## Schematic
 * With the caveat that code structure can quickly go out of date, the following
-represents the host-provision utility as it existed as of commit <>.
+represents the host-provision utility as it existed as of commit c09b9d3eec.
 
 ![Shows codeflow from host-utility.sh command line to the host-provision.yml entry point and on to the leaf scripts.](host-provision-logical-fork-points.png)
 

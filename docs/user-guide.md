@@ -883,7 +883,11 @@ Found p6880880_122010_Linux-x86-64.zip : OPatch Utility
 
 ## Prerequisite configuration
 
-Before you run the tool you need to create JSON formatted configuration files
+After a newly reimaged BMX host is delivered, there are a few system configuration details
+that are needed to be done prior to running the `install-oracle.sh` utility.
+Please refer to the [docs section](host-provisioning-guide.md) for usage details.
+
+Before you run the `install-oracle.sh` tool you need to create JSON formatted configuration files
 for the data mount devices and the ASM disk group.
 
 ### Data mount configuration file

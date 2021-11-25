@@ -77,7 +77,7 @@ Command used:
 ```bash
 ./host-provision.sh --instance-ip-addr 172.16.30.1  --instance-ssh-user ansible9 --proxy-setup false --u01-lun /dev/mapper/3600a098038314344372b4f75392d3850
 ```
-  * The default value for the boolean `proxy-setup` is `false`, hence the above can be simply keyed in as:
+* The default value for the boolean `proxy-setup` is `false`, hence the above can be simply keyed in as:
 ```bash
-./host-provision.sh --instance-ip-addr 172.16.30.1  --instance-ssh-user ansible9 --proxy-setup false --u01-lun /dev/mapper/3600a098038314344372b4f75392d3850
+./host-provision.sh --instance-ip-addr 172.16.30.1  --instance-ssh-user ansible9 --u01-lun /dev/mapper/3600a098038314344372b4f75392d3850
 ```

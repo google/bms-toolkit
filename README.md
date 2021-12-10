@@ -1,6 +1,6 @@
 # bms-toolkit
 
-Toolkit for installing and creating an initial Oracle database on Bare Metal Solution.
+Toolkit for installing and creating an initial Oracle database on [Bare Metal Solution](https://cloud.google.com/bare-metal).
 
 ## Quick Start 
 
@@ -11,7 +11,7 @@ Toolkit for installing and creating an initial Oracle database on Bare Metal Sol
      gsutil mb -b on gs://installation-media-1234
      ```
 1. [Download software](/docs/user-guide.md#downloading-and-staging-the-oracle-software) from Oracle and populate the bucket.  Use [check-swlib.sh](/docs/user-guide.md#validating-media) to determine which files are required for your Oracle version.
-1. Create an SSH key, and populate to an Anisble user on each database host.
+1. Create an SSH key, and populate to an Ansible user on each database host.
 1. Create a JSON file `db1_asm.json` with ASM disk devices:
     ```json
     [{
@@ -61,9 +61,9 @@ Full documentation is available in the [user guide](/docs/user-guide.md)
 
 ## Destructive cleanup
 
-An Ansible role and playbook performs a [desructive brute-force removal](/docs/user-guide.md#destructive-cleanup) of Oracle software and configuration.  It does not remove other host prerequisites.
+An Ansible role and playbook performs a [destructive brute-force removal](/docs/user-guide.md#destructive-cleanup) of Oracle software and configuration.  It does not remove other host prerequisites.
 
-Run the desructive brute-force Oracle software removal with `cleanup-oracle.sh` or `ansible-playbook brute-cleanup.yml`
+Run the destructive brute-force Oracle software removal with `cleanup-oracle.sh` or `ansible-playbook brute-cleanup.yml`
 
 ## Contributing to the project
 

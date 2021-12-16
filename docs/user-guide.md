@@ -350,11 +350,15 @@ Support")</th>
 </tr>
 <tr>
 <td></td>
+<td>Patch - MOS</TD>
+<TD>COMBO OF OJVM RU COMPONENT 19.13.0.0.211019 + GI RU 19.13.0.0.211019</td>
+<td>p33248471_190000_Linux-x86-64.zip</td>
+</tr>
+<tr>
+<td></td>
 <td>Patch - MOS</td>
 <td>COMBO OF OJVM RU COMPONENT 19.11.0.0.210420 + GI RU 19.11.0.0.210420</td>
 <td>p32578973_190000_Linux-x86-64.zip</td>
-
-
 </tr>
 <tr>
 <td></td>
@@ -498,6 +502,12 @@ x86-64</td>
 <tr>
 <td></td>
 <td>Patch - MOS</td>
+<td>COMBO OF OJVM RU COMPONENT 12.2.0.1.211019 + 12.2.0.1.211019 GIOCT2021RU</td>
+<td>p333248546_122010_Linux-x86-64.zip</td>
+</tr>
+<tr>
+<td></td>
+<td>Patch - MOS</td>
 <td>COMBO OF OJVM RU COMPONENT 12.2.0.1.210420 + 12.2.0.1.210420 GIAPR2021RU</td>
 <td>p32579057_122010_Linux-x86-64.zip</td>
 </tr>
@@ -586,6 +596,12 @@ V77388-01_2of2.zip</td>
 <td>Oracle Grid Infrastructure 12.1.0.2.0 for Linux x86-64</td>
 <td>V46096-01_1of2.zip<br>
 V46096-01_2of2.zip</td>
+</tr>
+<tr>
+<td></td>
+<td>Patch - MOS</td>
+<td>COMBO OF OJVM COMPONENT 12.1.0.2.211019 DB PSU + GIPSU 12.1.0.2.211019</td>
+<td>p33248580_121020_Linux-x86-64.zip</td>
 </tr>
 <tr>
 <td></td>

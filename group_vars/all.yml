@@ -138,3 +138,6 @@ firsttime_connect_user: "customeradmin"
 control_node_key_file: "~/.ssh/id_rsa_bms_toolkit"
 proxy_setup: "{{ lookup('env','ORA_PROXY_SETUP')|lower|default('false',true) }}"
 u01_lun: "{{ lookup('env','ORA_U01_LUN')|lower|default('',true) }}"
+
+## AHF install variables
+ahf_patchfile: "{{ lookup('env','ORA_AHF_PATCHFILE')|default('AHF-LINUX_v21.4.0.zip',true) }}"

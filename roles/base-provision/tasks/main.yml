@@ -52,6 +52,7 @@
   with_items:
     - avahi-daemon.socket
     - avahi-daemon.service
+  ignore_errors: yes
   tags: cvu
 
 - name: Install required base OS packages

@@ -1,0 +1,92 @@
+# Copyright 2020 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+---
+
+- name: Download AHF patchfile from GCS bucket
+  hosts: all
+  gather_facts: false
+  tasks:
+    - name: Copy AHF patchfile from GCS to target instance
+      shell: |
+        set -o pipefail
+        if ! ssh -i {{ ansible_ssh_private_key_file }} {{ ansible_ssh_extra_args }} {{ ansible_ssh_user }}@{{ ansible_ssh_host }} \
+          "unzip -l {{ swlib_path }}/{{ ahf_patchfile }}"
+          then
+            gsutil cat gs://{{ swlib_mount_src }}/{{ ahf_patchfile }} | ssh -i {{ ansible_ssh_private_key_file }} {{ ansible_ssh_extra_args }} \
+              {{ ansible_ssh_user }}@{{ ansible_ssh_host }} "cat > {{ swlib_path }}/{{ ahf_patchfile }}"
+        fi        
+      register: shell_result
+      args:
+        executable: /bin/bash
+      delegate_to: 127.0.0.1
+
+
+- name: Install AHF
+  hosts: dbasm
+  become: true
+  gather_facts: false
+  tasks:
+    - name: Create staging temp directory
+      tempfile:
+        state: directory
+        suffix: ahf
+      register: tempdir
+
+    # - name: Show tempdir path
+    #   debug: var=tempdir
+
+    
+    # 2 tasks to avoid errors
+    # (1) For new installations, entire directory path should be owned by root
+    # This is to avoid "AHF-00014: AHF Data Location /u01/app/oracle/oracle.ahf/data is not owned by root in directory hierarchy" (2640052.1)
+
+    # (2) If there is existing installation or if there `/u01/oracle.ahf/data` directory exists, remove DATA_DIR
+    # This is to avoid "[ERROR] : AHF-00014: AHF Data directory [/u01/oracle.ahf/data] not found"
+
+    - name: Remove DATA_DIR if it exists
+      file:
+        path: /u01/oracle.ahf/data
+        state: absent
+
+    - name: Create DATA_DIR
+      file:
+        path: /u01/oracle.ahf/data
+        state: directory
+      
+    - name: Copy AHF installer from software library to tempdir for extraction
+      unarchive:
+        src: "{{ swlib_path }}/{{ ahf_patchfile }}"
+        dest: "{{ tempdir.path }}"
+        remote_src: yes
+
+    - name: Run installer
+      command:
+        argv:
+          -  "{{ tempdir.path|quote }}/ahf_setup"
+          - -local
+          - -silent
+          - -data_dir
+          - /u01/oracle.ahf/data
+      become: yes
+      become_user: root
+      register: installer
+
+    - name: Show installer output
+      debug: var=installer
+
+    - name: Clean up staging directory
+      file:
+        path: tempdir.path
+        state: absent

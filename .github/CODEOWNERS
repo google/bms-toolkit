@@ -1,3 +1,0 @@
-# Format: https://help.github.com/en/github/creating-cloning-and-archiving-repositories/about-code-owners
-# Team members bost be part of the google GitHub org
-*/*               @google/bms-toolkit-approvers

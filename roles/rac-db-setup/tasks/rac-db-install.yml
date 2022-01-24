@@ -118,7 +118,12 @@
 
 - name: rac-db-install | Set installer command
   set_fact:
-    installer_command: "{{ runinstaller_loc }}/runInstaller -silent -waitforcompletion -responseFile {{ install_unzip_path }}/db_install.rsp {{ rel_patch | default('') }} {% if oneoff_patch_dirs|length > 0 %}-applyOneOffs {{ oneoff_patch_dirs }}{% endif %} {{ prereq_option }}"
+    # As noted in https://screenshot.googleplex.com/7XbsnHPzu2aXH4g, this is an ongoing bug since APR-2021 that's expected to be closed in the next quarter
+    # This leaves us with 2 options for 19.13 OCT'21 RU: (1) Modify the fundamental code permanently to include a new logic for patching OJVM xeprately in the RDBMS_HOME
+    # (2) Other option is to remove the `applyOneOffs` flag from the following command OJVM patch application shall be handled after install-oracle.sh finishes by a single command: `opatch apply`
+    # Going with (2) considering the introduction of additional logic and temporary nature of bug
+    # installer_command: "{{ runinstaller_loc }}/runInstaller -silent -waitforcompletion -responseFile {{ install_unzip_path }}/db_install.rsp {{ rel_patch | default('') }} {% if oneoff_patch_dirs|length > 0 %}-applyOneOffs {{ oneoff_patch_dirs }}{% endif %} {{ prereq_option }}"
+    installer_command: "{{ runinstaller_loc }}/runInstaller -silent -waitforcompletion -responseFile {{ install_unzip_path }}/db_install.rsp {{ rel_patch | default('') }} {{ prereq_option }}"
   tags: rac-db,rac-db-install
 
 - name: rac-db-install | Information

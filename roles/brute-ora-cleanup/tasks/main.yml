@@ -210,6 +210,20 @@
   with_items:
     - "{{ oracle_user_data_mounts }}"
 
+# Adding this task for the error that may subsequently in the Ansible task:
+# TASK [host-storage : Mount Oracle user mount LV devices]
+# "msg": "Error mounting /u01: mount: mount /dev/mapper/sw-u01 on /u01 failed: Structure needs cleaning"
+# [root@at-bmx-svr ~]# mount /u01
+# mount: mount /dev/mapper/sw-u01 on /u01 failed: Structure needs cleaning
+
+- name: After lazy umount and before removing fstab, ensure device integrity
+  shell: |
+    xfs_repair "{{ item.blk_device }}" -L
+    mount "{{ item.mount_point }}"
+    umount "{{ item.mount_point }}"
+  with_items:
+    - "{{ oracle_user_data_mounts }}"
+
 - name: Remove Oracle user data devices from fstab
   mount:
     fstype: "{{ item.fstype }}"

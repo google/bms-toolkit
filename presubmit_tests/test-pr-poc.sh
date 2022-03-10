@@ -29,7 +29,8 @@ cp /etc/files_needed_for_tk/google-cloud-sdk.repo /etc/yum.repos.d/google-cloud-
 yum install google-cloud-sdk -y
 
 # run the cleanup script
-cd ..; ./cleanup-oracle.sh --ora-version 19  --inventory-file /etc/files_needed_for_tk/nonrac-inv  --yes-i-am-sure --ora-disk-mgmt udev --ora-swlib-path /u01/oracle_install --ora-asm-disks /etc/files_needed_for_tk/nonrac-asm.json --ora-data-mounts /etc/files_needed_for_tk/nonrac-datamounts.json
+pwd
+./cleanup-oracle.sh --ora-version 19  --inventory-file /etc/files_needed_for_tk/nonrac-inv  --yes-i-am-sure --ora-disk-mgmt udev --ora-swlib-path /u01/oracle_install --ora-asm-disks /etc/files_needed_for_tk/nonrac-asm.json --ora-data-mounts /etc/files_needed_for_tk/nonrac-datamounts.json
 
 # As noted in the design doc comment (internal): https://docs.google.com/document/d/1mv2nV0Cv6EKv-ZTScv59JdyqvmNfYeMojqFJdJVhdmk/edit?pli=1&disco=AAAAUN1OWrw
 # fail the prowjob if the cleanup does not succeed

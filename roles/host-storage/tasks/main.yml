@@ -60,8 +60,7 @@
     src: "{{ item.blk_device }}"
     path: "{{ item.mount_point }}"
     opts: "{{ item.mount_opts }}"
-    #state: mounted # to change this to incorrect value unknown to ansible for testing prowjob
-    state: created
+    state: mounted
   when: "'mapper' in item.blk_device"
   with_items:
     - "{{ oracle_user_data_mounts }}"

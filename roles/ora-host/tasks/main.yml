@@ -290,7 +290,7 @@
 - name: (udev) Add ASM mpath disk rules on BM (udevadm info)
   become: yes
   become_user: root
-  shell: udevadm info --query=all --name={{ item.1.blk_device }} | grep DM_UUID | awk -F'=' '{print $2}'
+  shell: udevadm info --query=all --name={{ item.1.blk_device }} | grep DEVPATH | awk -F'=' '{print $2}'
   register: udevadm_result
   when:
     - "'mapper' in item.1.blk_device"

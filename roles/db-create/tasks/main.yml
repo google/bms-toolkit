@@ -52,7 +52,7 @@
   become: yes
   become_user: "{{ oracle_user }}"
   template:
-    src: dbca.rsp.sh.j2
+    src: rac-dbca.rsp.sh.j2
     dest: "{{ swlib_unzip_path }}/dbca_{{ db_name }}.rsp.sh"
     owner: "{{ oracle_user }}"
     group: "{{ oracle_group }}"

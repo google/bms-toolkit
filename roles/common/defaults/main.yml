@@ -298,7 +298,7 @@ gi_patches:
 # Warning: GIRU 32126842 for 19.10.0.0.210119 has critical regressions and password protected. Development recommends 19.11.0.0.210420 Patch 32545008 instead of the JAN 2021 quarter RU
 #  - { category: "RU", base: "19.3.0.0.0", release: "19.10.0.0.210119", patchnum: "32126842", patchfile: "p32126842_190000_Linux-x86-64.zip", patch_subdir: "/32226239", prereq_check: FALSE, method: "opatchauto apply", ocm: FALSE, upgrade: FALSE, md5sum: "opnaS/8dS13yGypZCCN8WA==" }
 #  - { category: "RU", base: "19.3.0.0.0", release: "19.11.0.0.210420", patchnum: "32578973", patchfile: "p32578973_190000_Linux-x86-64.zip", patch_subdir: "/32545008", prereq_check: FALSE, method: "opatchauto apply", ocm: FALSE, upgrade: FALSE, md5sum: "YLEOruyjCOdDvUOMBUazNQ==" }
-  - { category: "RU", base: "19.3.0.0.0", release: "19.9.0.0.211019", patchnum: "33248471", patchfile: "p33248471_190000_Linux-x86-64.zip", patch_subdir: "/33192694", prereq_check: FALSE, method: "opatchauto apply", ocm: FALSE, upgrade: FALSE, md5sum: "3LgQa6fZ/UHs3XZ8GvtwrQ==" }
+  - { category: "RU", base: "19.3.0.0.0", release: "19.13.0.0.211019", patchnum: "33248471", patchfile: "p33248471_190000_Linux-x86-64.zip", patch_subdir: "/33182768", prereq_check: FALSE, method: "opatchauto apply", ocm: FALSE, upgrade: FALSE, md5sum: "3LgQa6fZ/UHs3XZ8GvtwrQ==" }
 
 rdbms_patches:
 # 11.2.0.4 OJVM packages from Combo
@@ -349,4 +349,4 @@ rdbms_patches:
   - { category: "RU_Combo", base: "19.3.0.0.0", release: "19.9.0.0.201020", patchnum: "31720429", patchfile: "p31720429_190000_Linux-x86-64.zip", patch_subdir: "/31668882", prereq_check: TRUE, method: "opatch apply", ocm: FALSE, upgrade: TRUE, md5sum: "tTZDYSasdnt7lrNJ/MYm1g==" }
 #  - { category: "RU_Combo", base: "19.3.0.0.0", release: "19.10.0.0.210119", patchnum: "32126842", patchfile: "p32126842_190000_Linux-x86-64.zip", patch_subdir: "/32067171", prereq_check: TRUE, method: "opatch apply", ocm: FALSE, upgrade: TRUE, md5sum: "opnaS/8dS13yGypZCCN8WA==" }
 #  - { category: "RU_Combo", base: "19.3.0.0.0", release: "19.11.0.0.210420", patchnum: "32578973", patchfile: "p32578973_190000_Linux-x86-64.zip", patch_subdir: "/32399816", prereq_check: TRUE, method: "opatch apply", ocm: FALSE, upgrade: TRUE, md5sum: "YLEOruyjCOdDvUOMBUazNQ==" }
-  - { category: "RU_Combo", base: "19.3.0.0.0", release: "19.9.0.0.211019", patchnum: "33248471", patchfile: "p33248471_190000_Linux-x86-64.zip", patch_subdir: "/33182768/33192793", prereq_check: TRUE, method: "opatch apply", ocm: FALSE, upgrade: TRUE, md5sum: "3LgQa6fZ/UHs3XZ8GvtwrQ==" }
+  - { category: "RU_Combo", base: "19.3.0.0.0", release: "19.13.0.0.211019", patchnum: "33248471", patchfile: "p33248471_190000_Linux-x86-64.zip", patch_subdir: "/33192694", prereq_check: TRUE, method: "opatch apply", ocm: FALSE, upgrade: TRUE, md5sum: "3LgQa6fZ/UHs3XZ8GvtwrQ==" }

@@ -29,17 +29,25 @@ cp /etc/files_needed_for_tk/google-cloud-sdk.repo /etc/yum.repos.d/google-cloud-
 yum install google-cloud-sdk -y
 
 # run the cleanup script
-cd ..; ./cleanup-oracle.sh --ora-version 19 \ 
+pwd
+./cleanup-oracle.sh --ora-version 19 \
 --inventory-file /etc/files_needed_for_tk/nonrac-inv \
---yes-i-am-sure --ora-disk-mgmt udev --ora-swlib-path /u01/oracle_install \ 
---ora-asm-disks /etc/files_needed_for_tk/nonrac-asm.json \ 
+--yes-i-am-sure --ora-disk-mgmt udev --ora-swlib-path /u01/oracle_install \
+--ora-asm-disks /etc/files_needed_for_tk/nonrac-asm.json \
 --ora-data-mounts /etc/files_needed_for_tk/nonrac-datamounts.json
 
+# As noted in the design doc comment (internal): https://docs.google.com/document/d/1mv2nV0Cv6EKv-ZTScv59JdyqvmNfYeMojqFJdJVhdmk/edit?pli=1&disco=AAAAUN1OWrw
+# fail the prowjob if the cleanup does not succeed
+if [[ $? -ne 0 ]]; then
+    echo "cleanup-oracle.sh failed, fix and rerun prowjob"
+    exit 1
+fi
+
 # run the install script
-./install-oracle.sh --ora-swlib-bucket gs://bmaas-testing-oracle-software \ 
---instance-ssh-user ansible9 --instance-ssh-key /etc/files_needed_for_tk/id_rsa_bms_tk_key \ 
+./install-oracle.sh --ora-swlib-bucket gs://bmaas-testing-oracle-software \
+--instance-ssh-user ansible9 --instance-ssh-key /etc/files_needed_for_tk/id_rsa_bms_tk_key \
 --backup-dest "+RECO" --ora-swlib-path /u01/oracle_install --ora-version 19 --ora-swlib-type gcs \
---ora-asm-disks /etc/files_needed_for_tk/nonrac-asm.json \ 
---ora-data-mounts /etc/files_needed_for_tk/nonrac-datamounts.json --cluster-type NONE \ 
---ora-data-diskgroup DATA --ora-reco-diskgroup RECO --ora-db-name orcl \ 
+--ora-asm-disks /etc/files_needed_for_tk/nonrac-asm.json \
+--ora-data-mounts /etc/files_needed_for_tk/nonrac-datamounts.json --cluster-type NONE \
+--ora-data-diskgroup DATA --ora-reco-diskgroup RECO --ora-db-name orcl \
 --ora-db-container false --instance-ip-addr 172.16.30.1 --instance-hostname linuxserver44.orcl

@@ -49,11 +49,6 @@
   become: yes
   tags: rdbms-setup,sw-unzip
 
-- name: rdbms-install | Set variable for OneOff patch
-  set_fact:
-    oneoff_patch_dirs: "{% set c = joiner(',') %}{% for p in rdbms_patches %}{% if p.release == oracle_rel %}{{ c() }}{{ swlib_unzip_path }}/{{ p.patchnum }}{{ p.patch_subdir }}{% endif %}{% endfor %}"
-  tags: rdbms-setup,oneoff-patch
-
 - name: rdbms-install | Unzipping software
   become: yes
   become_user: "{{ oracle_user }}"
@@ -63,7 +58,7 @@
     remote_src: yes
   with_items:
     - "{{ osw.files }}"
-  tags: rdbms-setup,sw_unzip
+  tags: rdbms-setup,sw-unzip
 
 - name: rdbms-install | Create RDBMS response file script
   become: yes
@@ -104,7 +99,7 @@
 
 - name: rdbms-install | Set installer command
   set_fact:
-    installer_command: "{{ runinstaller_loc }}/runInstaller -silent -waitforcompletion -responseFile {{ swlib_unzip_path }}/db_install.rsp {{ rel_patch | default('') }} {% if oneoff_patch_dirs|length > 0 %}-applyOneOffs {{ oneoff_patch_dirs }}{% endif %} {{ prereq_option }}"
+    installer_command: "{{ runinstaller_loc }}/runInstaller -silent -waitforcompletion -responseFile {{ swlib_unzip_path }}/db_install.rsp {{ rel_patch | default('') }} {{ prereq_option }}"
   tags: rdbms-setup
 
 - name: rdbms-install | Information
@@ -128,6 +123,28 @@
       - "{{ install_db_software.stdout_lines }}"
     #verbosity: 1
   tags: rdbms-setup
+
+- name: rdbms-install | Apply one-off and OJVM patches
+  become: yes
+  become_user: "{{ oracle_user }}"
+  command: "{{ oracle_home }}/OPatch/{{ item.method }} -silent -oh {{ oracle_home }} {{ swlib_unzip_path }}/{{ item.patchnum }}{{ item.patch_subdir }}"
+  with_items:
+    - "{{ rdbms_patches }}"
+  when:
+    - item.release == oracle_rel
+  register: apply_oneoff
+  failed_when: "('OPatch succeeded' not in apply_oneoff.stdout) or
+                (apply_oneoff.rc not in [0,6,250])"
+  tags: rdbms-setup,opatch
+
+- name: rdbms-install | opatch output
+  debug:
+    msg:
+      - "{{ item.cmd }}"
+      - "{{ item.stdout_lines }}"
+  with_items: "{{ apply_oneoff.results }}"
+  when: item.changed
+  tags: rdbms-setup,opatch
 
 - name: rdbms-install | Run script orainstRoot.sh
   become: yes

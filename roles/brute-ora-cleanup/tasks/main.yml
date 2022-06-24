@@ -68,6 +68,7 @@
     - tnslsnr
     - agent13c
     - ohasd
+    - orachkscheduler
     - OSWatcher
     - PROTOCOL=beq
     - '\\+ASM'
@@ -95,6 +96,7 @@
     - tnslsnr
     - agent13c
     - ohasd
+    - orachkscheduler
     - OSWatcher
     - PROTOCOL=beq
     - '\\+ASM'
@@ -134,8 +136,10 @@
     - /usr/local/bin/dbhome
     - /usr/local/bin/oraenv
     - /usr/local/bin/coraenv
+    - /etc/init.d/acfssihamount
     - /etc/init.d/ohasd
     - /etc/init.d/init.ohasd
+    - /etc/init.d/init.orachkscheduler
     - /etc/init.d/init.tfa
     - /etc/oracle
     - /etc/sysconfig/oracleasm-update
@@ -219,10 +223,10 @@
   with_items:
     - "{{ oracle_user_data_mounts }}"
 
-- name: Zero-out header in Oracle user data disks
+- name: Remove magic strings from Oracle user data disks
   become: yes
   become_user: root
-  command: "dd if=/dev/zero of={{ item.blk_device }} bs=1M count=100"
+  command: "wipefs --all --force {{ item.blk_device }}"
   with_items:
     - "{{ oracle_user_data_mounts }}"
 

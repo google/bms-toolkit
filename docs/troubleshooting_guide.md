@@ -338,7 +338,7 @@ Thu Jan 21 22:40:31 UTC 2021
 Thu Jan 21 22:40:34 UTC 2021
 ```
 
-## Pass extra flags into ansible via `install-oracle.sh`:
+## Pass extra flags into ansible via `install-oracle.sh` 
 * There may arise situations where we may want to pass extra flags to ansible and this may be done as follows (taking an example of passing the debug flag):
 ```bash
  ~/git-clone-holder/bms-toolkit [master L|✚ 3…2]
@@ -371,3 +371,15 @@ Running Ansible playbook: /usr/bin/ansible-playbook -i ./inventory_files/invento
 ```
 
 * Debug tip: if you are testing a **specific functionality** of a playbook by extracting snippets of the playbook into your local ansible setup, don't turn off the `gather_facts` (by inadvertently having the setting `gather_facts: False` in your test playbook).
+
+## Conditional check failure on AnsibleUnsafeText
+
+* A playbook may report a missing attribute on an AnsibleUnsafeText object:
+
+```
+  TASK [host-storage : Partition Oracle user mount devices] **************************************************************************************************************************************************************************************************************************************************************
+  fatal: [racnode1.orcl]: FAILED! => {"msg": "The conditional check ''mapper' not in item.blk_device' failed. The error was: error while evaluating conditional ('mapper' not in item.blk_device): 'ansible.utils.unsafe_proxy.AnsibleUnsafeText object' has no attribute 'blk_device'\n\nThe error appears to be in '/home/mfielding/git/opatch/roles/host-storage/tasks/main.yml': line 16, column 3, but may\nbe elsewhere in the file depending on the exact syntax problem.\n\nThe offending line appears to be:\n\n---\n- name: Partition Oracle user mount devices\n  ^ here\n"}
+```
+
+* Fix:
+  * Ansible is not able to parse an input JSON file.  Identify the input file involved, and validate.  Is there a blank line, perhaps?

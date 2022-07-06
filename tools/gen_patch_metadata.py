@@ -63,7 +63,7 @@ def parse_patch(patch_file: str, patchnum: int) -> (str, str, str, str):
             ojvm_subdir = m.group(1)
           elif 'GI ' in c.find('title').get_text() or 'Grid Infrastructure' in c.find('title').get_text():
             gi_subdir = m.group(1)
-  return(patch_release, release, ojvm_subdir, gi_subdir)
+  return(release, patch_release, ojvm_subdir, gi_subdir)
 
 
 def main():
@@ -133,8 +133,7 @@ def main():
     - {{ category: "RU", base: "{base_release}", release: "{patch_release}", patchnum: "{patchnum}", patchfile: "{patch_file}", patch_subdir: "/{gi_subdir}", prereq_check: FALSE, method: "opatchauto apply", ocm: FALSE, upgrade: FALSE, md5sum: "{md5_digest}" }}
 
   rdbms_patches:
-    - {{ category: "RU_Combo", base: "{base_release}", release:
-        "{patch_release}", patchnum: "{patchnum}, patchfile: "{patch_file}", patch_subdir: "/{ojvm_subdir}", prereq_check: TRUE, method: "opatch apply", ocm: FALSE, upgrade: TRUE, md5sum: "{md5_digest}" }}
+    - {{ category: "RU_Combo", base: "{base_release}", release: "{patch_release}", patchnum: "{patchnum}", patchfile: "{patch_file}", patch_subdir: "/{ojvm_subdir}", prereq_check: TRUE, method: "opatch apply", ocm: FALSE, upgrade: TRUE, md5sum: "{md5_digest}" }}
   ''')
 
 if __name__ == '__main__':

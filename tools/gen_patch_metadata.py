@@ -38,6 +38,7 @@ def get_patch_url(s: requests.models.Request, patchnum: int) -> typing.List[str]
 def download_patch(s: requests.models.Request, url: str, patch_file: str) -> None:
   """Downloads a given URL to a local file."""
   logging.info('Downloading %s', url)
+  s.mount(url, requests.adapters.HTTPAdapter(max_retries=3))
   with s.get(url, stream=True) as r:
     with open(patch_file, 'wb') as f:
       shutil.copyfileobj(r.raw, f)
@@ -49,6 +50,7 @@ def parse_patch(patch_file: str, patchnum: int) -> (str, str, str, str):
     with z.open('PatchSearch.xml') as f:
       c = bs4.BeautifulSoup(f.read(), 'xml')
       abstract = c.find('abstract').get_text()
+      assert 'COMBO OF OJVM' in abstract, f'Patch {patchnum} abstract {abstract} does not look like an OJVM combo'
       logging.info('Abstract: %s', abstract)
       patch_release = re.findall(r' (\d+\.\d+\.\d+\.\d+\.\d+) ', abstract)[0]
       release = c.find('release')['name']
@@ -63,6 +65,8 @@ def parse_patch(patch_file: str, patchnum: int) -> (str, str, str, str):
             ojvm_subdir = m.group(1)
           elif 'GI ' in c.find('title').get_text() or 'Grid Infrastructure' in c.find('title').get_text():
             gi_subdir = m.group(1)
+    assert 'ojvm_subdir' in locals(), f'Could not find an OJVM patch molecule in {patch_file}'
+    assert 'gi_subdir' in locals(), f'Could not find a GI patch molecule in {patch_file}'
   return(release, patch_release, ojvm_subdir, gi_subdir)
 
 

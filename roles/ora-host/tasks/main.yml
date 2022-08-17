@@ -234,7 +234,7 @@
     dest: "/home/{{ grid_user }}/.bash_profile"
     marker: "# {mark} Oracle Grid Infrastructure Settings:"
     backup: yes
-  when: role_separaion|bool
+  when: role_separation|bool
   tags: os-users
 
 - name: (asmlib) | ASM device managment via asmlib or udev?

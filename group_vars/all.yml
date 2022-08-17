@@ -76,7 +76,7 @@ ncharset: "{{ lookup('env','ORA_DB_NCHARSET')|default('AL16UTF16',true) }}"
 
 # ASM and storage related variables:
 asm_disk_management: "{{ lookup('env','ORA_DISK_MGMT')|lower|default('udev',true) }}"
-role_separaion: "{{ lookup('env','ORA_ROLE_SEPARATION')|lower|default('true',true) }}"
+role_separation: "{{ lookup('env','ORA_ROLE_SEPARATION')|lower|default('true',true) }}"
 data_diskgroup: "{{ lookup('env','ORA_DATA_DISKGROUP')|default('DATA',true) }}"
 reco_diskgroup: "{{ lookup('env','ORA_RECO_DISKGROUP')|default('RECO',true) }}"
 
@@ -115,7 +115,7 @@ sga_target: "{{ (ansible_memory_mb.real.total*memory_pct)//100 }}M"
 pga_aggtar: 150M
 oracle_user: oracle
 oracle_group: oinstall
-grid_user: "{% if role_separaion|bool %}grid{% else %}{{ oracle_user }}{% endif %}"
+grid_user: "{% if role_separation|bool %}grid{% else %}{{ oracle_user }}{% endif %}"
 grid_group: asmadmin
 oracle_root: "/u01/app"
 home_name: "dbhome_1"

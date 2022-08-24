@@ -29,6 +29,19 @@
   shell: pidof -x /usr/bin/yum /bin/yum | xargs -t -r -n 1 kill -INT
   tags: os_packages
 
+- name: Remove ntpd package
+  package:
+    name: ntp
+    state: absent
+    lock_timeout: 180
+  tags: ntp
+
+- name: Remove ntp conf
+  file:
+    path: /etc/ntp.conf
+    state: absent
+  tags: ntp
+
 - name: Disable avahi daemon
   systemd:
     name: "{{ item }}"
@@ -36,6 +49,7 @@
     state: stopped
   when:
     cluster_name is defined
+  ignore_errors: yes
   with_items:
     - avahi-daemon.socket
     - avahi-daemon.service

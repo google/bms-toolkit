@@ -220,6 +220,7 @@
     src: "{{ item.blk_device }}1"
     path: "{{ item.mount_point }}"
     state: absent
+  ignore_errors: true
   with_items:
     - "{{ oracle_user_data_mounts }}"
 

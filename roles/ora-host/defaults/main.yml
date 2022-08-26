@@ -72,6 +72,62 @@ oracle_required_rpms:
   - xorg-x11-utils
   - xorg-x11-xauth
 
+oracle_required_rpms_oel8:
+  - bc
+  - binutils
+  - cpp
+  - gcc
+  - gcc-c++
+  - glibc-devel
+  - glibc-headers
+  - gssproxy
+  - kernel-headers
+  - keyutils
+  - ksh
+  - libaio-devel
+  - libbasicobjects
+  - libcollection
+  - libdmx
+  - libevent
+  - libICE
+  - libini_config
+  - libmpc
+  - libnfsidmap
+  - libpath_utils
+  - libref_array
+  - libSM
+  - libstdc++-devel
+  - libtirpc
+  - libverto-libevent
+  - libXi
+  - libXinerama
+  - libXmu
+  - libXrandr
+  - libXrender
+  - libXt
+  - libXtst
+  - libXv
+  - libXxf86dga
+  - libXxf86misc
+  - libXxf86vm
+  - mailx
+  - make
+  - mpfr
+  - nfs-utils
+  - psmisc
+  - quota
+  - quota-nls
+  - rpcbind
+  - smartmontools
+  - sysstat
+  - xorg-x11-utils
+  - xorg-x11-xauth
+  - libnsl
+  - libnsl.i686
+  - libnsl2
+  - libnsl2.i686  
+
+
 sysctl_entries:
   - { name: "fs.aio-max-nr", value: "1048576" }
   - { name: "fs.file-max", value: "6815744" }

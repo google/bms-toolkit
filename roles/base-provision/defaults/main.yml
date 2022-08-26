@@ -20,7 +20,7 @@ etc_hosts_ip: "{% if 'virtualbox' in ansible_virtualization_type %}{{ ansible_al
 install_os_packages: true
 
 packages:
-  - ntp
+  - chrony
   - bind-utils
   - unzip
   - expect

@@ -1314,7 +1314,7 @@ NTP_PREF
 --ntp-pref
 </pre></p></td>
 <td>user defined - no default</td>
-<td>Preferred NTP server to use in /etc/ntp.conf.<br>
+<td>Preferred NTP server to use in /etc/chrony.conf.<br>
 <br>
 Optional: set only if you need to manually define an NTP server, instead of
 relying on the OS defaults.</td>

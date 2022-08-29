@@ -80,6 +80,13 @@
   when:
     - install_os_packages|bool and ansible_distribution == 'OracleLinux'
 
+- name: Stat OL8 repo
+  stat:
+    path: /etc/yum.repos.d/oracle-linux-ol8.repo
+  register: oraclelinux_repo_oel8
+  when:
+    - install_os_packages|bool and ansible_distribution == 'OracleLinux'
+
 - name: Install Oracle required packages (base/non-rhui config) for OEL7
   yum:
     name: "{{ oracle_required_rpms }}"
@@ -88,6 +95,16 @@
   when:
     - install_os_packages|bool and ansible_distribution == 'OracleLinux' and ansible_distribution_major_version == '7'
     - oraclelinux_repo.stat.exists|bool
+  tags: os-packages
+
+- name: Install Oracle required packages (base/non-rhui config) for OEL8
+  yum:
+    name: "{{ oracle_required_rpms_oel8 }}"
+    state: present
+    lock_timeout: 180
+  when:
+    - install_os_packages|bool and ansible_distribution == 'OracleLinux' and ansible_distribution_major_version == '8'
+    - oraclelinux_repo_oel8.stat.exists|bool
   tags: os-packages
 
 - name: Install Oracle required packages (rhui config)

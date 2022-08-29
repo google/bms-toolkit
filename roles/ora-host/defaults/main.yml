@@ -72,7 +72,7 @@ oracle_required_rpms:
   - xorg-x11-utils
   - xorg-x11-xauth
 
-oracle_required_rpms_oel8:
+oracle_required_rpms_el8:
   - bc
   - binutils
   - cpp

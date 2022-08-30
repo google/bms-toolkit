@@ -20,6 +20,7 @@ oracle_inventory: "{{ oracle_root }}/oraInventory"
 oracle_base: "{{ oracle_root }}/oracle"
 oracle_home: "{{ oracle_root }}/oracle/product/{{ oracle_ver_dir }}/{{ home_name }}"
 grid_home: "{{ oracle_root }}/{{ oracle_ver_dir }}/grid"
+grid_base: "{{ oracle_root }}/grid"
 
 path_udev: asmdisks
 

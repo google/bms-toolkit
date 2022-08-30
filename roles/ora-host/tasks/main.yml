@@ -99,7 +99,7 @@
 
 - name: Install Oracle required packages (base/non-rhui config) for OEL8
   yum:
-    name: "{{ oracle_required_rpms_oel8 }}"
+    name: "{{ oracle_required_rpms_el8 }}"
     state: present
     lock_timeout: 180
   when:

@@ -153,10 +153,11 @@
 - name: rac-db-install | opatch output
   debug:
     msg:
-      - "{{ apply_oneoff.cmd }}"
-      - "{{ apply_oneoff.stdout_lines }}"
+      - "{{ item.cmd }}"
+      - "{{ item.stdout_lines }}"
   with_items: "{{ apply_oneoff.results }}"
   when: item.changed
+  ignore_errors: yes
   tags: rac-db,rac-db-install,opatch
 
 - name: rac-db-install | Run script root.sh

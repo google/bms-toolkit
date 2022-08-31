@@ -220,7 +220,10 @@
     src: "{{ item.blk_device }}1"
     path: "{{ item.mount_point }}"
     state: absent
-  ignore_errors: true
+  register: fstab_result
+  failed_when:
+    - fstab_result.rc != 0
+    - "'Directory not empty' not in fstab_result.stderr"
   with_items:
     - "{{ oracle_user_data_mounts }}"
 

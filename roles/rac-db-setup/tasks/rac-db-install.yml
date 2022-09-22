@@ -148,6 +148,7 @@
   register: apply_oneoff
   failed_when: "('OPatch succeeded' not in apply_oneoff.stdout) or
                 (apply_oneoff.rc not in [0,6,250])"
+  ignore_errors: yes
   tags: rac-db,rac-db-install,opatch
 
 - name: rac-db-install | opatch output

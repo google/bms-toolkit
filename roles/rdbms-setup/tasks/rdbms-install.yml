@@ -135,6 +135,7 @@
   register: apply_oneoff
   failed_when: "('OPatch succeeded' not in apply_oneoff.stdout) or
                 (apply_oneoff.rc not in [0,6,250])"
+  ignore_errors: yes
   tags: rdbms-setup,opatch
 
 - name: rdbms-install | opatch output

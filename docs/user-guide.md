@@ -957,29 +957,23 @@ The following example shows a properly formatted JSON ASM disk group
 configuration file:
 
 ```json
-[
-    {
-        "diskgroup": "DATA",
-        "disks": [
-            {
-                "blk_device": "/dev/mapper/3600a098038314352502b4f782f446244",
-                "name": "DATA1"
-            },
-            {
-                "blk_device": "/dev/mapper/3600a098038314352502b4f782f446245",
-                "name": "DATA2"
-            }
-        ]
-    },
-    {
-        "diskgroup": "RECO",
-        "disks": [
-            {
-                "blk_device": "/dev/mapper/3600a098038314352502b4f782f446246",
-                "name": "RECO1"
-            }
-        ]
-    }
+[{
+  "diskgroup": "DATA",
+  "disks": [
+    { "name": "DATA_1234567538", "blk_device": "/dev/mapper/3600a098038314344382b4f1234567538" },
+    { "name": "DATA_123456752D", "blk_device": "/dev/mapper/3600a098038314344382b4f123456752d" },
+    { "name": "DATA_1234567541", "blk_device": "/dev/mapper/3600a098038314344382b4f1234567541" },
+    { "name": "DATA_1234567542", "blk_device": "/dev/mapper/3600a098038314344382b4f1234567542" },
+    { "name": "DATA_1234567543", "blk_device": "/dev/mapper/3600a098038314344382b4f1234567543" },
+    { "name": "DATA_1234567544", "blk_device": "/dev/mapper/3600a098038314344382b4f1234567544" },
+  ]},
+ {
+  "diskgroup": "RECO",
+  "disks": [
+    { "name": "RECO_1234567546", "blk_device": "/dev/mapper/3600a098038314344382b4f1234567546" },
+    { "name": "RECO_1234567547", "blk_device": "/dev/mapper/3600a098038314344382b4f1234567547" },
+    { "name": "RECO_1234567548", "blk_device": "/dev/mapper/3600a098038314344382b4f1234567548" },
+  ]}
 ]
 ```
 

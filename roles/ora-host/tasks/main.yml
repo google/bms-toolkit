@@ -52,7 +52,7 @@
     opts: rw,nosuid,nodev
     state: mounted
 
-- name: Stat RHEL7 base repo
+- name: Stat RHEL base repo
   stat:
     path: /etc/yum.repos.d/redhat.repo
   register: redhat_repo
@@ -95,6 +95,17 @@
   when:
     - install_os_packages|bool and ansible_distribution == 'OracleLinux' and ansible_distribution_major_version == '7'
     - oraclelinux_repo.stat.exists|bool
+  tags: os-packages
+
+- name: Install Oracle required packages (base/non-rhui config) for RHEL8
+  yum:
+    name: "{{ oracle_required_rpms_el8 }}"
+    state: present
+    lock_timeout: 180
+    enablerepo: rhel-8-server-optional-rpms
+  when:
+    - install_os_packages|bool and ansible_distribution == 'RedHat' and ansible_distribution_major_version == '8'
+    - redhat_repo.stat.exists|bool
   tags: os-packages
 
 - name: Install Oracle required packages (base/non-rhui config) for OEL8

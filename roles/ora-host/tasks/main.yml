@@ -102,7 +102,6 @@
     name: "{{ oracle_required_rpms_el8 }}"
     state: present
     lock_timeout: 180
-    enablerepo: rhel-8-server-optional-rpms
   when:
     - install_os_packages|bool and ansible_distribution == 'RedHat' and ansible_distribution_major_version == '8'
     - redhat_repo.stat.exists|bool

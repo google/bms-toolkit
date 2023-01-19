@@ -2348,7 +2348,6 @@ the following actions:
 -  Removes Oracle related directories and files.
 -  Removes Oracle software owner users and groups.
 -  Re-initializes ASM storage devices and uninstalls ASMlib if installed.
--  Reboots the server.
 
 **Important**: a destructive cleanup permanently deletes the databases and any data they
 contain. Any backups that are stored local to the server are also deleted. Backups

@@ -142,7 +142,7 @@
   become_user: "{{ oracle_user }}"
   command: "{{ oracle_home }}/OPatch/{{ item.method }} -silent -oh {{ oracle_home }} {{ swlib_unzip_path }}/{{ item.patchnum }}{{ item.patch_subdir }}"
   environment:
-    PATH: "{{ grid_home }}/perl/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin"
+    PATH: "{{ oracle_home }}/perl/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin"
     PERL5LIB: "{{ oracle_home }}/perl/lib"
   with_items:
     - "{{ rdbms_patches }}"

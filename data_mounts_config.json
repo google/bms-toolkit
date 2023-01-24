@@ -1,7 +1,7 @@
 [
     {
         "purpose": "software",
-	"blk_device": "/dev/BOGUS",
+	"blk_device": "replace_with_block_device_like_/dev/mapper/db-sw",
 	"name": "u01",
 	"fstype":"xfs",
 	"mount_point":"/u01",

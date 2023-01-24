@@ -48,7 +48,7 @@
     LD_LIBRARY_PATH: "{{ grid_home }}/lib:${LD_LIBRARY_PATH}"
   when:
     - asm_disk_management == "asmlib"
-    - created_dg is not search('{{ item.diskgroup }}')
+    - created_dg is not search(item.diskgroup)
   with_items:
     - "{{ asm_disks }}"
   register: create_dg
@@ -76,7 +76,7 @@
     LD_LIBRARY_PATH: "{{ grid_home }}/lib:${LD_LIBRARY_PATH}"
   when:
     - asm_disk_management == "udev"
-    - created_dg is not search('{{ item.diskgroup }}')
+    - created_dg is not search(item.diskgroup)
   with_items:
     - "{{ asm_disks }}"
   register: create_dg

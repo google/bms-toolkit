@@ -71,6 +71,7 @@
     - orachkscheduler
     - OSWatcher
     - PROTOCOL=beq
+    - oracle.rat.tfa
     - '\\+ASM'
     - /grid/bin
     - /grid/jdk
@@ -99,6 +100,7 @@
     - orachkscheduler
     - OSWatcher
     - PROTOCOL=beq
+    - oracle.rat.tfa
     - '\\+ASM'
     - /grid/bin
     - /grid/jdk

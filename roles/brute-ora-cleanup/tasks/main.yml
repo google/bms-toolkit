@@ -60,6 +60,16 @@
   become: yes
   become_user: root
   when: cluster_name is not defined
+  
+- name: Uninstall TFA service
+  command: "{{ grid_home }}/bin/tfactl uninstall -local -silent"
+  environment:
+    PATH: "{{ grid_home }}/perl/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin"
+    PERL5LIB: "{{ grid_home }}/perl/lib"
+  register: uninstall_tfa
+  ignore_errors: yes
+  become: yes
+  become_user: root
 
 - name: Kill (SIGTERM) any remaining Oracle processes
   command: "pkill -f {{ item }}"

@@ -141,6 +141,9 @@
   become: yes
   become_user: "{{ oracle_user }}"
   command: "{{ oracle_home }}/OPatch/{{ item.method }} -silent -oh {{ oracle_home }} {{ swlib_unzip_path }}/{{ item.patchnum }}{{ item.patch_subdir }}"
+  environment:
+    PATH: "{{ oracle_home }}/perl/bin:$PATH"
+    PERL5LIB: "{{ oracle_home }}/perl/lib"
   with_items:
     - "{{ rdbms_patches }}"
   when:

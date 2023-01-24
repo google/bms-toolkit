@@ -232,6 +232,15 @@
     state: absent
   with_items:
     - "{{ oracle_user_data_mounts }}"
+    
+- name: Remove magic strings from Oracle user data partitions
+  become: yes
+  become_user: root
+  command: "wipefs --all --force {{ item.blk_device }}1"
+  when: "'mapper' not in item.blk_device"
+  ignore_errors: true
+  with_items:
+    - "{{ oracle_user_data_mounts }}"
 
 - name: Remove magic strings from Oracle user data disks
   become: yes

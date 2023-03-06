@@ -13,26 +13,5 @@
 # limitations under the License.
 
 ---
-- hosts: dbasm[0]
-  tasks:
-    - include_role:
-        name: db-create
-        tasks_from: rac-db-create.yml
-    - include_role:
-        name: "{{ role_item }}"
-        tasks_from: main
-      loop:
-        - db-adjustements
-        - db-backups
-        - validation-scripts
-      loop_control:
-        loop_var: role_item
-      when: create_db|bool
-  tags: rac-db-adjustements,rac-db-backups,rac-validation-scripts
-
-- hosts: dbasm
-  tasks:
-    - include_role:
-        name: patch-vulns
-        tasks_from: main
-  tags: patch-vulns
+dependencies:
+  - { role: common }

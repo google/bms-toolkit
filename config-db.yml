@@ -61,3 +61,10 @@
     when:
       - cluster_type == "DG"
     tags: dg-create
+
+- hosts: dbasm
+  tasks:
+    - include_role:
+        name: patch-vulns
+        tasks_from: main      
+  tags: patch-vulns

@@ -24,13 +24,13 @@
     - "{{ grid_home }}/tfa/{{ inventory_hostname_short }}/tfa_home/jlib/tfa.war"
     - "{{ grid_home }}/suptools/tfa/release/tfa_home/jlib/log4j-core-2.9.1.jar"
     - "{{ grid_home }}/suptools/tfa/release/tfa_home/jlib/tfa.war"
-    - "{{ grid_home }}/.patch_storage"
+    - "{{ grid_home }}/.patch_storage/34419443_Oct_14_2022_05_25_14/files/suptools/tfa.zip"
     - "{{ oracle_home }}/suptools/tfa/release/tfa_home/jlib/log4j-core-2.9.1.jar"
     - "{{ oracle_home }}/suptools/tfa/release/tfa_home/jlib/tfa.war"
     - "{{ oracle_home }}/md/property_graph/lib"
     - "{{ oracle_home }}/md/property_graph/pgx"
-    - "{{ oracle_home }}/.patch_storage"
+    - "{{ oracle_home }}/.patch_storage/34419443_Oct_14_2022_05_25_14/files/md/property_graph.zip"
+    - "{{ oracle_home }}/.patch_storage/34419443_Oct_14_2022_05_25_14/files/suptools/tfa.zip"
     - "{{ swlib_path }}/V982063-01.zip"
     - "{{ swlib_path }}/V982068-01.zip"
-  ignore_errors: true
   tags: patch-vulns

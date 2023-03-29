@@ -29,10 +29,3 @@
         loop_var: role_item
       when: create_db|bool
   tags: rac-db-adjustements,rac-db-backups,rac-validation-scripts
-
-- hosts: dbasm
-  tasks:
-    - include_role:
-        name: patch-vulns
-        tasks_from: main
-  tags: patch-vulns

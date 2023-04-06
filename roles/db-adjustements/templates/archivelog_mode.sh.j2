@@ -25,6 +25,6 @@ select name, display_value from v\$system_parameter2 where name like 'db_recover
 order by 1,2;
 EOF
 
-{% if cluster_type == 'RAC' %}
+{% if groups['dbasm'] | length > 1 %}
 srvctl start db -d {{ db_name }}
 {% endif %}

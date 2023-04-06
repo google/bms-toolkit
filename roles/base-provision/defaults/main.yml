@@ -20,12 +20,13 @@ etc_hosts_ip: "{% if 'virtualbox' in ansible_virtualization_type %}{{ ansible_al
 install_os_packages: true
 
 required_packages:
-  - ntp
+  - chrony
   - bind-utils
   - unzip
   - expect
   - wget
   - net-tools
+  - parted
 
 swap_blk_device: ""
 ntp_preferred: ""

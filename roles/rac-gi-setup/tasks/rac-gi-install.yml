@@ -94,6 +94,18 @@
     - "{{ osw_files }}"
   tags: rac-gi,sw-unzip
 
+- name: rac-gi-install | Patch OL8 CVU issue MOS note 2878100.1
+  become: yes
+  become_user: "{{ grid_user }}"
+  lineinfile:
+    path: "{{ install_unzip_path }}/cv/admin/cvu_config"
+    regexp: "^CV_ASSUME_DISTID"
+    line: "CV_ASSUME_DISTID=OEL7.8"
+  when:
+    - ansible_distribution == 'OracleLinux'
+    - ansible_distribution_major_version >= '8'
+    - oracle_ver_base == '19.3'
+
 - name: rac-gi-install | Get symlinks for devices
   become: yes
   become_user: root

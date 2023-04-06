@@ -29,16 +29,16 @@
   shell: pidof -x /usr/bin/yum /bin/yum | xargs -t -r -n 1 kill -INT
   tags: os_packages
 
-- name: Remove chrony package
+- name: Remove ntpd package
   package:
-    name: chrony
+    name: ntp
     state: absent
     lock_timeout: 180
   tags: ntp
 
-- name: Remove chrony rpmsave
+- name: Remove ntp conf
   file:
-    path: /etc/chrony.conf.rpmsave
+    path: /etc/ntp.conf
     state: absent
   tags: ntp
 
@@ -54,6 +54,7 @@
   when:
     - cluster_name is defined
     - "'avahi' in ansible_facts.packages"
+  ignore_errors: yes
   with_items:
     - avahi-daemon.socket
     - avahi-daemon.service
@@ -66,26 +67,19 @@
     lock_timeout: 180
   tags: os_packages
 
-- name: Update OPTIONS in /etc/sysconfig/ntpd
-  lineinfile:
-    dest: /etc/sysconfig/ntpd
-    regexp: '^OPTIONS='
-    line: 'OPTIONS="{{ ntp_options }}"'
-  notify: restart ntpd
-
 - name: Add ntp preferred server
   blockinfile:
-    path: /etc/ntp.conf
+    path: /etc/chrony.conf
     marker: "# {mark} ANSIBLE MANAGED BLOCK"
     insertafter: '^server '
     block: "server {{ ntp_preferred }} prefer iburst"
     state: "{{ (ntp_preferred != \"\" ) | ternary('present', 'absent') }}"
-  notify: restart ntpd
+  notify: restart chronyd
   tags: ntp
 
-- name: Make sure ntp is running
+- name: Make sure chronyd is running
   service:
-    name: ntpd
+    name: chronyd
     state: started
     enabled: yes
   tags: ntp

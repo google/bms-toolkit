@@ -265,7 +265,7 @@ certified for Oracle Database. The toolkit currently supports the following
 certified OS versions:
 
 - Red Hat Enterprise Linux (RHEL) 7 and 8 (versions 7.3 and up).
-- Oracle Enterprise Linux (OEL) 7 and 8 (versions 7.3 and up).
+- Oracle Linux (OL) 7 and 8 (versions 7.3 and up).
 
 For more information about Oracle-supported platforms see the Oracle
 certification matrix in the "My Oracle Support" (MOS) site (sign in required):

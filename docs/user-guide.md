@@ -247,8 +247,7 @@ install Ansible with `sudo apt-get install ansible`. Your installation command
 might be different. You can verify your version of Ansible with ansible
 `--version`.
 
-You can use the [Google Cloud
-Shell]([https://cloud.google.com/shell](https://cloud.google.com/shell)) as your
+You can use the [Google Cloud Shell](https://cloud.google.com/shell) as your
 control node. Cloud Shell provides command-line access to a virtual machine
 instance in a terminal window that opens in the web console. The latest version
 of Cloud SDK is installed for you.

@@ -247,8 +247,7 @@ install Ansible with `sudo apt-get install ansible`. Your installation command
 might be different. You can verify your version of Ansible with ansible
 `--version`.
 
-You can use the [Google Cloud
-Shell]([https://cloud.google.com/shell](https://cloud.google.com/shell)) as your
+You can use the [Google Cloud Shell](https://cloud.google.com/shell) as your
 control node. Cloud Shell provides command-line access to a virtual machine
 instance in a terminal window that opens in the web console. The latest version
 of Cloud SDK is installed for you.
@@ -266,7 +265,7 @@ certified for Oracle Database. The toolkit currently supports the following
 certified OS versions:
 
 - Red Hat Enterprise Linux (RHEL) 7 and 8 (versions 7.3 and up).
-- Oracle Enterprise Linux (OEL) 7 and 8 (versions 7.3 and up).
+- Oracle Linux (OL) 7 and 8 (versions 7.3 and up).
 
 For more information about Oracle-supported platforms see the Oracle
 certification matrix in the "My Oracle Support" (MOS) site (sign in required):

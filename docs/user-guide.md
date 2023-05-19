@@ -247,8 +247,7 @@ install Ansible with `sudo apt-get install ansible`. Your installation command
 might be different. You can verify your version of Ansible with ansible
 `--version`.
 
-You can use the [Google Cloud
-Shell]([https://cloud.google.com/shell](https://cloud.google.com/shell)) as your
+You can use the [Google Cloud Shell](https://cloud.google.com/shell) as your
 control node. Cloud Shell provides command-line access to a virtual machine
 instance in a terminal window that opens in the web console. The latest version
 of Cloud SDK is installed for you.
@@ -265,8 +264,8 @@ The target database server(s) must be running a version of Linux that is
 certified for Oracle Database. The toolkit currently supports the following
 certified OS versions:
 
-- Red Hat Enterprise Linux (RHEL) 7 (versions 7.3 and up).
-- Oracle Linux (OL) 7 (versions 7.3 and up).
+- Red Hat Enterprise Linux (RHEL) 7 and 8 (versions 7.3 and up).
+- Oracle Linux (OL) 7 and 8 (versions 7.3 and up).
 
 For more information about Oracle-supported platforms see the Oracle
 certification matrix in the "My Oracle Support" (MOS) site (sign in required):
@@ -957,29 +956,23 @@ The following example shows a properly formatted JSON ASM disk group
 configuration file:
 
 ```json
-[
-    {
-        "diskgroup": "DATA",
-        "disks": [
-            {
-                "blk_device": "/dev/mapper/3600a098038314352502b4f782f446244",
-                "name": "DATA1"
-            },
-            {
-                "blk_device": "/dev/mapper/3600a098038314352502b4f782f446245",
-                "name": "DATA2"
-            }
-        ]
-    },
-    {
-        "diskgroup": "RECO",
-        "disks": [
-            {
-                "blk_device": "/dev/mapper/3600a098038314352502b4f782f446246",
-                "name": "RECO1"
-            }
-        ]
-    }
+[{
+  "diskgroup": "DATA",
+  "disks": [
+    { "name": "DATA_1234567538", "blk_device": "/dev/mapper/3600a098038314344382b4f1234567538" },
+    { "name": "DATA_123456752D", "blk_device": "/dev/mapper/3600a098038314344382b4f123456752d" },
+    { "name": "DATA_1234567541", "blk_device": "/dev/mapper/3600a098038314344382b4f1234567541" },
+    { "name": "DATA_1234567542", "blk_device": "/dev/mapper/3600a098038314344382b4f1234567542" },
+    { "name": "DATA_1234567543", "blk_device": "/dev/mapper/3600a098038314344382b4f1234567543" },
+    { "name": "DATA_1234567544", "blk_device": "/dev/mapper/3600a098038314344382b4f1234567544" },
+  ]},
+ {
+  "diskgroup": "RECO",
+  "disks": [
+    { "name": "RECO_1234567546", "blk_device": "/dev/mapper/3600a098038314344382b4f1234567546" },
+    { "name": "RECO_1234567547", "blk_device": "/dev/mapper/3600a098038314344382b4f1234567547" },
+    { "name": "RECO_1234567548", "blk_device": "/dev/mapper/3600a098038314344382b4f1234567548" },
+  ]}
 ]
 ```
 
@@ -1314,7 +1307,7 @@ NTP_PREF
 --ntp-pref
 </pre></p></td>
 <td>user defined - no default</td>
-<td>Preferred NTP server to use in /etc/ntp.conf.<br>
+<td>Preferred NTP server to use in /etc/chrony.conf.<br>
 <br>
 Optional: set only if you need to manually define an NTP server, instead of
 relying on the OS defaults.</td>
@@ -2354,7 +2347,6 @@ the following actions:
 -  Removes Oracle related directories and files.
 -  Removes Oracle software owner users and groups.
 -  Re-initializes ASM storage devices and uninstalls ASMlib if installed.
--  Reboots the server.
 
 **Important**: a destructive cleanup permanently deletes the databases and any data they
 contain. Any backups that are stored local to the server are also deleted. Backups

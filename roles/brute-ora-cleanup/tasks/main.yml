@@ -60,6 +60,16 @@
   become: yes
   become_user: root
   when: cluster_name is not defined
+  
+- name: Uninstall TFA service
+  command: "{{ grid_home }}/bin/tfactl uninstall -local -silent"
+  environment:
+    PATH: "{{ grid_home }}/perl/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin"
+    PERL5LIB: "{{ grid_home }}/perl/lib"
+  register: uninstall_tfa
+  ignore_errors: yes
+  become: yes
+  become_user: root
 
 - name: Kill (SIGTERM) any remaining Oracle processes
   command: "pkill -f {{ item }}"
@@ -220,6 +230,19 @@
     src: "{{ item.blk_device }}1"
     path: "{{ item.mount_point }}"
     state: absent
+  register: fstab_result
+  failed_when:
+    - fstab_result is failed
+    - "'Directory not empty' not in fstab_result.module_stdout"
+  with_items:
+    - "{{ oracle_user_data_mounts }}"
+    
+- name: Remove magic strings from Oracle user data partitions
+  become: yes
+  become_user: root
+  command: "wipefs --all --force {{ item.blk_device }}1"
+  when: "'mapper' not in item.blk_device"
+  ignore_errors: true
   with_items:
     - "{{ oracle_user_data_mounts }}"
 

@@ -96,6 +96,33 @@
     dest: "{{ install_unzip_path }}/db_install.rsp"
   tags: rac-db,rac-db-response
 
+- name: rac-db-install | Update DB OPatch
+  unarchive:
+    src: "{{ swlib_path }}/{{ item.patchfile }}"
+    dest: "{{ oracle_home }}"
+    remote_src: yes
+  with_items:
+    - "{{ opatch_patches }}"
+  when:
+    - item.release == oracle_ver
+    - item.category == "OPatch"
+    - oracle_rel != "base"
+  become: yes
+  become_user: "{{ oracle_user }}"
+  tags: rac-db,update-opatch-db
+
+- name: rac-db-install | Patch OL8 CVU issue MOS note 2878100.1
+  become: yes
+  become_user: "{{ oracle_user }}"
+  lineinfile:
+    path: "{{ oracle_home }}/cv/admin/cvu_config"
+    regexp: "^CV_ASSUME_DISTID"
+    line: "CV_ASSUME_DISTID=OEL7.8"
+  when:
+    - ansible_distribution == 'OracleLinux'
+    - ansible_distribution_major_version >= '8'
+    - oracle_ver_base == '19.3'
+
 - name: rac-db-install | Set installer command
   set_fact:
     installer_command: "{{ runinstaller_loc }}/runInstaller -silent -waitforcompletion -responseFile {{ install_unzip_path }}/db_install.rsp {{ rel_patch | default('') }} {{ prereq_option }}"
@@ -141,6 +168,9 @@
   become: yes
   become_user: "{{ oracle_user }}"
   command: "{{ oracle_home }}/OPatch/{{ item.method }} -silent -oh {{ oracle_home }} {{ swlib_unzip_path }}/{{ item.patchnum }}{{ item.patch_subdir }}"
+  environment:
+    PATH: "{{ oracle_home }}/perl/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin"
+    PERL5LIB: "{{ oracle_home }}/perl/lib"
   with_items:
     - "{{ rdbms_patches }}"
   when:
@@ -157,6 +187,7 @@
       - "{{ item.stdout_lines }}"
   with_items: "{{ apply_oneoff.results }}"
   when: item.changed
+  ignore_errors: yes
   tags: rac-db,rac-db-install,opatch
 
 - name: rac-db-install | Run script root.sh

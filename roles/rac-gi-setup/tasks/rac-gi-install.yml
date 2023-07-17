@@ -102,7 +102,7 @@
     regexp: "^CV_ASSUME_DISTID"
     line: "CV_ASSUME_DISTID=OEL7.8"
   when:
-    - ansible_distribution == 'OracleLinux'
+    - ansible_os_family == 'RedHat'
     - ansible_distribution_major_version >= '8'
     - oracle_ver_base == '19.3'
 

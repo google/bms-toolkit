@@ -70,7 +70,7 @@
     enablerepo: rhel-7-server-optional-rpms
   when:
     - install_os_packages|bool and ansible_distribution == 'RedHat' and ansible_distribution_major_version == '7'
-    - redhat_repo.stat.exists|bool
+    - redhat_repo.stat.exists|bool or rh_cloud_repo.stat.exists|bool
   tags: os-packages
 
 - name: Stat OL7 repo
@@ -104,7 +104,7 @@
     lock_timeout: 180
   when:
     - install_os_packages|bool and ansible_distribution == 'RedHat' and ansible_distribution_major_version == '8'
-    - redhat_repo.stat.exists|bool
+    - redhat_repo.stat.exists|bool or rh_cloud_repo.stat.exists|bool
   tags: os-packages
 
 - name: Install Oracle required packages (base/non-rhui config) for OEL8
@@ -126,7 +126,7 @@
   when:
     - install_os_packages|bool and ansible_distribution_major_version == '7'
     - rh_cloud_repo.stat.exists|bool
-    - not redhat_repo.stat.exists|bool
+    - not redhat_repo.stat.exists|bool or rh_cloud_repo.stat.exists|bool
   tags: os-packages
 
 - name: Add OS groups
@@ -276,7 +276,7 @@
     state: present
     label: gpt
   when: "'mapper' not in item.1.blk_device"
-  run_once: "{% if cluster_type == 'RAC' %}true{% endif %}"
+  run_once: true
   with_subelements:
     - "{{ asm_disks }}"
     - disks

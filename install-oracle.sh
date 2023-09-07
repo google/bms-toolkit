@@ -1,4 +1,3 @@
-#!/bin/bash
 # Copyright 2020 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -204,7 +203,8 @@ BACKUP_LOG_LOCATION="${BACKUP_LOG_LOCATION:-/home/oracle/logs}"
 BACKUP_LOG_LOCATION_PARAM="^/.+$"
 
 INSTANCE_IP_ADDR="${INSTANCE_IP_ADDR}"
-INSTANCE_IP_ADDR_PARAM='^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$'
+# Permit valid hostnames and IP addresses.  They must start with an alphanumeric character.
+INSTANCE_IP_ADDR_PARAM="[a-z0-9][a-z0-9\-\.]*"
 
 PRIMARY_IP_ADDR="${PRIMARY_IP_ADDR}"
 PRIMARY_IP_ADDR_PARAM='^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$'

@@ -28,7 +28,6 @@
     mode: ug=rw,o=
     owner: "{{ grid_user }}"
     group: asmdba
-  when: "'mapper' in item.1.blk_device"
   with_subelements:
     - "{{ asm_disks }}"
     - disks

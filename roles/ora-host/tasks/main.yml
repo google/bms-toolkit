@@ -284,11 +284,30 @@
      - asm_disk_input {{ asm_disk_input }}
   tags: asm-disks
 
+- name: (udev) Add ASM disk rules (non-multipath)
+  become: yes
+  become_user: root
+  blockinfile:
+    block: "KERNEL==\"sd?1\", SUBSYSTEM==\"block\", PROGRAM==\"/usr/lib/udev/scsi_id -g -u -d /dev/$parent\", RESULT==\"{{ hostvars[inventory_hostname]['ansible_device_links']['ids']['%s' | format( item.1.blk_device | regex_replace('/dev/') )] | select('match','scsi-') | first | regex_replace('scsi-') }}\", SYMLINK+=\"{{ path_udev }}/{{ item.1.name }}\", OWNER=\"{{ grid_user }}\", GROUP=\"{{ grid_group }}\", MODE=\"0660\""
+    dest: "/etc/udev/rules.d/99-oracle-asmdevices.rules"
+    marker: "# {mark} ASM disk udev rules for {{ item.1.name }}:"
+    create: yes
+  register: udevRules
+  when:
+    - asm_disk_management == "udev"
+    - "'mapper' not in item.1.blk_device"
+  with_subelements:
+    - "{{ asm_disks }}"
+    - disks
+  tags: asm-disks
+
 - name: (udev) Add ASM mpath disk rules on BM (udevadm info)
   become: yes
   become_user: root
   shell: udevadm info --query=all --name={{ item.1.blk_device }} | grep DM_UUID | awk -F'=' '{print $2}'
   register: udevadm_result
+  when:
+    - "'mapper' in item.1.blk_device"
   with_subelements:
     - "{{ asm_disks }}"
     - disks

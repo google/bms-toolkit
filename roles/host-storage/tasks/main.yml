@@ -24,10 +24,18 @@
     - "{{ oracle_user_data_mounts }}"
   tags: ora-mounts
 
+- name: Update oracle_user_data_mounts with the first partition ID
+  set_fact:
+    oracle_user_data_mounts: "{{ oracle_user_data_mounts | map('combine', { 'first_partition_id': ('/dev/disk/by-id/' + ansible_facts.devices[item.blk_device | basename].partitions | dict2items  | map(attribute='value.links.ids') | flatten | first()) })}}"
+  loop: "{{ oracle_user_data_mounts }}"
+  loop_control:
+    loop_var: item
+  when: "'mapper' not in item.blk_device"
+
 - name: Add filesystem on Oracle user mount raw devices
   filesystem:
     fstype: "{{ item.fstype }}"
-    dev: "{{ item.blk_device }}1"
+    dev: "{{ item.first_partition_id }}"
   when: "'mapper' not in item.blk_device"
   with_items:
     - "{{ oracle_user_data_mounts }}"
@@ -45,7 +53,7 @@
 - name: Mount Oracle user mount raw devices
   mount:
     fstype: "{{ item.fstype }}"
-    src: "{{ item.blk_device }}1"
+    src: "{{ item.first_partition_id }}"
     path: "{{ item.mount_point }}"
     opts: "{{ item.mount_opts }}"
     state: mounted

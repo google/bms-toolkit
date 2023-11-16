@@ -297,22 +297,50 @@
      - asm_disk_input {{ asm_disk_input }}
   tags: asm-disks
 
-- name: (udev) Add ASM disk rules (non-multipath)
+######## Udev rules for non-multipath disks ########
+
+- name: (udev) Add ASM non-multipath disk rules (udevadm info)
   become: yes
   become_user: root
-  blockinfile:
-    block: "KERNEL==\"sd?1\", SUBSYSTEM==\"block\", PROGRAM==\"/usr/lib/udev/scsi_id -g -u -d /dev/$parent\", RESULT==\"{{ hostvars[inventory_hostname]['ansible_device_links']['ids']['%s' | format( item.1.blk_device | regex_replace('/dev/') )] | select('match','scsi-') | first | regex_replace('scsi-') }}\", SYMLINK+=\"{{ path_udev }}/{{ item.1.name }}\", OWNER=\"{{ grid_user }}\", GROUP=\"{{ grid_group }}\", MODE=\"0660\""
-    dest: "/etc/udev/rules.d/99-oracle-asmdevices.rules"
-    marker: "# {mark} ASM disk udev rules for {{ item.1.name }}:"
-    create: yes
-  register: udevRules
-  when:
-    - asm_disk_management == "udev"
-    - "'mapper' not in item.1.blk_device"
+  shell: udevadm info --query=all --name={{ item.1.blk_device }} | grep ID_SERIAL_SHORT | awk -F'=' '{print $2}'
+  register: udevadm_result_nonmultipath
   with_subelements:
     - "{{ asm_disks }}"
     - disks
-  tags: asm-disks
+  tags: udev_mpath
+
+- name: (udev) Add ASM non-multipath disk rules (init dict)
+  set_fact:
+    uuid_result_nonmultipath: []
+  when:
+    - udevadm_result_nonmultipath.results.0.stdout is defined
+  tags: udev_mpath
+
+- name: (udev) Add ASM non-multipath disk rules (filling dict)
+  set_fact:
+    uuid_result_nonmultipath: "{{ uuid_result_nonmultipath | combine({item.stdout: item.item}) }}"
+  when:
+    - udevadm_result_nonmultipath.results.0.stdout is defined
+  with_items:
+    - "{{ udevadm_result_nonmultipath.results }}"
+  tags: udev_mpath
+
+- name: (udev) Add ASM non-multipath disk rules (udev rules file)
+  become: yes
+  become_user: root
+  blockinfile:
+    block: "ACTION==\"add|change\", ENV{ID_SERIAL_SHORT}==\"{{ item.key }}\", SYMLINK+=\"{{ path_udev }}/{{ uuid_result_nonmultipath[item.key] | json_query ('[*].name') | list | join(', ') }}\", GROUP=\"{{ grid_group }}\", OWNER=\"{{ grid_user }}\", MODE=\"0660\""
+    path: "/etc/udev/rules.d/99-oracle-asmdevices.rules"
+    marker: "# {mark} ASM disk udev rules for {{ uuid_result_nonmultipath[item.key] | json_query ('[*].blk_device') | list | join(', ') }}"
+    create: yes
+  register: udevRules_nonmultipath
+  when:
+    - uuid_result_nonmultipath is defined
+  with_dict:
+    - "{{ uuid_result_nonmultipath }}"
+  tags: udev_mpath
+
+######## Udev rules for multipath disks ########
 
 - name: (udev) Add ASM mpath disk rules on BM (udevadm info)
   become: yes

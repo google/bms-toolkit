@@ -24,6 +24,13 @@
     - "{{ oracle_user_data_mounts }}"
   tags: ora-mounts
 
+- name: Collect new disk facts
+  setup:
+    gather_subset:
+      - '!all'
+      - '!any'
+      - devices
+
 - name: Update oracle_user_data_mounts with the first partition ID
   set_fact:
     oracle_user_data_mounts: "{{ oracle_user_data_mounts | map('combine', { 'first_partition_id': ('/dev/disk/by-id/' + ansible_facts.devices[item.blk_device | basename].partitions | dict2items  | map(attribute='value.links.ids') | flatten | first()) })}}"

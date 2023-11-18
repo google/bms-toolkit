@@ -106,13 +106,22 @@
     - ansible_distribution_major_version >= '8'
     - oracle_ver_base == '19.3'
 
+- name: Add first partition IDs
+  set_fact:
+    asm_disks_with_partiotions: "{{ asm_disks_with_partiotions | default([]) + [{'diskgroup': item.diskgroup, 'disks': item.disks | map('combine', {'first_partition_id': first_partition_id}) | list}] }}"
+  with_items: "{{ asm_disks }}"
+  vars:
+    first_partition_id: "{{ ansible_facts.devices[item.disks | map(attribute='blk_device') | join() | basename ].partitions.keys() | first }}"
+  loop_control:
+    label: "{{ item.diskgroup }}"
+
 - name: rac-gi-install | Get symlinks for devices
   become: yes
   become_user: root
   # if mapper in disk name - info taken from whole disk, otherwise from first partition
   shell: |
-    udevadm info --query=all --name={% if item is search ('mapper') %}{{ item }}{% else %}{{ item }}1{% endif %} | grep "^S: " | grep {{ path_udev }} | awk '{ print "/dev/"$2 }'
-  loop: "{{ asm_disks | json_query('[?diskgroup==`' + hostvars[groups['dbasm'].0]['dg_name'] + '`].disks[*].blk_device') | list | join() }}"
+    udevadm info --query=all --name={% if item is search ('mapper') %}{{ item.blk_device }}{% else %}{{ item.first_partition_id }}{% endif %} | grep "^S: " | grep {{ path_udev }} | awk '{ print "/dev/"$2 }'
+  loop: "{{ asm_disks_with_partiotions | json_query('[?diskgroup==`' + hostvars[groups['dbasm'].0]['dg_name'] + '`].disks[*]') | list | flatten }}"
   when: asm_disk_management == "udev"
   register: symlink
 

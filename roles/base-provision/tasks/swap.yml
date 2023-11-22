@@ -28,7 +28,7 @@
       - '!any'
       - devices
 
-- name: Determine the partition ID for the swap_blk_device
+- name: Determine the first partition ID of the swap_blk_device
   set_fact:
     swap_partition_id: "{{ '/dev/disk/by-id/' + ansible_facts.devices[swap_blk_device | basename].partitions | dict2items  | map(attribute='value.links.ids') | flatten | first() }}"
 

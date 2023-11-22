@@ -39,3 +39,49 @@
     var:
       oracle_rel
   tags: oracle-rel
+
+- name: Resolve the symlinks
+  ansible.builtin.shell:
+    cmd: "realpath {{ item  }}"
+  loop: "{{ asm_disks | map(attribute='disks') | flatten | map(attribute='blk_device') }}"
+  register: realpath_output
+  tags: asm-disks
+
+- name: Create a copy of the asm_disks with the blk_device set to the canonical path
+  set_fact:
+    asm_disks_normalized: "{{ asm_disks_normalized | default([]) + [item.1 | combine({'disks': item.1.disks | map('combine', {'blk_device': item.0.stdout}) | list })] }}"
+  with_together:
+    - "{{ realpath_output.results }}"
+    - "{{ asm_disks }}"
+  when: item.0.rc == 0 and item.1 is not none
+  tags: asm-disks
+
+- name: Update asm_disks
+  set_fact:
+    asm_disks: "{{asm_disks_normalized}}"
+  tags: asm-disks
+
+- name: Resolve the symlinks
+  ansible.builtin.shell:
+    cmd: "realpath {{ item.blk_device }}"
+  loop: "{{ oracle_user_data_mounts }}"
+  register: realpath_result
+  tags: ora-mounts
+
+- name: Create a dictionary with blk_device as keys and real_path as values
+  ansible.builtin.set_fact:
+    normalized_blk_device_paths: "{{ dict(realpath_result.results | map(attribute='item.blk_device') | zip(realpath_result.results | map(attribute='stdout'))) }}"
+  tags: ora-mounts
+
+- name: Update oracle_user_data_mounts with normalized blk_device paths
+  ansible.builtin.set_fact:
+    oracle_user_data_mounts_normalized: "{{ oracle_user_data_mounts_normalized | default([]) + [item | combine({'blk_device': normalized_blk_device_paths[item.blk_device]})] }}"
+  loop: "{{ oracle_user_data_mounts }}"
+  loop_control:
+    extended: yes
+  tags: ora-mounts
+
+- name: Update oracle_user_data_mounts
+  set_fact:
+    oracle_user_data_mounts: "{{oracle_user_data_mounts_normalized}}"
+  tags: ora-mounts

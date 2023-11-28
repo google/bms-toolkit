@@ -217,12 +217,16 @@
   when: asm_disk_management == "asmlib"
   register: remove_oracleasm
 
+- include_role:
+    name: common
+    tasks_from: populate-user-data-mounts.yml
+
 - name: Lazy unmount Oracle user data devices
   shell: |
     umount -f -l "{{ item.mount_point }}"
   ignore_errors: true
   with_items:
-    - "{{ oracle_user_data_mounts_with_partitions }}"
+    - "{{ oracle_user_data_mounts }}"
 
 - name: Remove Oracle user data devices from fstab
   mount:
@@ -235,30 +239,34 @@
     - fstab_result is failed
     - "'Directory not empty' not in fstab_result.module_stdout"
   with_items:
-    - "{{ oracle_user_data_mounts_with_partitions }}"
+    - "{{ oracle_user_data_mounts }}"
+  when: 
+    - item.first_partition_id is defined
     
 - name: Remove magic strings from Oracle user data partitions
   become: yes
   become_user: root
   command: "wipefs --all --force {{ item.first_partition_id }}"
-  when: "'mapper' not in item.blk_device"
+  when: 
+    - "'mapper' not in item.blk_device"
+    - item.first_partition_id is defined
   ignore_errors: true
   with_items:
-    - "{{ oracle_user_data_mounts_with_partitions }}"
+    - "{{ oracle_user_data_mounts }}"
 
 - name: Remove magic strings from Oracle user data disks
   become: yes
   become_user: root
   command: "wipefs --all --force {{ item.blk_device }}"
   with_items:
-    - "{{ oracle_user_data_mounts_with_partitions }}"
+    - "{{ oracle_user_data_mounts }}"
 
 - name: Reload partition table for user data disks
   become: yes
   become_user: root
   command: "partprobe {{ item.blk_device }}"
   with_items:
-    - "{{ oracle_user_data_mounts_with_partitions }}"
+    - "{{ oracle_user_data_mounts }}"
 
 - name: Zero-out header in ASM disks partitions
   become: yes
@@ -269,6 +277,10 @@
     - disks
   register: zero_disks
   ignore_errors: true
+
+- include_role:
+    name: common
+    tasks_from: populate-swap-partition-id.yml
 
 - name: Disable and remove swap
   block:
@@ -299,7 +311,7 @@
   become_user: root
   command: "blockdev --rereadpt {{ item.blk_device }}"
   with_items:
-    - "{{ oracle_user_data_mounts_with_partitions }}"
+    - "{{ oracle_user_data_mounts }}"
   when: "'mapper' not in item.blk_device"
   ignore_errors: true
 

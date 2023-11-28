@@ -282,29 +282,19 @@
     - disks
   tags: asm-disks
 
-- name: Collect new disk facts
-  setup:
-    gather_subset:
-      - '!all'
-      - '!any'
-      - devices
-  tags: asm-disks
-
-- name: Update asm_disks with partition IDs
-  set_fact:
-    asm_disks_with_partitions: "{{ asm_disks_with_partitions | default([]) + [{'diskgroup': item.diskgroup, 'disks': item.disks | map('combine', {'first_partition_id': first_partition_id}) | list}] }}"
-  with_items: "{{ asm_disks }}"
-  vars:
-    first_partition_id: "{{'/dev/' + ansible_facts.devices[item.disks | map(attribute='blk_device') | join() | basename ].partitions.keys() | first }}"
-  loop_control:
-    label: "{{ item.diskgroup }}"
-  tags: asm-disks
+- include_role:
+    name: common
+    tasks_from: populate-asm-disks.yml
+  when: "'mapper' not in item.1.blk_device"
+  run_once: true
+  with_subelements:
+    - "{{ asm_disks }}"
+    - disks
 
 - name: (debug) asm disk configuration
   debug:
     msg:
      - asm_disks {{ asm_disks }}
-     - asm_disks_with_partitions {{ asm_disks_with_partitions }}
      - asm_def_file {{ asm_definition_file }}
      - asm_disk_input {{ asm_disk_input }}
   tags: asm-disks
@@ -320,7 +310,7 @@
     - asm_disk_management == "udev"
     - "'mapper' not in item.1.blk_device"
   with_subelements:
-    - "{{ asm_disks_with_partitions }}"
+    - "{{ asm_disks }}"
     - disks
   tags: udev-mpath
 
@@ -365,7 +355,7 @@
   when:
     - "'mapper' in item.1.blk_device"
   with_subelements:
-    - "{{ asm_disks_with_partitions }}"
+    - "{{ asm_disks }}"
     - disks
   tags: udev-mpath
 
@@ -430,7 +420,7 @@
   become_user: root
   command: "/usr/sbin/oracleasm createdisk -v {{ item.1.name }} {{ item.1.first_partition_id }}"
   with_subelements:
-    - "{{ asm_disks_with_partitions }}"
+    - "{{ asm_disks }}"
     - disks
   when: asm_disk_management == "asmlib"
   register: asmraw
@@ -443,7 +433,7 @@
   become_user: root
   command: "/usr/sbin/oracleasm createdisk -v {{ item.1.name }} {{ item.1.blk_device }}{% if item.1.name is not search('mapper') %}{{ item.1.first_partition_id }}{% endif %}"
   with_subelements:
-    - "{{ asm_disks_with_partitions }}"
+    - "{{ asm_disks }}"
     - disks
   when: asm_disk_management == "asmlib"
   register: asmlv

@@ -1,0 +1,48 @@
+- name: Collect new disk facts
+  setup:
+    gather_subset:
+      - '!all'
+      - '!any'
+      - devices
+  tags: populate-user-mounts
+
+- name: Resolve the symlinks
+  ansible.builtin.shell:
+    cmd: "realpath {{ item.blk_device }}"
+  loop: "{{ oracle_user_data_mounts }}"
+  register: realpath_result
+  tags: populate-user-mounts
+
+- name: Create a dictionary with blk_device as keys and real_path as values
+  ansible.builtin.set_fact:
+    normalized_blk_device_paths: "{{ dict(realpath_result.results | map(attribute='item.blk_device') | zip(realpath_result.results | map(attribute='stdout'))) }}"
+  tags: populate-user-mounts
+
+- name: Update oracle_user_data_mounts with normalized blk_device paths
+  ansible.builtin.set_fact:
+    oracle_user_data_mounts_normalized: "{{ oracle_user_data_mounts_normalized | default([]) + [item | combine({'blk_device': normalized_blk_device_paths[item.blk_device]})] }}"
+  loop: "{{ oracle_user_data_mounts }}"
+  loop_control:
+    extended: yes
+  tags: populate-user-mounts
+
+- name: Update oracle_user_data_mounts_normalized with first partition IDs
+  set_fact:
+    oracle_user_data_mounts_with_partitions: "{{ oracle_user_data_mounts_with_partitions | default([]) + [item | combine({'first_partition_id': ('/dev/disk/by-id/' + first_partition_id)})] }}"
+  loop: "{{ oracle_user_data_mounts_normalized }}"
+  loop_control:
+    loop_var: item
+  when:
+    - "'mapper' not in item.blk_device"
+    - item.blk_device  | basename in ansible_facts.devices.keys()
+    - ansible_facts.devices[item.blk_device  | basename].partitions.keys()|length > 0
+  vars:
+    first_partition_id: "{{ ansible_facts.devices[item.blk_device  | basename].partitions | dict2items | map(attribute='value.links.ids') | flatten | first() }}"
+  tags: populate-user-mounts
+
+- name: Update oracle_user_data_mounts
+  set_fact:
+    oracle_user_data_mounts: "{{oracle_user_data_mounts_with_partitions}}"
+  when:
+    - oracle_user_data_mounts_with_partitions is defined
+  tags: populate-user-mounts

@@ -1,0 +1,14 @@
+- name: Collect new disk facts
+  setup:
+    gather_subset:
+      - '!all'
+      - '!any'
+      - devices
+
+- name: Determine the first partition ID of the swap_blk_device
+  set_fact:
+    swap_partition_id: "{{ '/dev/disk/by-id/' + ansible_facts.devices[swap_blk_device | basename].partitions | dict2items  | map(attribute='value.links.ids') | flatten | first() }}"
+  when:
+    - swap_blk_device is defined
+    - swap_blk_device | basename in ansible_facts.devices.keys()
+    - ansible_facts.devices[item.blk_device  | basename].partitions.keys()|length > 0

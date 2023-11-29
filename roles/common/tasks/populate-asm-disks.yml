@@ -8,7 +8,7 @@
 
 - name: Resolve the symlinks
   ansible.builtin.shell:
-    cmd: "realpath {{ item  }}"
+    cmd: "realpath {{ item }}"
   loop: "{{ asm_disks | map(attribute='disks') | flatten | map(attribute='blk_device') }}"
   register: realpath_output
   tags: populate-asm-disks
@@ -38,5 +38,5 @@
   set_fact:
     asm_disks: "{{asm_disks_with_partitions}}"
   when:
-  - asm_disks_with_partitions is defined
+    - asm_disks_with_partitions is defined
   tags: populate-asm-disks

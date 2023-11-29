@@ -24,10 +24,14 @@
     - "{{ oracle_user_data_mounts }}"
   tags: ora-mounts
 
+- include_role:
+    name: common
+    tasks_from: populate-user-data-mounts.yml
+
 - name: Add filesystem on Oracle user mount raw devices
   filesystem:
     fstype: "{{ item.fstype }}"
-    dev: "{{ item.blk_device }}1"
+    dev: "{{ item.first_partition_id }}"
   when: "'mapper' not in item.blk_device"
   with_items:
     - "{{ oracle_user_data_mounts }}"
@@ -45,7 +49,7 @@
 - name: Mount Oracle user mount raw devices
   mount:
     fstype: "{{ item.fstype }}"
-    src: "{{ item.blk_device }}1"
+    src: "{{ item.first_partition_id }}"
     path: "{{ item.mount_point }}"
     opts: "{{ item.mount_opts }}"
     state: mounted

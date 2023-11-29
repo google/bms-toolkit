@@ -106,13 +106,17 @@
     - ansible_distribution_major_version >= '8'
     - oracle_ver_base == '19.3'
 
+- include_role:
+    name: common
+    tasks_from: populate-asm-disks.yml
+
 - name: rac-gi-install | Get symlinks for devices
   become: yes
   become_user: root
   # if mapper in disk name - info taken from whole disk, otherwise from first partition
   shell: |
-    udevadm info --query=all --name={% if item is search ('mapper') %}{{ item }}{% else %}{{ item }}1{% endif %} | grep "^S: " | grep {{ path_udev }} | awk '{ print "/dev/"$2 }'
-  loop: "{{ asm_disks | json_query('[?diskgroup==`' + hostvars[groups['dbasm'].0]['dg_name'] + '`].disks[*].blk_device') | list | join() }}"
+    udevadm info --query=all --name={% if item is search ('mapper') %}{{ item.blk_device }}{% else %}{{ item.first_partition_id }}{% endif %} | grep "^S: " | grep {{ path_udev }} | awk '{ print "/dev/"$2 }'
+  loop: "{{ asm_disks | json_query('[?diskgroup==`' + hostvars[groups['dbasm'].0]['dg_name'] + '`].disks[*]') | list | flatten }}"
   when: asm_disk_management == "udev"
   register: symlink
 

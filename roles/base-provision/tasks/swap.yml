@@ -21,19 +21,27 @@
   become: true
   register: swapfile_register_create
 
+- include_role:
+    name: common
+    tasks_from: populate-swap-partition-id.yml
+
 - name: swap | Initialize swap file
-  command: mkswap -f {{ swap_blk_device }}1
+  command: mkswap -f {{ swap_partition_id }}
   become: true
-  when: swapfile_register_create is changed
+  when: 
+    - swapfile_register_create is changed
+    - swap_partition_id is defined
 
 - name: swap | Enable swap file
-  command: swapon {{ swap_blk_device }}1
+  command: swapon {{ swap_partition_id }}
   become: true
-  when: swapfile_register_create is changed
+  when: 
+    - swapfile_register_create is changed
+    - swap_partition_id is defined
 
 - name: swap | Manage swap file in /etc/fstab
   mount:
-    src: "{{ swap_blk_device }}1"
+    src: "{{ swap_partition_id }}"
     name: "none"
     fstype: "swap"
     opts: "sw,nofail"
@@ -41,3 +49,5 @@
     passno: "0"
     state: "present"
   become: true
+  when:
+    - swap_partition_id is defined

@@ -311,6 +311,7 @@ gi_patches:
   - { category: "RU", base: "19.3.0.0.0", release: "19.18.0.0.230117", patchnum: "34773504", patchfile: "p34773504_190000_Linux-x86-64.zip", patch_subdir: "/34762026", prereq_check: FALSE, method: "opatchauto apply", ocm: FALSE, upgrade: FALSE, md5sum: "2JrfvvdegLUUXKUF21rmKw==" }
   - { category: "RU", base: "19.3.0.0.0", release: "19.19.0.0.230418", patchnum: "35058172", patchfile: "p35058172_190000_Linux-x86-64.zip", patch_subdir: "/35037840", prereq_check: FALSE, method: "opatchauto apply", ocm: FALSE, upgrade: FALSE, md5sum: "ZUIxTPD1d4mtalg1FuiYWA==" }
   - { category: "RU", base: "19.3.0.0.0", release: "19.20.0.0.230718", patchnum: "35370167", patchfile: "p35370167_190000_Linux-x86-64.zip", patch_subdir: "/35319490", prereq_check: FALSE, method: "opatchauto apply", ocm: FALSE, upgrade: FALSE, md5sum: "921xb/KsOPOQy11PgDKVkg==" }
+  - { category: "RU", base: "19.3.0.0.0", release: "19.21.0.0.231017", patchnum: "35742441", patchfile: "p35742441_190000_Linux-x86-64.zip", patch_subdir: "/35642822", prereq_check: FALSE, method: "opatchauto apply", ocm: FALSE, upgrade: FALSE, md5sum: "XCHpxqMlJ0/4dTUeMYNcSg==" }
 
 rdbms_patches:
 # 11.2.0.4 OJVM packages from Combo
@@ -373,3 +374,4 @@ rdbms_patches:
   - { category: "RU_Combo", base: "19.3.0.0.0", release: "19.18.0.0.230117", patchnum: "34773504", patchfile: "p34773504_190000_Linux-x86-64.zip", patch_subdir: "/34786990", prereq_check: TRUE, method: "opatch apply", ocm: FALSE, upgrade: TRUE, md5sum: "2JrfvvdegLUUXKUF21rmKw==" }
   - { category: "RU_Combo", base: "19.3.0.0.0", release: "19.19.0.0.230418", patchnum: "35058172", patchfile: "p35058172_190000_Linux-x86-64.zip", patch_subdir: "/35050341", prereq_check: TRUE, method: "opatch apply", ocm: FALSE, upgrade: TRUE, md5sum: "ZUIxTPD1d4mtalg1FuiYWA==" }
   - { category: "RU_Combo", base: "19.3.0.0.0", release: "19.20.0.0.230718", patchnum: "35370167", patchfile: "p35370167_190000_Linux-x86-64.zip", patch_subdir: "/35354406", prereq_check: TRUE, method: "opatch apply", ocm: FALSE, upgrade: TRUE, md5sum: "921xb/KsOPOQy11PgDKVkg==" }
+  - { category: "RU_Combo", base: "19.3.0.0.0", release: "19.21.0.0.231017", patchnum: "35742441", patchfile: "p35742441_190000_Linux-x86-64.zip", patch_subdir: "/35648110", prereq_check: TRUE, method: "opatch apply", ocm: FALSE, upgrade: TRUE, md5sum: "XCHpxqMlJ0/4dTUeMYNcSg==" }

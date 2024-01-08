@@ -1,0 +1,42 @@
+- name: Collect new disk facts
+  setup:
+    gather_subset:
+      - '!all'
+      - '!any'
+      - devices
+  tags: populate-asm-disks
+
+- name: Resolve the symlinks
+  ansible.builtin.shell:
+    cmd: "realpath {{ item }}"
+  loop: "{{ asm_disks | map(attribute='disks') | flatten | map(attribute='blk_device') }}"
+  register: realpath_output
+  tags: populate-asm-disks
+
+- name: Create a copy of the asm_disks with the blk_device set to the canonical path
+  set_fact:
+    asm_disks_normalized: "{{ asm_disks_normalized | default([]) + [item.1 | combine({'disks': item.1.disks | map('combine', {'blk_device': item.0.stdout}) | list })] }}"
+  with_together:
+    - "{{ realpath_output.results }}"
+    - "{{ asm_disks }}"
+  when: item.0.rc == 0 and item.1 is not none
+  tags: populate-asm-disks
+
+- name: Update asm_disks with partition IDs
+  set_fact:
+    asm_disks_with_partitions: "{{ asm_disks_with_partitions | default([]) + [{'diskgroup': item.diskgroup, 'disks': item.disks | map('combine', {'first_partition_id': first_partition_id}) | list}] }}"
+  with_items: "{{ asm_disks_normalized }}"
+  vars:
+    first_partition_id: "{{'/dev/' + ansible_facts.devices[item.disks | map(attribute='blk_device') | join() | basename ].partitions.keys() | first }}"
+  loop_control:
+    label: "{{ item.diskgroup }}"
+  when:
+    - asm_disks_normalized is defined
+  tags: populate-asm-disks
+
+- name: Update asm_disks
+  set_fact:
+    asm_disks: "{{asm_disks_with_partitions}}"
+  when:
+    - asm_disks_with_partitions is defined
+  tags: populate-asm-disks

@@ -247,8 +247,7 @@ install Ansible with `sudo apt-get install ansible`. Your installation command
 might be different. You can verify your version of Ansible with ansible
 `--version`.
 
-You can use the [Google Cloud
-Shell]([https://cloud.google.com/shell](https://cloud.google.com/shell)) as your
+You can use the [Google Cloud Shell](https://cloud.google.com/shell) as your
 control node. Cloud Shell provides command-line access to a virtual machine
 instance in a terminal window that opens in the web console. The latest version
 of Cloud SDK is installed for you.
@@ -266,7 +265,7 @@ certified for Oracle Database. The toolkit currently supports the following
 certified OS versions:
 
 - Red Hat Enterprise Linux (RHEL) 7 and 8 (versions 7.3 and up).
-- Oracle Enterprise Linux (OEL) 7 and 8 (versions 7.3 and up).
+- Oracle Linux (OL) 7 and 8 (versions 7.3 and up).
 
 For more information about Oracle-supported platforms see the Oracle
 certification matrix in the "My Oracle Support" (MOS) site (sign in required):
@@ -347,6 +346,12 @@ Support")</th>
 <td></td>
 <td>Oracle Grid Infrastructure 19.3.0.0.0 for Linux x86-64</td>
 <td>V982068-01.zip</td>
+</tr>
+<tr>
+<td></td>
+<td>Patch - MOS</TD>
+<TD>COMBO OF OJVM RU COMPONENT 19.21.0.0.231017 + GI RU 19.21.0.0.231017</td>
+<td>p35742441_190000_Linux-x86-64.zip</td>
 </tr>
 <tr>
 <td></td>
@@ -2348,7 +2353,6 @@ the following actions:
 -  Removes Oracle related directories and files.
 -  Removes Oracle software owner users and groups.
 -  Re-initializes ASM storage devices and uninstalls ASMlib if installed.
--  Reboots the server.
 
 **Important**: a destructive cleanup permanently deletes the databases and any data they
 contain. Any backups that are stored local to the server are also deleted. Backups

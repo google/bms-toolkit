@@ -70,7 +70,7 @@
     enablerepo: rhel-7-server-optional-rpms
   when:
     - install_os_packages|bool and ansible_distribution == 'RedHat' and ansible_distribution_major_version == '7'
-    - redhat_repo.stat.exists|bool
+    - redhat_repo.stat.exists|bool or rh_cloud_repo.stat.exists|bool
   tags: os-packages
 
 - name: Stat OL7 repo
@@ -104,7 +104,7 @@
     lock_timeout: 180
   when:
     - install_os_packages|bool and ansible_distribution == 'RedHat' and ansible_distribution_major_version == '8'
-    - redhat_repo.stat.exists|bool
+    - redhat_repo.stat.exists|bool or rh_cloud_repo.stat.exists|bool
   tags: os-packages
 
 - name: Install Oracle required packages (base/non-rhui config) for OEL8
@@ -126,7 +126,7 @@
   when:
     - install_os_packages|bool and ansible_distribution_major_version == '7'
     - rh_cloud_repo.stat.exists|bool
-    - not redhat_repo.stat.exists|bool
+    - not redhat_repo.stat.exists|bool or rh_cloud_repo.stat.exists|bool
   tags: os-packages
 
 - name: Add OS groups
@@ -276,18 +276,22 @@
     state: present
     label: gpt
   when: "'mapper' not in item.1.blk_device"
-  run_once: "{% if cluster_type == 'RAC' %}true{% endif %}"
+  run_once: true
   with_subelements:
     - "{{ asm_disks }}"
     - disks
   tags: asm-disks
 
-- name: Collect new disk facts
-  setup:
-    gather_subset:
-      - '!all'
-      - '!any'
-      - devices
+- include_role:
+    name: common
+    tasks_from: populate-asm-disks.yml
+  when: "'mapper' not in outer_item.1.blk_device"
+  run_once: true
+  with_subelements:
+    - "{{ asm_disks }}"
+    - disks
+  loop_control:
+    loop_var: outer_item
 
 - name: (debug) asm disk configuration
   debug:
@@ -297,22 +301,53 @@
      - asm_disk_input {{ asm_disk_input }}
   tags: asm-disks
 
-- name: (udev) Add ASM disk rules (non-multipath)
+######## Udev rules for non-multipath disks ########
+
+- name: (udev) Add ASM non-multipath disk rules (udevadm info)
   become: yes
   become_user: root
-  blockinfile:
-    block: "KERNEL==\"sd?1\", SUBSYSTEM==\"block\", PROGRAM==\"/usr/lib/udev/scsi_id -g -u -d /dev/$parent\", RESULT==\"{{ hostvars[inventory_hostname]['ansible_device_links']['ids']['%s' | format( item.1.blk_device | regex_replace('/dev/') )] | select('match','scsi-') | first | regex_replace('scsi-') }}\", SYMLINK+=\"{{ path_udev }}/{{ item.1.name }}\", OWNER=\"{{ grid_user }}\", GROUP=\"{{ grid_group }}\", MODE=\"0660\""
-    dest: "/etc/udev/rules.d/99-oracle-asmdevices.rules"
-    marker: "# {mark} ASM disk udev rules for {{ item.1.name }}:"
-    create: yes
-  register: udevRules
+  shell: udevadm info --query=all --name={{ item.1.blk_device }} | grep ID_SERIAL_SHORT | awk -F'=' '{print $2}'
+  register: udevadm_result_nonmultipath
   when:
     - asm_disk_management == "udev"
     - "'mapper' not in item.1.blk_device"
   with_subelements:
     - "{{ asm_disks }}"
     - disks
-  tags: asm-disks
+  tags: udev-mpath
+
+- name: (udev) Add ASM non-multipath disk rules (init dict)
+  set_fact:
+    uuid_result_nonmultipath: []
+  when:
+    - udevadm_result_nonmultipath.results.0.stdout is defined
+  tags: udev-mpath
+
+- name: (udev) Add ASM non-multipath disk rules (filling dict)
+  set_fact:
+    uuid_result_nonmultipath: "{{ uuid_result_nonmultipath | combine({item.stdout: item.item}) }}"
+  when:
+    - udevadm_result_nonmultipath.results.0.stdout is defined
+  with_items:
+    - "{{ udevadm_result_nonmultipath.results }}"
+  tags: udev-mpath
+
+- name: (udev) Add ASM non-multipath disk rules (udev rules file)
+  become: yes
+  become_user: root
+  blockinfile:
+    block: "SUBSYSTEM==\"block\" ACTION==\"add|change\", ENV{ID_SERIAL_SHORT}==\"{{ item.key }}\", SYMLINK+=\"{{ path_udev }}/{{ uuid_result_nonmultipath[item.key] | json_query ('[*].name') | list | join(', ') }}\", GROUP=\"{{ grid_group }}\", OWNER=\"{{ grid_user }}\", MODE=\"0660\""
+    path: "/etc/udev/rules.d/99-oracle-asmdevices.rules"
+    marker: "# {mark} ASM disk udev rules for {{ uuid_result_nonmultipath[item.key] | json_query ('[*].blk_device') | list | join(', ') }}"
+    create: yes
+  register: udevRules_nonmultipath
+  when:
+    - uuid_result_nonmultipath is defined
+  with_dict:
+    - "{{ uuid_result_nonmultipath }}"
+  tags: udev-mpath
+
+######## Udev rules for multipath disks ########
 
 - name: (udev) Add ASM mpath disk rules on BM (udevadm info)
   become: yes
@@ -324,14 +359,14 @@
   with_subelements:
     - "{{ asm_disks }}"
     - disks
-  tags: udev_mpath
+  tags: udev-mpath
 
 - name: (udev) Add ASM mpath disk rules on BM (init dict)
   set_fact:
     uuid_result: []
   when:
     - udevadm_result.results.0.stdout is defined
-  tags: udev_mpath
+  tags: udev-mpath
 
 - name: (udev) Add ASM mpath disk rules on BM (filling dict)
   set_fact:
@@ -340,13 +375,13 @@
     - udevadm_result.results.0.stdout is defined
   with_items:
     - "{{ udevadm_result.results }}"
-  tags: udev_mpath
+  tags: udev-mpath
 
 - name: (udev) Add ASM mpath disk rules on BM (udev rules file)
   become: yes
   become_user: root
   blockinfile:
-    block: "ACTION==\"add|change\", ENV{DM_UUID}==\"{{ item.key }}\", SYMLINK+=\"{{ path_udev }}/{{ uuid_result[item.key] | json_query ('[*].name') | list | join(', ') }}\", GROUP=\"{{ grid_group }}\", OWNER=\"{{ grid_user }}\", MODE=\"0660\""
+    block: "SUBSYSTEM==\"block\" ACTION==\"add|change\", ENV{DM_UUID}==\"{{ item.key }}\", SYMLINK+=\"{{ path_udev }}/{{ uuid_result[item.key] | json_query ('[*].name') | list | join(', ') }}\", GROUP=\"{{ grid_group }}\", OWNER=\"{{ grid_user }}\", MODE=\"0660\""
     path: "/etc/udev/rules.d/99-oracle-asmdevices.rules"
     marker: "# {mark} ASM disk udev rules for {{ uuid_result[item.key] | json_query ('[*].blk_device') | list | join(', ') }}"
     create: yes
@@ -355,7 +390,7 @@
     - uuid_result is defined
   with_dict:
     - "{{ uuid_result }}"
-  tags: udev_mpath
+  tags: udev-mpath
 
 - name: (udev) reload rules
   become: yes
@@ -385,7 +420,7 @@
 - name: (asmlib) Create Oracle ASM raw disks
   become: yes
   become_user: root
-  command: "/usr/sbin/oracleasm createdisk -v {{ item.1.name }} {{ item.1.blk_device }}1"
+  command: "/usr/sbin/oracleasm createdisk -v {{ item.1.name }} {{ item.1.first_partition_id }}"
   with_subelements:
     - "{{ asm_disks }}"
     - disks
@@ -398,7 +433,7 @@
 - name: (asmlib) Create Oracle ASM LV disks
   become: yes
   become_user: root
-  command: "/usr/sbin/oracleasm createdisk -v {{ item.1.name }} {{ item.1.blk_device }}{% if item.1.name is not search('mapper') %}1{% endif %}"
+  command: "/usr/sbin/oracleasm createdisk -v {{ item.1.name }} {{ item.1.blk_device }}{% if item.1.name is not search('mapper') %}{{ item.1.first_partition_id }}{% endif %}"
   with_subelements:
     - "{{ asm_disks }}"
     - disks

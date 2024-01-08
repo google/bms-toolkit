@@ -145,3 +145,10 @@
       when:
         - cluster_type == "RAC"
   tags: rac-db
+
+- hosts: dbasm
+  tasks:
+    - include_role:
+        name: patch-vulns
+        tasks_from: main
+  tags: patch-vulns

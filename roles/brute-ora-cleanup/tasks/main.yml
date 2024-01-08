@@ -60,6 +60,16 @@
   become: yes
   become_user: root
   when: cluster_name is not defined
+  
+- name: Uninstall TFA service
+  command: "{{ grid_home }}/bin/tfactl uninstall -local -silent"
+  environment:
+    PATH: "{{ grid_home }}/perl/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin"
+    PERL5LIB: "{{ grid_home }}/perl/lib"
+  register: uninstall_tfa
+  ignore_errors: yes
+  become: yes
+  become_user: root
 
 - name: Kill (SIGTERM) any remaining Oracle processes
   command: "pkill -f {{ item }}"
@@ -207,6 +217,10 @@
   when: asm_disk_management == "asmlib"
   register: remove_oracleasm
 
+- include_role:
+    name: common
+    tasks_from: populate-user-data-mounts.yml
+
 - name: Lazy unmount Oracle user data devices
   shell: |
     umount -f -l "{{ item.mount_point }}"
@@ -217,9 +231,26 @@
 - name: Remove Oracle user data devices from fstab
   mount:
     fstype: "{{ item.fstype }}"
-    src: "{{ item.blk_device }}1"
+    src: "{{ item.first_partition_id }}"
     path: "{{ item.mount_point }}"
     state: absent
+  register: fstab_result
+  failed_when:
+    - fstab_result is failed
+    - "'Directory not empty' not in fstab_result.module_stdout"
+  with_items:
+    - "{{ oracle_user_data_mounts }}"
+  when: 
+    - item.first_partition_id is defined
+    
+- name: Remove magic strings from Oracle user data partitions
+  become: yes
+  become_user: root
+  command: "wipefs --all --force {{ item.first_partition_id }}"
+  when: 
+    - "'mapper' not in item.blk_device"
+    - item.first_partition_id is defined
+  ignore_errors: true
   with_items:
     - "{{ oracle_user_data_mounts }}"
 
@@ -247,12 +278,16 @@
   register: zero_disks
   ignore_errors: true
 
+- include_role:
+    name: common
+    tasks_from: populate-swap-partition-id.yml
+
 - name: Disable and remove swap
   block:
     - name: Turn swap off
-      command: "swapoff {{ swap_blk_device }}1"
+      command: "swapoff {{ swap_partition_id }}"
     - name: Clean swap disk partition
-      command: "dd if=/dev/zero of={{ swap_blk_device }}1 bs=1M count=100"
+      command: "dd if=/dev/zero of={{ swap_partition_id }} bs=1M count=100"
     - name: Remove swap partition
       parted:
         device: "{{ swap_blk_device }}"
@@ -266,6 +301,7 @@
   become: yes
   when:
     - swap_blk_device is defined
+    - swap_partition_id is defined
     - swap_blk_device|length > 0
   ignore_errors: true
   tags: remove-swap

@@ -62,7 +62,7 @@
   ignore_errors: true
   with_items:
     - "{{ opatch_patches }}"
-  when: item.release == oracle_ver
+  when: item.release == oracle_ver and oracle_rel != "base"
   register: opatch_repo_files
 
 - name: check-swlib | Report gsutil failures (base)

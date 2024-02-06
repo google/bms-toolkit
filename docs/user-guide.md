@@ -299,6 +299,13 @@ Cloud](https://edelivery.oracle.com/) site (also known as Oracle "eDelivery"),
 and **patches** that you download from Oracle's [My Oracle
 Support](https://support.oracle.com/) (MOS) site.
 
+You can also download base software from 
+[Oracle Technology Network][https://www.oracle.com/database/technologies/oracle-database-software-downloads.html#db_ee).
+In this case, please rename the downloaded files to the
+[software delivery cloud equivalent](#required-oracle-software---download-summary)
+names, and use `--no-patch` to skip patching.  Note that unpatched software may
+have known defects and security vulnerabilities.
+
 One key exception: Oracle 11g base software can be downloaded directly from My
 Oracle Support. Only Oracle 12c or later base software needs to be downloaded
 from Oracle Software Delivery Cloud. Direct links to MOS downloads are provided
@@ -309,7 +316,8 @@ license terms.
 
 Before using the toolkit, download all of the software pieces for your Oracle
 release, including the base release, patchsets, the OPatch utility, and any
-additional patches listed by Oracle.
+additional patches listed by Oracle (unless using `--no-patch`, at which
+point only the base release is installed).
 
 Do not unzip the downloaded installation files. The toolkit requires the
 downloads in their original, compressed-file format.

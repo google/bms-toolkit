@@ -16,7 +16,7 @@
 install_os_packages: true
 disable_firewall: false
 disable_selinux: true
-firewall_service: "{% if ansible_distribution_major_version|int==6%}iptables{%elif ansible_distribution_major_version|int==7 %}firewalld{% else %}0{% endif %}"
+firewall_service: "{% if ansible_distribution_major_version|int==6%}iptables{%elif ansible_distribution_major_version|int>=7 %}firewalld{% else %}0{% endif %}"
 
 oracle_required_rpms:
   - bc
@@ -127,6 +127,57 @@ oracle_required_rpms_el8:
   - libnsl2
   - libnsl2.i686  
 
+oracle_required_rpms_el9:
+  - bc
+  - binutils
+  - cpp
+  - gcc
+  - gcc-c++
+  - glibc-devel
+  - glibc-headers
+  - gssproxy
+  - kernel-headers
+  - keyutils
+  - ksh
+  - libaio-devel
+  - libbasicobjects
+  - libcollection
+  - libdmx
+  - libevent
+  - libICE
+  - libini_config
+  - libmpc
+  - libnfsidmap
+  - libpath_utils
+  - libref_array
+  - libSM
+  - libstdc++-devel
+  - libtirpc
+  - libXi
+  - libXinerama
+  - libXmu
+  - libXrandr
+  - libXrender
+  - libXt
+  - libXtst
+  - libXv
+  - libXxf86dga
+  - libXxf86vm
+  - make
+  - mpfr
+  - nfs-utils
+  - psmisc
+  - quota
+  - quota-nls
+  - rpcbind
+  - smartmontools
+  - sysstat
+  - xorg-x11-utils
+  - xorg-x11-xauth
+  - libnsl
+  - libnsl.i686
+  - libnsl2
+  - libnsl2.i686  
 
 sysctl_entries:
   - { name: "fs.aio-max-nr", value: "1048576" }

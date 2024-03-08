@@ -145,7 +145,7 @@
     - install_os_packages|bool
     - ansible_distribution == 'OracleLinux'
     - ansible_distribution_major_version == '9'
-     oraclelinux_repo_oel9.stat.exists|bool
+    - oraclelinux_repo_oel9.stat.exists|bool
   tags: os-packages
 
 - name: Install Oracle required packages (rhui config)

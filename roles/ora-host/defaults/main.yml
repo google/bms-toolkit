@@ -153,6 +153,7 @@ oracle_required_rpms_el9:
   - libSM
   - libstdc++-devel
   - libtirpc
+  - libxcrypt-compat
   - libXi
   - libXinerama
   - libXmu
@@ -166,6 +167,7 @@ oracle_required_rpms_el9:
   - make
   - mpfr
   - nfs-utils
+  - policycoreutils-python-utils
   - psmisc
   - quota
   - quota-nls

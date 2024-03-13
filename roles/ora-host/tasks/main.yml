@@ -87,6 +87,13 @@
   when:
     - install_os_packages|bool and ansible_distribution == 'OracleLinux'
 
+- name: Stat OL9 repo
+  stat:
+    path: /etc/yum.repos.d/oracle-linux-ol9.repo
+  register: oraclelinux_repo_oel9
+  when:
+    - install_os_packages|bool and ansible_distribution == 'OracleLinux'
+
 - name: Install Oracle required packages (base/non-rhui config) for OEL7
   yum:
     name: "{{ oracle_required_rpms }}"
@@ -107,6 +114,18 @@
     - redhat_repo.stat.exists|bool or rh_cloud_repo.stat.exists|bool
   tags: os-packages
 
+- name: Install Oracle required packages (base/non-rhui config) for RHEL9
+  yum:
+    name: "{{ oracle_required_rpms_el9 }}"
+    state: present
+    lock_timeout: 180
+  when:
+    - install_os_packages|bool
+    - ansible_distribution == 'RedHat'
+    - ansible_distribution_major_version == '9'
+    - rh_cloud_repo.stat.exists|bool
+  tags: os-packages
+
 - name: Install Oracle required packages (base/non-rhui config) for OEL8
   yum:
     name: "{{ oracle_required_rpms_el8 }}"
@@ -115,6 +134,18 @@
   when:
     - install_os_packages|bool and ansible_distribution == 'OracleLinux' and ansible_distribution_major_version == '8'
     - oraclelinux_repo_oel8.stat.exists|bool
+  tags: os-packages
+
+- name: Install Oracle required packages (base/non-rhui config) for OEL9
+  yum:
+    name: "{{ oracle_required_rpms_el9 }}"
+    state: present
+    lock_timeout: 180
+  when:
+    - install_os_packages|bool
+    - ansible_distribution == 'OracleLinux'
+    - ansible_distribution_major_version == '9'
+    - oraclelinux_repo_oel9.stat.exists|bool
   tags: os-packages
 
 - name: Install Oracle required packages (rhui config)
@@ -177,6 +208,31 @@
   with_items:
     - "{{ sysctl_entries }}"
   tags: sysctl
+
+- name: Get the ID of the oinstall group
+  shell:
+    cmd: "getent group oinstall | cut -d: -f3"
+  register: oinstall_group_id
+  changed_when: false
+  when:
+    - ansible_distribution == 'RedHat'
+    - ansible_distribution_major_version == '9'
+
+
+# Setting vm.hugetlb_shm_group to the ID of the "oinstall" group to allow its members to create 
+# SysV shared memory segment using hugetlb page. 
+# By default only the root user has permissions to create shared memory segments.
+# This is needed to prevent the occurrence of "ORA-27125: unable to create shared memory segment" error.
+- name: Set hugetlb_shm_group to the ID of the oinstall group
+  sysctl:
+    name: vm.hugetlb_shm_group
+    value: "{{ oinstall_group_id.stdout }}"
+    state: present
+    reload: true
+  become: true
+  when:
+    - ansible_distribution == 'RedHat'
+    - ansible_distribution_major_version == '9'
 
 - name: Adjust kernel limits for users
   pam_limits:

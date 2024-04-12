@@ -6,37 +6,57 @@
       - devices
   tags: populate-asm-disks
 
-- name: Resolve the symlinks
-  ansible.builtin.shell:
-    cmd: "realpath {{ item }}"
-  loop: "{{ asm_disks | map(attribute='disks') | flatten | map(attribute='blk_device') }}"
-  register: realpath_output
+- name: Determine real paths of block devices
+  ansible.builtin.shell: "readlink -f {{ item.1.blk_device }}"
+  with_subelements:
+   - "{{ asm_disks }}"
+   - disks
+  register: real_paths
+  changed_when: false
   tags: populate-asm-disks
 
-- name: Create a copy of the asm_disks with the blk_device set to the canonical path
+    
+- name: Update asm_disks with real paths
   set_fact:
-    asm_disks_normalized: "{{ asm_disks_normalized | default([]) + [item.1 | combine({'disks': item.1.disks | map('combine', {'blk_device': item.0.stdout}) | list })] }}"
-  with_together:
-    - "{{ realpath_output.results }}"
-    - "{{ asm_disks }}"
-  when: item.0.rc == 0 and item.1 is not none
-  tags: populate-asm-disks
-
-- name: Update asm_disks with partition IDs
-  set_fact:
-    asm_disks_with_partitions: "{{ asm_disks_with_partitions | default([]) + [{'diskgroup': item.diskgroup, 'disks': item.disks | map('combine', {'first_partition_id': first_partition_id}) | list}] }}"
-  with_items: "{{ asm_disks_normalized }}"
+    asm_disks_normalized: "{{ asm_disks_updated | from_yaml }}"
   vars:
-    first_partition_id: "{{'/dev/' + ansible_facts.devices[item.disks | map(attribute='blk_device') | join() | basename ].partitions.keys() | first }}"
-  loop_control:
-    label: "{{ item.diskgroup }}"
-  when:
-    - asm_disks_normalized is defined
+    asm_disks_updated: >
+      {% set disks = asm_disks | json_query('[].{diskgroup: diskgroup, disks: disks}') %}
+      {% for disk_group in disks %}
+        {% for disk in disk_group.disks %}
+          {% set real_path = real_paths.results | selectattr('item.1.blk_device', 'equalto', disk.blk_device) | map(attribute='stdout') | list %}
+          {% if real_path %}
+            {% set _ = disk.update({'real_path': real_path | first}) %}
+          {% endif %}
+        {% endfor %}
+      {% endfor %}
+      {{ disks }}
+
+
+- name: Add partition IDs to asm_disks
+  set_fact:
+    asm_disks: "{{ asm_disks_partitions | from_yaml }}"
+  vars:
+    asm_disks_partitions: >
+      {% set updated_disks = [] %}
+      {% for disk_group in asm_disks_normalized %}
+        {% set updated_group_disks = [] %}
+        {% for disk in disk_group.disks %}
+          {% set real_device = disk.real_path | regex_replace('^/dev/', '') %}
+          {% set device_facts = ansible_facts.devices[real_device] if real_device in ansible_facts.devices else {} %}
+          {% set partitions = device_facts.partitions if device_facts and 'partitions' in device_facts else {} %}
+          {% if partitions %}
+            {% set first_partition_key = partitions.keys() | list | sort | first %}
+            {% set first_partition = '/dev/' + first_partition_key %}
+          {% else %}
+            {% set first_partition = 'No partition' %}
+          {% endif %}
+          {% set disk_with_partition = disk | combine({'first_partition_id': first_partition}) %}
+          {% set _ = updated_group_disks.append(disk_with_partition) %}
+        {% endfor %}
+        {% set updated_group = {'diskgroup': disk_group.diskgroup, 'disks': updated_group_disks} %}
+        {% set _ = updated_disks.append(updated_group) %}
+      {% endfor %}
+      {{ updated_disks }}
   tags: populate-asm-disks
 
-- name: Update asm_disks
-  set_fact:
-    asm_disks: "{{asm_disks_with_partitions}}"
-  when:
-    - asm_disks_with_partitions is defined
-  tags: populate-asm-disks

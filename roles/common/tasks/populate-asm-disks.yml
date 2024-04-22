@@ -1,62 +1,43 @@
-- name: Collect new disk facts
-  setup:
-    gather_subset:
-      - '!all'
-      - '!any'
-      - devices
+- name: Resolve blk_device paths to first partition paths if they exist
+  ansible.builtin.shell: >
+    set -o pipefail;
+    case "{{ item.blk_device }}" in
+      /dev/disk/by-id/*)
+        part_path="{{ item.blk_device }}"-part1;
+        ;;
+      /dev/mapper/*)
+        part_path="{{ item.blk_device }}"p1;
+        ;;
+      /dev/*)
+        by_id_link=$(find /dev/disk/by-id/ -type l -exec sh -c 'echo $1 $(readlink -f $1)' _ {} \; | awk -v dev="{{ item.blk_device }}" '$2==dev {print $1}' | grep -vE '/dev/disk/by-id/(nvme-|scsi-|wwn-)' | head -n 1);
+        part_path="${by_id_link}"-part1;
+        ;;
+    esac;
+    if [[ -e "$part_path" ]]; then
+      echo "$part_path"
+    else
+      echo ""
+    fi
+  loop: "{{ asm_disks | json_query('[].disks[]') }}"
+  register: disk_paths
   tags: populate-asm-disks
 
-- name: Determine real paths of block devices
-  ansible.builtin.shell: "readlink -f {{ item.1.blk_device }}"
-  with_subelements:
-   - "{{ asm_disks }}"
-   - disks
-  register: real_paths
-  changed_when: false
-  tags: populate-asm-disks
 
-    
-- name: Update asm_disks with real paths
+- name: Update asm_disks with partition paths
   set_fact:
-    asm_disks_normalized: "{{ asm_disks_updated | from_yaml }}"
+    asm_disks: "{{ asm_disks_updated | from_yaml }}"
   vars:
     asm_disks_updated: >
-      {% set disks = asm_disks | json_query('[].{diskgroup: diskgroup, disks: disks}') %}
-      {% for disk_group in disks %}
+      {% set new_disks = [] %}
+      {% for disk_group in asm_disks %}
+        {% set new_group_disks = [] %}
         {% for disk in disk_group.disks %}
-          {% set real_path = real_paths.results | selectattr('item.1.blk_device', 'equalto', disk.blk_device) | map(attribute='stdout') | list %}
-          {% if real_path %}
-            {% set _ = disk.update({'real_path': real_path | first}) %}
-          {% endif %}
+          {% set output = disk_paths.results | selectattr('item.blk_device', 'equalto', disk.blk_device) | map(attribute='stdout') | first %}
+          {% set new_disk = disk | combine({'first_partition_id': output}) %}
+          {% set _ = new_group_disks.append(new_disk) %}
         {% endfor %}
+        {% set new_disk_group = {'diskgroup': disk_group.diskgroup, 'disks': new_group_disks} %}
+        {% set _ = new_disks.append(new_disk_group) %}
       {% endfor %}
-      {{ disks }}
-
-
-- name: Add partition IDs to asm_disks
-  set_fact:
-    asm_disks: "{{ asm_disks_partitions | from_yaml }}"
-  vars:
-    asm_disks_partitions: >
-      {% set updated_disks = [] %}
-      {% for disk_group in asm_disks_normalized %}
-        {% set updated_group_disks = [] %}
-        {% for disk in disk_group.disks %}
-          {% set real_device = disk.real_path | regex_replace('^/dev/', '') %}
-          {% set device_facts = ansible_facts.devices[real_device] if real_device in ansible_facts.devices else {} %}
-          {% set partitions = device_facts.partitions if device_facts and 'partitions' in device_facts else {} %}
-          {% if partitions %}
-            {% set first_partition_key = partitions.keys() | list | sort | first %}
-            {% set first_partition = '/dev/' + first_partition_key %}
-          {% else %}
-            {% set first_partition = 'No partition' %}
-          {% endif %}
-          {% set disk_with_partition = disk | combine({'first_partition_id': first_partition}) %}
-          {% set _ = updated_group_disks.append(disk_with_partition) %}
-        {% endfor %}
-        {% set updated_group = {'diskgroup': disk_group.diskgroup, 'disks': updated_group_disks} %}
-        {% set _ = updated_disks.append(updated_group) %}
-      {% endfor %}
-      {{ updated_disks }}
+      {{ new_disks }}
   tags: populate-asm-disks
-

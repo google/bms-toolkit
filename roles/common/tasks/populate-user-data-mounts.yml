@@ -1,48 +1,40 @@
-- name: Collect new disk facts
-  setup:
-    gather_subset:
-      - '!all'
-      - '!any'
-      - devices
-  tags: populate-user-mounts
-
-- name: Resolve the symlinks
-  ansible.builtin.shell:
-    cmd: "realpath {{ item.blk_device }}"
+- name: Identify the first partition of the block device based on its persistent identifier (/dev/disk/by-id/)
+  ansible.builtin.shell: >
+    set -o pipefail;
+    part_path="";
+    case "{{ item.blk_device }}" in
+      # If the block device is specified by a persistent identifier, append '-part1' to form the path to the first partition.
+      /dev/disk/by-id/*)
+        part_path="{{ item.blk_device }}"-part1;
+        ;;
+      # Skip /dev/mapper devices since they are typically managed by LVM and do not require partitioning (partitioning logical LVM volumes is not practical).
+      /dev/mapper/*)
+        part_path="";
+        ;;
+      # For other devices (E.g.: /dev/sda, /dev/nvme0n1), find the corresponding /dev/disk/by-id/ path and add '-part1' to denote the first partition.
+      /dev/*)
+        by_id_link=$(find /dev/disk/by-id/ -type l -exec sh -c 'echo $1 $(readlink -f $1)' _ {} \; | awk -v dev="{{ item.blk_device }}" '$2==dev {print $1}' | grep -vE '/dev/disk/by-id/(nvme-|scsi-|wwn-)' | head -n 1);
+        part_path="${by_id_link}"-part1;
+        ;;
+    esac;
+    if [[ -e "$part_path" ]] && [[ "$part_path" != "" ]]; then
+      echo "$part_path"
+    else
+      echo ""
+    fi
   loop: "{{ oracle_user_data_mounts }}"
-  register: realpath_result
+  register: disk_paths
   tags: populate-user-mounts
 
-- name: Create a dictionary with blk_device as keys and real_path as values
-  ansible.builtin.set_fact:
-    normalized_blk_device_paths: "{{ dict(realpath_result.results | map(attribute='item.blk_device') | zip(realpath_result.results | map(attribute='stdout'))) }}"
-  tags: populate-user-mounts
 
-- name: Update oracle_user_data_mounts with normalized blk_device paths
-  ansible.builtin.set_fact:
-    oracle_user_data_mounts_normalized: "{{ oracle_user_data_mounts_normalized | default([]) + [item | combine({'blk_device': normalized_blk_device_paths[item.blk_device]})] }}"
-  loop: "{{ oracle_user_data_mounts }}"
-  loop_control:
-    extended: yes
-  tags: populate-user-mounts
-
-- name: Update oracle_user_data_mounts_normalized with first partition IDs
+- name: Update oracle_user_data_mounts with partition paths
   set_fact:
-    oracle_user_data_mounts_with_partitions: "{{ oracle_user_data_mounts_with_partitions | default([]) + [item | combine({'first_partition_id': ('/dev/disk/by-id/' + first_partition_id)})] }}"
-  loop: "{{ oracle_user_data_mounts_normalized }}"
-  loop_control:
-    loop_var: item
-  when:
-    - "'mapper' not in item.blk_device"
-    - item.blk_device  | basename in ansible_facts.devices.keys()
-    - ansible_facts.devices[item.blk_device  | basename].partitions.keys()|length > 0
-  vars:
-    first_partition_id: "{{ ansible_facts.devices[item.blk_device  | basename].partitions | dict2items | map(attribute='value.links.ids') | flatten | first() }}"
-  tags: populate-user-mounts
-
-- name: Update oracle_user_data_mounts
-  set_fact:
-    oracle_user_data_mounts: "{{oracle_user_data_mounts_with_partitions}}"
-  when:
-    - oracle_user_data_mounts_with_partitions is defined
+    oracle_user_data_mounts: >-
+      {%- set updated_mounts = [] -%}
+      {%- for mount in oracle_user_data_mounts -%}
+        {%- set part_result = disk_paths.results | selectattr('item.blk_device', 'equalto', mount.blk_device) | map(attribute='stdout') | first -%}
+        {%- set updated_mount = mount | combine({'first_partition_id': part_result if part_result != '' else ''}) -%}
+        {%- set _ = updated_mounts.append(updated_mount) -%}
+      {%- endfor -%}
+      {{ updated_mounts }}
   tags: populate-user-mounts

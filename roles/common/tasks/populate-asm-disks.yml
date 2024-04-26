@@ -1,19 +1,23 @@
-- name: Resolve blk_device paths to first partition paths if they exist
+- name: Identify the first partition of the block device based on its persistent identifier (/dev/disk/by-id/)
   ansible.builtin.shell: >
     set -o pipefail;
+    part_path="";
     case "{{ item.blk_device }}" in
+      # If the block device is specified by a persistent identifier, append '-part1' to form the path to the first partition.
       /dev/disk/by-id/*)
         part_path="{{ item.blk_device }}"-part1;
         ;;
+      # Skip /dev/mapper devices since they are typically managed by LVM and do not require partitioning (partitioning logical LVM volumes is not practical).
       /dev/mapper/*)
-        part_path="{{ item.blk_device }}"p1;
+        part_path="";
         ;;
+      # For other devices (E.g.: /dev/sda, /dev/nvme0n1), find the corresponding /dev/disk/by-id/ path and add '-part1' to denote the first partition.
       /dev/*)
         by_id_link=$(find /dev/disk/by-id/ -type l -exec sh -c 'echo $1 $(readlink -f $1)' _ {} \; | awk -v dev="{{ item.blk_device }}" '$2==dev {print $1}' | grep -vE '/dev/disk/by-id/(nvme-|scsi-|wwn-)' | head -n 1);
         part_path="${by_id_link}"-part1;
         ;;
     esac;
-    if [[ -e "$part_path" ]]; then
+    if [[ -e "$part_path" ]] && [[ "$part_path" != "" ]]; then
       echo "$part_path"
     else
       echo ""
@@ -25,19 +29,21 @@
 
 - name: Update asm_disks with partition paths
   set_fact:
-    asm_disks: "{{ asm_disks_updated | from_yaml }}"
-  vars:
-    asm_disks_updated: >
-      {% set new_disks = [] %}
-      {% for disk_group in asm_disks %}
-        {% set new_group_disks = [] %}
-        {% for disk in disk_group.disks %}
-          {% set output = disk_paths.results | selectattr('item.blk_device', 'equalto', disk.blk_device) | map(attribute='stdout') | first %}
-          {% set new_disk = disk | combine({'first_partition_id': output}) %}
-          {% set _ = new_group_disks.append(new_disk) %}
-        {% endfor %}
-        {% set new_disk_group = {'diskgroup': disk_group.diskgroup, 'disks': new_group_disks} %}
-        {% set _ = new_disks.append(new_disk_group) %}
-      {% endfor %}
+    asm_disks: >-
+      {%- set new_disks = [] -%}
+      {%- for disk_group in asm_disks -%}
+        {%- set new_group_disks = [] -%}
+        {%- for disk in disk_group.disks -%}
+          {%- set output = disk_paths.results | selectattr('item.blk_device', 'equalto', disk.blk_device) | map(attribute='stdout') | first -%}
+          {%- if output -%}  
+            {%- set new_disk = disk | combine({'first_partition_id': output}) -%}
+          {%- else -%}
+            {%- set new_disk = disk -%}
+          {%- endif -%}
+          {%- set _ = new_group_disks.append(new_disk) -%}
+        {%- endfor -%}
+        {%- set new_disk_group = {'diskgroup': disk_group.diskgroup, 'disks': new_group_disks} -%}
+        {%- set _ = new_disks.append(new_disk_group) -%}
+      {%- endfor -%}
       {{ new_disks }}
   tags: populate-asm-disks

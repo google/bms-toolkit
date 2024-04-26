@@ -1,14 +1,42 @@
-- name: Collect new disk facts
-  setup:
-    gather_subset:
-      - '!all'
-      - '!any'
-      - devices
-
-- name: Determine the first partition ID of the swap_blk_device
-  set_fact:
-    swap_partition_id: "{{ '/dev/disk/by-id/' + ansible_facts.devices[swap_blk_device | basename].partitions | dict2items  | map(attribute='value.links.ids') | flatten | first() }}"
+- name: Identify the first partition of the swap block device
+  ansible.builtin.shell: >
+    set -o pipefail;
+    part_path="";
+    case "{{ swap_blk_device }}" in
+      # If the block device is specified by a persistent identifier, append '-part1' to form the path to the first partition.
+      /dev/disk/by-id/*)
+        part_path="{{ swap_blk_device }}"-part1;
+        ;;
+      # Skip /dev/mapper devices since they are typically managed by LVM and do not require partitioning (partitioning logical LVM volumes is not practical).
+      /dev/mapper/*)
+        part_path="";
+        ;;
+      # For other devices (E.g.: /dev/sda, /dev/nvme0n1), find the corresponding /dev/disk/by-id/ path and add '-part1' to denote the first partition.
+      /dev/*)
+        by_id_link=$(find /dev/disk/by-id/ -type l -exec sh -c 'echo $1 $(readlink -f $1)' _ {} \; | awk -v dev="{{ swap_blk_device }}" '$2==dev {print $1}' | grep -vE '/dev/disk/by-id/(nvme-|scsi-|wwn-)' | head -n 1);
+        part_path="${by_id_link}"-part1;
+        ;;
+    esac;
+    if [[ -e "$part_path" ]] && [[ "$part_path" != "" ]]; then
+      echo "$part_path"
+    else
+      echo ""
+    fi
+  register: swap_first_partition
   when:
     - swap_blk_device is defined
-    - swap_blk_device | basename in ansible_facts.devices.keys()
-    - ansible_facts.devices[item.blk_device  | basename].partitions.keys()|length > 0
+    - "'mapper' not in swap_blk_device"
+  tags: populate-swap-partition-id
+
+- name: Set swap_partition_id
+  set_fact:
+    swap_partition_id: "{{ swap_first_partition.stdout }}"
+  when:
+  - swap_blk_device is defined
+  - "'mapper' not in swap_blk_device"
+  tags: populate-swap-partition-id
+
+- name: (debug) Display the swap partition ID
+  debug:
+    msg: "{{ swap_partition_id }}"
+  tags: populate-swap-partition-id

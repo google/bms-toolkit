@@ -331,13 +331,6 @@
 - include_role:
     name: common
     tasks_from: populate-asm-disks.yml
-  when: "'mapper' not in outer_item.1.blk_device"
-  run_once: true
-  with_subelements:
-    - "{{ asm_disks }}"
-    - disks
-  loop_control:
-    loop_var: outer_item
 
 - name: (debug) asm disk configuration
   debug:

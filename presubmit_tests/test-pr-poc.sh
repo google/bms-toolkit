@@ -26,7 +26,7 @@ ssh-keyscan "${bms_host}" > ~/.ssh/known_hosts
 # install pre-reqs
 pip install jmespath
 cp /etc/files_needed_for_tk/google-cloud-sdk.repo /etc/yum.repos.d/google-cloud-sdk.repo
-yum install google-cloud-sdk -y
+yum --disablerepo=* --enablerepo=google-cloud-sdk -y install google-cloud-sdk
 
 # run the cleanup script
 pwd

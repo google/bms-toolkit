@@ -70,6 +70,8 @@
   tags: gi-setup,sw-unzip
 
 - name: gi-install | Find the cvuqdisk RPM
+  become: yes
+  become_user: root
   find:
     paths: "{{ grid_home }}/cv/rpm/"
     patterns: "*.rpm"

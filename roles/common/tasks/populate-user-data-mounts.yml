@@ -26,15 +26,23 @@
   register: disk_paths
   tags: populate-user-mounts
 
-
 - name: Update oracle_user_data_mounts with partition paths
+  vars:
+    blk_device_to_partition: >-
+      {%- set mapping = {} -%}
+      {%- for res in disk_paths.results -%}
+        {%- if res.stdout != '' -%}
+          {%- set _ = mapping.update({res.item.blk_device: res.stdout}) -%}
+        {%- endif -%}
+      {%- endfor -%}
+      {{ mapping }}
   set_fact:
     oracle_user_data_mounts: >-
       {%- set updated_mounts = [] -%}
       {%- for mount in oracle_user_data_mounts -%}
-        {%- set part_result = disk_paths.results | selectattr('item.blk_device', 'equalto', mount.blk_device) | map(attribute='stdout') | first -%}
-        {%- set updated_mount = mount | combine({'first_partition_id': part_result if part_result != '' else ''}) -%}
-        {%- set _ = updated_mounts.append(updated_mount) -%}
+        {%- set part_result = blk_device_to_partition.get(mount.blk_device, '') -%}
+        {%- set updated_mount = mount | combine({'first_partition_id': part_result}) -%}
+        {{ updated_mounts.append(updated_mount) }}
       {%- endfor -%}
       {{ updated_mounts }}
   tags: populate-user-mounts

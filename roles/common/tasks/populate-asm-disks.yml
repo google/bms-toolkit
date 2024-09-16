@@ -26,24 +26,28 @@
   register: disk_paths
   tags: populate-asm-disks
 
-
 - name: Update asm_disks with partition paths
+  vars:
+    blk_device_to_partition: >-
+      {%- set mapping = {} -%}
+      {%- for res in disk_paths.results -%}
+        {%- if res.stdout != '' -%}
+          {%- set _ = mapping.update({res.item.blk_device: res.stdout}) -%}
+        {%- endif -%}
+      {%- endfor -%}
+      {{ mapping }}
   set_fact:
     asm_disks: >-
-      {%- set new_disks = [] -%}
-      {%- for disk_group in asm_disks -%}
-        {%- set new_group_disks = [] -%}
-        {%- for disk in disk_group.disks -%}
-          {%- set output = disk_paths.results | selectattr('item.blk_device', 'equalto', disk.blk_device) | map(attribute='stdout') | first -%}
-          {%- if output -%}  
-            {%- set new_disk = disk | combine({'first_partition_id': output}) -%}
-          {%- else -%}
-            {%- set new_disk = disk -%}
-          {%- endif -%}
-          {%- set _ = new_group_disks.append(new_disk) -%}
+      {%- set updated_disk_groups = [] -%}
+      {%- for group in asm_disks -%}
+        {%- set updated_disks = [] -%}
+        {%- for disk in group.disks -%}
+          {%- set part_result = blk_device_to_partition.get(disk.blk_device, '') -%}
+          {%- set updated_disk = disk | combine({'first_partition_id': part_result}) -%}
+          {{ updated_disks.append(updated_disk) }}
         {%- endfor -%}
-        {%- set new_disk_group = {'diskgroup': disk_group.diskgroup, 'disks': new_group_disks} -%}
-        {%- set _ = new_disks.append(new_disk_group) -%}
+        {%- set updated_group = group | combine({'disks': updated_disks}) -%}
+        {{ updated_disk_groups.append(updated_group) }}
       {%- endfor -%}
-      {{ new_disks }}
+      {{ updated_disk_groups }}
   tags: populate-asm-disks

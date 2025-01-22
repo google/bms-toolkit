@@ -125,7 +125,7 @@ oracle_required_rpms_el8:
   - libnsl
   - libnsl.i686
   - libnsl2
-  - libnsl2.i686  
+  - libnsl2.i686
 
 oracle_required_rpms_el9:
   - bc
@@ -179,7 +179,10 @@ oracle_required_rpms_el9:
   - libnsl
   - libnsl.i686
   - libnsl2
-  - libnsl2.i686  
+  - libnsl2.i686
+
+oracle19c_specific_rpms_el8:
+  - perl
 
 sysctl_entries:
   - { name: "fs.aio-max-nr", value: "1048576" }

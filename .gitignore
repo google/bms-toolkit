@@ -23,8 +23,8 @@
 **/vault.yml
 hosts.yml
 inventory
-inventory_files/*
-logs/*.log
+inventory_files/
+logs/
 secrets.yml
 secrets/
 vars/

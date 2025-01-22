@@ -24,6 +24,18 @@
   when: disable_firewall|bool and ansible_os_family == 'RedHat' and firewall.results
   tags: firewall
 
+- name: Set sshd parameters
+  lineinfile:
+    path: "/etc/ssh/sshd_config"
+    regexp: '(?i)^(?:\s*#)?\s*{{ item.param }}\s+'
+    line: "{{ item.param }} {{ item.value }}"
+    state: present
+  with_items: "{{ sshd_params }}"
+  notify:
+    - restart_ssh
+    - Reset Ansible connection
+  tags: sshd_param
+
 - name: Disable selinux (permanently)
   selinux: state=disabled
   when: disable_selinux and ansible_os_family == 'RedHat'
@@ -41,8 +53,8 @@
 - name: Ensure NOZEROCONF=yes is in /etc/sysconfig/network
   lineinfile:
     dest: /etc/sysconfig/network
-    regexp: '^NOZEROCONF'
-    line: 'NOZEROCONF=yes'
+    regexp: "^NOZEROCONF"
+    line: "NOZEROCONF=yes"
 
 - name: Ensure /dev/shm is present in /etc/fstab
   mount:
@@ -209,8 +221,8 @@
     - "{{ sysctl_entries }}"
   tags: sysctl
 
-# Setting vm.hugetlb_shm_group to the ID of the "oinstall" group to allow its members to create 
-# SysV shared memory segment using hugetlb page. 
+# Setting vm.hugetlb_shm_group to the ID of the "oinstall" group to allow its members to create
+# SysV shared memory segment using hugetlb page.
 # By default only the root user has permissions to create shared memory segments.
 # This is needed to prevent the occurrence of "ORA-27125: unable to create shared memory segment" error.
 - name: Set hugetlb_shm_group to the ID of the oinstall group
@@ -231,7 +243,7 @@
     limit_item: "{{ item[1].name }}"
     value: "{{ item[1].value }}"
   with_nested:
-    - [ "{{ oracle_user }}", "{{ grid_user }}" ]
+    - ["{{ oracle_user }}", "{{ grid_user }}"]
     - "{{ resource_limits }}"
   tags: kernel-setup
 
@@ -287,7 +299,7 @@
   lineinfile:
     dest: /etc/systemd/logind.conf
     regexp: '^#\s*RemoveIPC.*$'
-    line: 'RemoveIPC=no'
+    line: "RemoveIPC=no"
 
 - name: Append database variables to bash_profile
   become: yes
@@ -335,9 +347,9 @@
 - name: (debug) asm disk configuration
   debug:
     msg:
-     - asm_disks {{ asm_disks }}
-     - asm_def_file {{ asm_definition_file }}
-     - asm_disk_input {{ asm_disk_input }}
+      - asm_disks {{ asm_disks }}
+      - asm_def_file {{ asm_definition_file }}
+      - asm_disk_input {{ asm_disk_input }}
   tags: asm-disks
 
 ######## Udev rules for non-multipath disks ########
@@ -375,7 +387,7 @@
   become: yes
   become_user: root
   blockinfile:
-    block: "SUBSYSTEM==\"block\" ACTION==\"add|change\", ENV{ID_SERIAL_SHORT}==\"{{ item.key }}\", SYMLINK+=\"{{ path_udev }}/{{ uuid_result_nonmultipath[item.key] | json_query ('[*].name') | list | join(', ') }}\", GROUP=\"{{ grid_group }}\", OWNER=\"{{ grid_user }}\", MODE=\"0660\""
+    block: 'SUBSYSTEM=="block" ACTION=="add|change", ENV{ID_SERIAL_SHORT}=="{{ item.key }}", SYMLINK+="{{ path_udev }}/{{ uuid_result_nonmultipath[item.key] | json_query (''[*].name'') | list | join('', '') }}", GROUP="{{ grid_group }}", OWNER="{{ grid_user }}", MODE="0660"'
     path: "/etc/udev/rules.d/99-oracle-asmdevices.rules"
     marker: "# {mark} ASM disk udev rules for {{ uuid_result_nonmultipath[item.key] | json_query ('[*].blk_device') | list | join(', ') }}"
     create: yes
@@ -420,7 +432,7 @@
   become: yes
   become_user: root
   blockinfile:
-    block: "SUBSYSTEM==\"block\" ACTION==\"add|change\", ENV{DM_UUID}==\"{{ item.key }}\", SYMLINK+=\"{{ path_udev }}/{{ uuid_result[item.key] | json_query ('[*].name') | list | join(', ') }}\", GROUP=\"{{ grid_group }}\", OWNER=\"{{ grid_user }}\", MODE=\"0660\""
+    block: 'SUBSYSTEM=="block" ACTION=="add|change", ENV{DM_UUID}=="{{ item.key }}", SYMLINK+="{{ path_udev }}/{{ uuid_result[item.key] | json_query (''[*].name'') | list | join('', '') }}", GROUP="{{ grid_group }}", OWNER="{{ grid_user }}", MODE="0660"'
     path: "/etc/udev/rules.d/99-oracle-asmdevices.rules"
     marker: "# {mark} ASM disk udev rules for {{ uuid_result[item.key] | json_query ('[*].blk_device') | list | join(', ') }}"
     create: yes
@@ -504,8 +516,8 @@
 - name: (asmlib) ASM listing results
   debug:
     msg:
-    - "{{ item.stderr_lines }}"
-    - "{{ item.stdout_lines }}"
+      - "{{ item.stderr_lines }}"
+      - "{{ item.stdout_lines }}"
   with_items:
     - "{{ asmconfig }}"
     - "{{ listdisks }}"

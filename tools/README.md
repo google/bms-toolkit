@@ -31,5 +31,5 @@ Add the following to the appropriate sections of roles/common/defaults/main.yml:
 
 ### Known issues
 
-* Only tested against 12.2, 18c, and 19c patches.
-* No support for multi-file patches.
+- Only tested against 12.2, 18c, and 19c patches.
+- No support for multi-file patches.

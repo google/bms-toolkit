@@ -15,10 +15,10 @@
 ---
 
 # Variables used by more than one role
-oracle_ver_dir: "{{ oracle_ver [:6] }}"
+oracle_ver_dir: "{% if oracle_edition != 'FREE' %}{{ oracle_ver [:6] }}{% else %}{% if oracle_ver[:4] == '23.2' or oracle_ver[:4] == '23.3' %}23c{% else %}{{ oracle_ver[:2] }}ai{% endif %}{% endif %}"
 oracle_inventory: "{{ oracle_root }}/oraInventory"
-oracle_base: "{{ oracle_root }}/oracle"
-oracle_home: "{{ oracle_root }}/oracle/product/{{ oracle_ver_dir }}/{{ home_name }}"
+oracle_base: "{% if oracle_edition != 'FREE' %}{{ oracle_root }}/oracle{% else %}/opt/oracle{% endif %}"
+oracle_home: "{{ oracle_base }}/product/{{ oracle_ver_dir }}/{{ home_name }}"
 grid_home: "{{ oracle_root }}/{{ oracle_ver_dir }}/grid"
 grid_base: "{{ oracle_root }}/grid"
 
@@ -69,6 +69,8 @@ oracle_dirs:
   - { name: "{{ oracle_inventory }}", owner: "{{ grid_user }}", group: "{{ oracle_group }}", mode: "ug=rwx,o=rx" }
   - { name: "{{ oracle_home }}", owner: "{{ oracle_user }}", group: "{{ oracle_group }}", mode: "ug=rwx,o=rx" }
   - { name: "/home/{{ oracle_user }}/.ansible/tmp", owner: "{{ oracle_user }}", group: "{{ oracle_group }}", mode: "ug=rwx,o=rx" }
+
+grid_dirs:
   - { name: "{{ grid_home }}", owner: "{{ grid_user }}", group: "{{ oracle_group }}", mode: "ug=rwx,o=rx" }
   - { name: "/home/{{ grid_user }}/.ansible/tmp", owner: "{{ grid_user }}", group: "{{ oracle_group }}", mode: "ug=rwx,o=rx" }
 
@@ -152,6 +154,71 @@ gi_software:
       - "BM7zeZHbGPgZD31KGbJpEg=="
 
 rdbms_software:
+  - name: 23aiFREE_23_6
+    version: 23.6.0.24.10
+    edition: FREE
+    files:
+      - "oracle-database-preinstall-23ai-1.0-2.el8.x86_64.rpm"
+      - "oracle-database-free-23ai-1.0-1.el8.x86_64.rpm"
+    sha256sum:
+      - "4578e6d1cf566e04541e0216b07a0372725726a7c339423ee560255cb918138b"
+      - "03ae958784e9443c0380e4d387cb0522016c72d029ab85cf55ee124489833e0e"
+    md5sum:
+      - "TmjqUT878Owv7NbXGECpTA=="
+      - "Y70TVN1a7dV6TnNOeN1pYA=="
+
+  - name: 23aiFREE_23_5
+    version: 23.5.0.24.07
+    edition: FREE
+    files:
+      - "oracle-database-preinstall-23ai-1.0-2.el8.x86_64.rpm"
+      - "oracle-database-free-23ai-1.0-1.el8.x86_64.version_23_5.rpm"
+    sha256sum:
+      - "4578e6d1cf566e04541e0216b07a0372725726a7c339423ee560255cb918138b"
+      - "80c1ceae3b158cffe71fa4cfa8e4f540161659f79f777bcf48935f79031c054c"
+    md5sum:
+      - "TmjqUT878Owv7NbXGECpTA=="
+      - "cWcZFOhqt4Bnwt4rft6wpw=="
+
+  - name: 23aiFREE_23_4
+    version: 23.4.0.24.05
+    edition: FREE
+    files:
+      - "oracle-database-preinstall-23ai-1.0-2.el8.x86_64.rpm"
+      - "oracle-database-free-23ai-1.0-1.el8.x86_64.version_23_4.rpm"
+    sha256sum:
+      - "4578e6d1cf566e04541e0216b07a0372725726a7c339423ee560255cb918138b"
+      - "e6cccec7f101325c233f374c2aa86f77d62123edd3125450d79404c3eec30b65"
+    md5sum:
+      - "TmjqUT878Owv7NbXGECpTA=="
+      - "nZiDvGPHVa8iDkR110gB8A=="
+
+  - name: 23cFREE_23_3
+    version: 23.3.0.23.09
+    edition: FREE
+    files:
+      - "oracle-database-preinstall-23c-1.0-1.el8.x86_64.rpm"
+      - "oracle-database-free-23c-1.0-1.el8.x86_64.version_23_3.rpm"
+    sha256sum:
+      - "f41059c22a610a2180cc6286179a7da148bfe14b0d88211f006c9998ce03ba0e"
+      - "1319bcd7cb706cb727501cbd98abf3f3980a4fdabeb613a1abffc756925c7374"
+    md5sum:
+      - "lVoplyvF66eUXign+DuZ8Q=="
+      - "k+q8twMOziARmih9mF79ow=="
+
+  - name: 23cFREE_23_2
+    version: 23.2.0.0.0
+    edition: FREE
+    files:
+      - "oracle-database-preinstall-23c-1.0-1.el8.x86_64.rpm"
+      - "oracle-database-free-23c-1.0-1.el8.x86_64.version_23_2.rpm"
+    sha256sum:
+      - "f41059c22a610a2180cc6286179a7da148bfe14b0d88211f006c9998ce03ba0e"
+      - "63b6c0ec9464682cfd9814e7e2a5d533139e5c6aeb9d3e7997a5f976d6677ca6"
+    md5sum:
+      - "lVoplyvF66eUXign+DuZ8Q=="
+      - "RRinLLsJM2hpuFcE+3zURA=="
+
   - name: 19c_base
     version: 19.3.0.0.0
     edition:

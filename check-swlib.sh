@@ -28,13 +28,13 @@ if [ $? != 4 ]; then
 fi
 
 ORA_VERSION="${ORA_VERSION:-19.3.0.0.0}"
-ORA_VERSION_PARAM='^(19\.3\.0\.0\.0|18\.0\.0\.0\.0|12\.2\.0\.1\.0|12\.1\.0\.2\.0|11\.2\.0\.4\.0)$'
+ORA_VERSION_PARAM='^(23\.[0-9]{1,2}\.[0-9]{1,2}\.[0-9]{1,2}\.[0-9]{1,6}|19\.3\.0\.0\.0|18\.0\.0\.0\.0|12\.2\.0\.1\.0|12\.1\.0\.2\.0|11\.2\.0\.4\.0)$'
 
 ORA_RELEASE="${ORA_RELEASE:-latest}"
 ORA_RELEASE_PARAM="^(base|latest|[0-9]{,2}\.[0-9]{,2}\.[0-9]{,2}\.[0-9]{,2}\.[0-9]{,6})$"
 
 ORA_EDITION="${ORA_EDITION:-EE}"
-ORA_EDITION_PARAM="^(EE|SE|SE2)$"
+ORA_EDITION_PARAM="^(EE|SE|SE2|FREE)$"
 
 ORA_SWLIB_BUCKET="${ORA_SWLIB_BUCKET}"
 ORA_SWLIB_BUCKET_PARAM='^gs://.+[^/]$'
@@ -62,6 +62,11 @@ while true; do
         ;;
     --ora-version)
         ORA_VERSION="$2"
+        if [[ "${ORA_VERSION}" = "23.6" ]] ; then ORA_VERSION="23.6.0.24.10"; fi
+        if [[ "${ORA_VERSION}" = "23.5" ]] ; then ORA_VERSION="23.5.0.24.07"; fi
+        if [[ "${ORA_VERSION}" = "23.4" ]] ; then ORA_VERSION="23.4.0.24.05"; fi
+        if [[ "${ORA_VERSION}" = "23.3" ]] ; then ORA_VERSION="23.3.0.23.09"; fi
+        if [[ "${ORA_VERSION}" = "23.2" ]] ; then ORA_VERSION="23.2.0.0.0"; fi
         if [[ "${ORA_VERSION}" = "19" ]]   ; then ORA_VERSION="19.3.0.0.0"; fi
         if [[ "${ORA_VERSION}" = "18" ]]   ; then ORA_VERSION="18.0.0.0.0"; fi
         if [[ "${ORA_VERSION}" = "12" ]]   ; then ORA_VERSION="12.2.0.1.0"; fi
@@ -112,6 +117,13 @@ done
     echo "Example: gs://my-gcs-bucket"
     exit 1
 }
+
+# Oracle Database free edition parameter overrides
+if [ "${ORA_EDITION}" = "FREE" ]; then
+  if [[ "${ORA_RELEASE}" == "latest" && ! "${ORA_VERSION}" =~ ^23\.[0-9]{1,2} ]]; then
+    ORA_VERSION="23.6.0.24.10"
+  fi
+fi
 
 # Mandatory options
 if [ "${ORA_SWLIB_BUCKET}" = "" ]; then

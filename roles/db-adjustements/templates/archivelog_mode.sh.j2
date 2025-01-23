@@ -1,8 +1,12 @@
 source oraenv <<< {{ oracle_sid }}
 
+{% if groups['dbasm'] | length > 1 %}
 srvctl stop db -d {{ db_name }} -o immediate
+{% else %}
+echo "shutdown immediate" | sqlplus -s -L / as sysdba
+{% endif %}
 
-sqlplus -s / as sysdba << EOF
+sqlplus -s -L / as sysdba << EOF
 startup mount
 alter database archivelog;
 alter database open;

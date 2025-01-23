@@ -36,13 +36,22 @@
       - db-create
       - db-adjustements
       - db-backups
-      - validation-scripts
     loop_control:
       loop_var: role_item
     when:
       - create_db|bool
       - cluster_type != "RAC"
       - lookup('env', 'PRIMARY_IP_ADDR') is not defined or lookup('env', 'PRIMARY_IP_ADDR') | length == 0
+    tags: primary-db
+
+  - include_role:
+      name: validation-scripts
+      tasks_from: main
+    when:
+      - create_db|bool
+      - cluster_type != "RAC"
+      - lookup('env', 'PRIMARY_IP_ADDR') is not defined or lookup('env', 'PRIMARY_IP_ADDR') | length == 0
+      - oracle_edition != 'FREE'
     tags: primary-db
 
   - include_role:
@@ -53,6 +62,7 @@
       - cluster_type != "RAC"
       - lookup('env', 'PRIMARY_IP_ADDR') is defined
       - lookup('env', 'PRIMARY_IP_ADDR') | length > 0
+      - oracle_edition != 'FREE'
     tags: active-duplicate
 
   - include_role:
@@ -60,4 +70,5 @@
       tasks_from: main
     when:
       - cluster_type == "DG"
+      - oracle_edition != 'FREE'
     tags: dg-create

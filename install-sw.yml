@@ -35,6 +35,7 @@
      when:
        - install_gi|bool
        - cluster_type in ("NONE", "DG")
+       - oracle_edition != 'FREE'
   tags: gi-setup
 
 - hosts: dbasm
@@ -54,17 +55,19 @@
        - cluster_type in ("NONE", "DG")
   tags: rdbms-setup
 
-
 - hosts: dbasm
   tasks:
     - name: rac-gi-install | defaults from common
       include_vars:
         dir: roles/common/defaults
+      when:
+        - oracle_edition != 'FREE'
     - name: rac-gi-install | open firewall
       include_role:
         name: rac-lsnr-firewall
       when:
         - cluster_type == "RAC"
+        - oracle_edition != 'FREE'
   tags: lsnr-firewall
 
 - hosts: dbasm
@@ -73,6 +76,8 @@
     - name: rac-gi-install | defaults from common
       include_vars:
         dir: roles/common/defaults
+      when:
+        - oracle_edition != 'FREE'
     - name: rac-gi-install | setup ssh keys
       include_role:
         name: ssh-setup
@@ -82,6 +87,7 @@
         ssh_nodes: "{{ groups['dbasm'] }}"
       when:
         - cluster_type == "RAC"
+        - oracle_edition != 'FREE'
   tags: rac-gi,ssh-keys
 
 - hosts: dbasm[0]
@@ -92,19 +98,22 @@
     - name: rac-gi-install | defaults from common
       include_vars:
         dir: roles/common/defaults
+      when:
+        - oracle_edition != 'FREE'
     - name: rac-gi-install | GI installation
       include_role:
         name: rac-gi-setup
-        #if 11.2 or 12.1 then rac-gi-install-<oracle_ver>.yml otherwise rac-gi-install.yml
+       #if 11.2 or 12.1 then rac-gi-install-<oracle_ver>.yml otherwise rac-gi-install.yml
         tasks_from: rac-gi-install{% if oracle_ver_base in ('11.2','12.1') %}-{{ oracle_ver }}{% endif %}.yml
-        #tasks_from: rac-gi-install.yml
+       #tasks_from: rac-gi-install.yml
         public: yes
       loop:
-        - "{{ gi_software  | json_query('[?version==`' + oracle_ver + '`].files[*]') | join() }}"
+        - "{{ gi_software | default([]) | json_query('[?version==`' + oracle_ver + '`].files[*]') | join() }}"
       loop_control:
         loop_var: osw_files
       when:
         - cluster_type == "RAC"
+        - oracle_edition != 'FREE'
   tags: rac-gi
 
 - hosts: dbasm
@@ -122,6 +131,7 @@
         ssh_nodes: "{{ groups['dbasm'] }}"
       when:
         - cluster_type == "RAC"
+        - oracle_edition != 'FREE'
   tags: rac-db,ssh-keys
 
 - hosts: dbasm[0]
@@ -144,6 +154,7 @@
         loop_var: osw_files
       when:
         - cluster_type == "RAC"
+        - oracle_edition != 'FREE'
   tags: rac-db
 
 - hosts: dbasm
@@ -151,4 +162,6 @@
     - include_role:
         name: patch-vulns
         tasks_from: main
+      when:
+        - oracle_edition != 'FREE'
   tags: patch-vulns

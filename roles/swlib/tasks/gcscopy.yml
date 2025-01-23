@@ -23,14 +23,17 @@
         gsutil cat gs://{{ swlib_mount_src }}/{{ i }} | ssh -i {{ ansible_ssh_private_key_file }} {{ ansible_ssh_extra_args }} \
           {{ ansible_ssh_user }}@{{ ansible_ssh_host }} "cat > {{ swlib_path }}/{{ i }}"
     fi
-        {% endfor %}
+    {% endfor %}
   register: shell_result
   args:
     executable: /bin/bash
   with_items:
     - "{{ gi_software }}"
     - "{{ gi_interim_patches }}"
-  when: item.version == oracle_ver and patch_only is not defined
+  when:
+    - item.version == oracle_ver
+    - patch_only is not defined
+    - oracle_edition != 'FREE'
   changed_when: "'Date    Time    Name' not in shell_result.stdout"
   delegate_to: 127.0.0.1
 
@@ -48,7 +51,9 @@
     executable: /bin/bash
   with_items:
     - "{{ gi_patches }}"
-  when: item.release == oracle_rel
+  when:
+    - item.release == oracle_rel
+    - oracle_edition != 'FREE'
   changed_when: "'Date    Time    Name' not in shell_result.stdout"
   delegate_to: 127.0.0.1
 
@@ -65,7 +70,10 @@
     executable: /bin/bash
   with_items:
     - "{{ opatch_patches }}"
-  when: item.release == oracle_ver and oracle_rel != "base"
+  when:
+    - item.release == oracle_ver
+    - oracle_rel != "base"
+    - oracle_edition != 'FREE'
   changed_when: "'Date    Time    Name' not in shell_result.stdout"
   delegate_to: 127.0.0.1
 
@@ -79,13 +87,16 @@
         gsutil cat gs://{{ swlib_mount_src }}/{{ i }} | ssh -i {{ ansible_ssh_private_key_file }} {{ ansible_ssh_extra_args }} \
           {{ ansible_ssh_user }}@{{ ansible_ssh_host }} "cat > {{ swlib_path }}/{{ i }}"
     fi
-        {% endfor %}
+    {% endfor %}
   register: shell_result
   args:
     executable: /bin/bash
   with_items:
     - "{{ rdbms_software }}"
-  when: item.version == oracle_ver and patch_only is not defined
+  when:
+    - item.version == oracle_ver
+    - patch_only is not defined
+    - oracle_edition != 'FREE'
   changed_when: "'Date    Time    Name' not in shell_result.stdout"
   delegate_to: 127.0.0.1
 
@@ -103,6 +114,30 @@
     executable: /bin/bash
   with_items:
     - "{{ rdbms_patches }}"
-  when: item.release == oracle_rel
+  when:
+    - item.release == oracle_rel
+    - oracle_edition != 'FREE'
   changed_when: "'Date    Time    Name' not in shell_result.stdout"
+  delegate_to: 127.0.0.1
+
+- name: gcscopy | Copy RPM software from GCS to target instance
+  shell: |
+    set -o pipefail
+    {% for i in item.files %}
+    if ! ssh -i {{ ansible_ssh_private_key_file }} {{ ansible_ssh_extra_args }} {{ ansible_ssh_user }}@{{ ansible_ssh_host }} \
+      "rpm -qp {{ swlib_path }}/{{ i }}"
+      then
+        gsutil cat gs://{{ swlib_mount_src }}/{{ i }} | ssh -i {{ ansible_ssh_private_key_file }} {{ ansible_ssh_extra_args }} \
+          {{ ansible_ssh_user }}@{{ ansible_ssh_host }} "cat > {{ swlib_path }}/{{ i }}" && echo "File copied"
+    fi
+    {% endfor %}
+  register: shell_result
+  args:
+    executable: /bin/bash
+  with_items:
+    - "{{ rdbms_software }}"
+  when:
+    - item.version == oracle_ver
+    - oracle_edition == 'FREE'
+  changed_when: "'File copied' in shell_result.stdout"
   delegate_to: 127.0.0.1

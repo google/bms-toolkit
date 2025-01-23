@@ -55,7 +55,7 @@
   when: create_listener
   tags: lsnr-create
 
-- name: Create listener
+- name: Create listener via srvctl
   become: yes
   become_user: "{{ grid_user }}"
   shell: |
@@ -65,7 +65,11 @@
     srvctl config listener -l {{ listener_name }}
     srvctl status listener -l {{ listener_name }}
   register: lsnr_output
-  when: create_listener and lsnr_port_check.stdout == "0" and lsnr_name_check.stdout == "0"
+  when:
+    - create_listener
+    - lsnr_port_check.stdout == "0"
+    - lsnr_name_check.stdout == "0"
+    - oracle_edition != 'FREE'
   tags: lsnr-create
 
 - name: Listener creation output
@@ -74,5 +78,38 @@
       - "{{ lsnr_output.cmd }}"
       - "{{ lsnr_output.stdout_lines }}"
     #verbosity: 1
-  when: create_listener and lsnr_port_check.stdout == "0" and lsnr_name_check.stdout == "0"
+  when: lsnr_output.cmd is defined
+  tags: lsnr-create
+
+- name: Create listener via netca
+  become: yes
+  become_user: "{{ oracle_user }}"
+  shell: |
+    set -o pipefail
+    {{ oracle_home }}/bin/netca                                      \
+      /orahome {{ oracle_home }}                                     \
+      /instype typical                                               \
+      /inscomp client,oraclenet,javavm,server,ano                    \
+      /insprtcl tcp                                                  \
+      /cfg local                                                     \
+      /authadp NO_VALUE                                              \
+      /responseFile {{ oracle_home }}/network/install/netca_typ.rsp  \
+      /silent                                                        \
+      /listenerparameters DEFAULT_SERVICE={{ oracle_sid }}           \
+      /lisport {{ listener_port }}
+  register: lsnr_output_netca
+  when:
+    - create_listener
+    - lsnr_port_check.stdout == "0"
+    - lsnr_name_check.stdout == "0"
+    - oracle_edition == 'FREE'
+  tags: lsnr-create
+
+- name: Listener creation output from netca
+  debug:
+    msg:
+      - "{{ lsnr_output_netca.cmd }}"
+      - "{{ lsnr_output_netca.stdout_lines }}"
+    #verbosity: 1
+  when: lsnr_output_netca.cmd is defined
   tags: lsnr-create

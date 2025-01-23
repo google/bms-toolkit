@@ -165,9 +165,7 @@
     name: "{{ item.group }}"
     gid: "{{ item.gid }}"
     state: present
-  with_items:
-    - "{{ oracle_groups }}"
-    - "{{ asm_groups }}"
+  with_items: "{{ oracle_groups + asm_groups if oracle_edition != 'FREE' else oracle_groups }}"
   tags: os-groups
 
 - name: Add OS users
@@ -187,6 +185,8 @@
   with_items:
     - "{{ asm_groups }}"
     - "{{ extra_asm_groups }}"
+  when:
+    - oracle_edition != 'FREE'
   tags: os-users,os-groups
 
 - name: Add necessary groups to the oracle user
@@ -194,9 +194,7 @@
     name: "{{ oracle_user }}"
     groups: "{{ item.group }}"
     append: yes
-  with_items:
-    - "{{ oracle_groups }}"
-    - "{{ extra_oracle_groups }}"
+  with_items: "{{ oracle_groups + extra_oracle_groups if oracle_edition != 'FREE' else oracle_groups }}"
   tags: os-users,os-groups
 
 - name: Add sysctl entries
@@ -209,8 +207,8 @@
     - "{{ sysctl_entries }}"
   tags: sysctl
 
-# Setting vm.hugetlb_shm_group to the ID of the "oinstall" group to allow its members to create 
-# SysV shared memory segment using hugetlb page. 
+# Setting vm.hugetlb_shm_group to the ID of the "oinstall" group to allow its members to create
+# SysV shared memory segment using hugetlb page.
 # By default only the root user has permissions to create shared memory segments.
 # This is needed to prevent the occurrence of "ORA-27125: unable to create shared memory segment" error.
 - name: Set hugetlb_shm_group to the ID of the oinstall group
@@ -242,7 +240,14 @@
     owner: "{{ item.owner }}"
     group: "{{ item.group }}"
     mode: "{{ item.mode }}"
-  with_items: "{{ oracle_dirs }}"
+  with_items: >
+    {{ oracle_dirs + grid_dirs if oracle_edition != 'FREE'
+       else oracle_dirs +
+       [
+         {'name': data_diskgroup, 'owner': oracle_user, 'group': oracle_group, 'mode': 'u=rwx,g=rx,o='},
+         {'name': reco_diskgroup, 'owner': oracle_user, 'group': oracle_group, 'mode': 'u=rwx,g=rx,o='}
+       ]
+    }}
   tags: os-dirs
 
 - name: Create backup directory
@@ -258,7 +263,8 @@
 - name: Check ASM backup destination
   set_fact:
     dg_exists: "{{ asm_disks | json_query('[?diskgroup==`' + backup_dest[1:] + '`].diskgroup') }}"
-  when: backup_dest[0:1]  == "+"
+  when:
+    - backup_dest[0:1]  == "+"
   tags: backup-dest
 
 - name: Fail if ASM backup diskgroup not defined
@@ -307,12 +313,16 @@
     dest: "/home/{{ grid_user }}/.bash_profile"
     marker: "# {mark} Oracle Grid Infrastructure Settings:"
     backup: yes
-  when: role_separation|bool
+  when:
+    - role_separation|bool
+    - oracle_edition != 'FREE'
   tags: os-users
 
 - name: (asmlib) | ASM device managment via asmlib or udev?
   debug:
     msg: "asm_disk_management is set to {{ asm_disk_management }}"
+  when:
+    - oracle_edition != 'FREE'
   tags: asm-disks
 
 - name: Partition all ASM raw disks
@@ -321,7 +331,9 @@
     number: 1
     state: present
     label: gpt
-  when: "'mapper' not in item.1.blk_device"
+  when:
+    - "'mapper' not in item.1.blk_device"
+    - oracle_edition != 'FREE'
   run_once: true
   with_subelements:
     - "{{ asm_disks }}"
@@ -331,6 +343,8 @@
 - include_role:
     name: common
     tasks_from: populate-asm-disks.yml
+  when:
+    - oracle_edition != 'FREE'
 
 - name: (debug) asm disk configuration
   debug:
@@ -338,6 +352,8 @@
      - asm_disks {{ asm_disks }}
      - asm_def_file {{ asm_definition_file }}
      - asm_disk_input {{ asm_disk_input }}
+  when:
+    - oracle_edition != 'FREE'
   tags: asm-disks
 
 ######## Udev rules for non-multipath disks ########
@@ -350,6 +366,7 @@
   when:
     - asm_disk_management == "udev"
     - "'mapper' not in item.1.blk_device"
+    - oracle_edition != 'FREE'
   with_subelements:
     - "{{ asm_disks }}"
     - disks
@@ -360,6 +377,7 @@
     uuid_result_nonmultipath: []
   when:
     - udevadm_result_nonmultipath.results.0.stdout is defined
+    - oracle_edition != 'FREE'
   tags: udev-mpath
 
 - name: (udev) Add ASM non-multipath disk rules (filling dict)
@@ -367,6 +385,7 @@
     uuid_result_nonmultipath: "{{ uuid_result_nonmultipath | combine({item.stdout: item.item}) }}"
   when:
     - udevadm_result_nonmultipath.results.0.stdout is defined
+    - oracle_edition != 'FREE'
   with_items:
     - "{{ udevadm_result_nonmultipath.results }}"
   tags: udev-mpath
@@ -382,6 +401,7 @@
   register: udevRules_nonmultipath
   when:
     - uuid_result_nonmultipath is defined
+    - oracle_edition != 'FREE'
   with_dict:
     - "{{ uuid_result_nonmultipath }}"
   tags: udev-mpath
@@ -395,6 +415,7 @@
   register: udevadm_result
   when:
     - "'mapper' in item.1.blk_device"
+    - oracle_edition != 'FREE'
   with_subelements:
     - "{{ asm_disks }}"
     - disks
@@ -405,6 +426,7 @@
     uuid_result: []
   when:
     - udevadm_result.results.0.stdout is defined
+    - oracle_edition != 'FREE'
   tags: udev-mpath
 
 - name: (udev) Add ASM mpath disk rules on BM (filling dict)
@@ -412,6 +434,7 @@
     uuid_result: "{{ uuid_result | combine({item.stdout: item.item}) }}"
   when:
     - udevadm_result.results.0.stdout is defined
+    - oracle_edition != 'FREE'
   with_items:
     - "{{ udevadm_result.results }}"
   tags: udev-mpath
@@ -427,6 +450,7 @@
   register: udevRules
   when:
     - uuid_result is defined
+    - oracle_edition != 'FREE'
   with_dict:
     - "{{ uuid_result }}"
   tags: udev-mpath
@@ -435,6 +459,8 @@
   become: yes
   become_user: root
   shell: ( /sbin/udevadm control --reload-rules && /sbin/udevadm trigger && /sbin/partprobe )
+  when:
+    - oracle_edition != 'FREE'
   tags: asm-disks
 
 - name: (asmlib) Install Oracle ASM libraries

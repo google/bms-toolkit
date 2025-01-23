@@ -56,7 +56,10 @@
     dest: "{{ swlib_unzip_path }}/dbca_{{ db_name }}.rsp.sh"
     owner: "{{ oracle_user }}"
     group: "{{ oracle_group }}"
-  when: pmon_proc.stdout == "0" and check_oratab.stdout == "0"
+  when:
+    - pmon_proc.stdout == "0"
+    - check_oratab.stdout == "0"
+    - oracle_edition != 'FREE'
   tags: db-create
 
 - name: Run DBCA response file script
@@ -64,7 +67,10 @@
   become_user: "{{ oracle_user }}"
   command: "sh {{ swlib_unzip_path }}/dbca_{{ db_name }}.rsp.sh"
   register: rspout
-  when: pmon_proc.stdout == "0" and check_oratab.stdout == "0"
+  when:
+    - pmon_proc.stdout == "0"
+    - check_oratab.stdout == "0"
+    - oracle_edition != 'FREE'
   tags: db-create
 
 - name: Script cleanup
@@ -73,13 +79,18 @@
   file:
     path: "{{ swlib_unzip_path }}/dbca_{{ db_name }}.rsp.sh"
     state: absent
+  when:
+    - oracle_edition != 'FREE'
   tags: db-create
 
 - name: DBCA response file differences to template
   debug:
     msg: "{{ rspout.stdout_lines }}"
     verbosity: 1
-  when: pmon_proc.stdout == "0" and check_oratab.stdout == "0"
+  when:
+    - pmon_proc.stdout == "0"
+    - check_oratab.stdout == "0"
+    - oracle_edition != 'FREE'
   tags: db-create
 
 - name: Copy to instance the pwgen.sh script
@@ -88,11 +99,15 @@
     dest: "{{ pwgen_path }}/{{ pwgen_file }}"
     owner: root
     mode: u=rwx,go=rx
+  when:
+    - oracle_edition != 'FREE'
 
 - name: Generate command for password randomization (not 11.2)
   set_fact:
     pwd_gen_cmd: echo -e "$({{ pass_param }})\n$({{ pass_param }})\n$({{ pass_param }})"
-  when: oracle_ver != "11.2.0.4.0"
+  when:
+    - oracle_ver != "11.2.0.4.0"
+    - oracle_edition != 'FREE'
   tags: db-create
 
 - name: Generate command for password randomization (11.2 only)
@@ -103,17 +118,60 @@
 
 - name: Create database using DBCA
   block:
-        - name: Run DBCA
-          become: yes
-          become_user: "{{ oracle_user }}"
-          shell: |
-            set -o pipefail
-            export PATH={{ oracle_home }}/bin:${PATH}
-            {{ pwd_gen_cmd }} | dbca -silent -createDatabase -redoLogFileSize {{ redologsize }} -responseFile {{ swlib_unzip_path }}/dbca_{{ db_name }}.rsp
-          register: dbca_output
-          failed_when: "'Completing Database Creation' not in dbca_output.stdout or '100% complete' not in dbca_output.stdout"
-          when: pmon_proc.stdout == "0" and check_oratab.stdout == "0"
-          tags: db-create
+    - name: Run DBCA using response file
+      become: yes
+      become_user: "{{ oracle_user }}"
+      shell: |
+        set -o pipefail
+        export PATH={{ oracle_home }}/bin:${PATH}
+        {{ pwd_gen_cmd }} | dbca -silent -createDatabase -redoLogFileSize {{ redologsize }} -responseFile {{ swlib_unzip_path }}/dbca_{{ db_name }}.rsp
+      register: dbca_output
+      failed_when: "'Completing Database Creation' not in dbca_output.stdout or '100% complete' not in dbca_output.stdout"
+      when:
+        - pmon_proc.stdout == "0"
+        - check_oratab.stdout == "0"
+        - oracle_edition != 'FREE'
+      tags: db-create
+    - name: Run DBCA with command line arguments
+      become: yes
+      become_user: "{{ oracle_user }}"
+      shell: |
+        set -o pipefail
+        export PATH={{ oracle_home }}/bin:${PATH}
+        dbca -silent                                                               \
+          -createDatabase                                                          \
+          -sid {{ oracle_sid }}                                                    \
+          -gdbName {{ db_name }}.{{ db_domain }}                                   \
+          -templateName FREE_Database.dbc                                          \
+          -characterSet {{ charset }}                                              \
+          -nationalCharacterSet {{ ncharset }}                                     \
+          -createAsContainerDatabase TRUE                                          \
+          -numberOfPDBs {{ pdb_count }}                                            \
+          -pdbName {{ pdb_prefix }}                                                \
+          -pdbAdminPassword $(tr -dc A-Za-z </dev/urandom | head -c 32)            \
+          -databaseType {{ db_type }}                                              \
+          -emConfiguration NONE                                                    \
+          -J-Doracle.assistants.dbca.validate.DBCredentials=false                  \
+          -ignorePrereqs -J-Doracle.assistants.skipAvailableSharedMemoryCheck=true \
+          -skipDatapatch TRUE                                                      \
+          -sampleSchema FALSE                                                      \
+          -initParams sga_target=1600M,pga_aggregate_target=400M,streams_pool_size=64M,use_large_pages=AUTO_ONLY,filesystemio_options=SETALL,diagnostic_dest={{ oracle_base }} \
+          -storageType FS                                                          \
+          -datafileDestination {{ data_diskgroup }}                                \
+          -useOMF TRUE                                                             \
+          -enableArchive FALSE                                                     \
+          -systemPassword $(tr -dc A-Za-z </dev/urandom | head -c 32)              \
+          -sysPassword $(tr -dc A-Za-z </dev/urandom | head -c 32)                 \
+          -recoveryAreaDestination {{ reco_diskgroup }}                            \
+          -recoveryAreaSize {{ recovery_area_size }}                               \
+          -redoLogFileSize {{ redologsize }}
+      register: dbca_output_cl
+      failed_when: "'Completing Database Creation' not in dbca_output_cl.stdout or '100% complete' not in dbca_output_cl.stdout"
+      when:
+        - pmon_proc.stdout == "0"
+        - check_oratab.stdout == "0"
+        - oracle_edition == 'FREE'
+      tags: db-create
   rescue:
     - name: Retrieve DBCA logs
       slurp:
@@ -122,13 +180,32 @@
     - debug:
         msg: "{{ dbcalog['content'] | b64decode }}"
 
-- name: DBCA output
+- name: DBCA output from response file install
   debug:
     msg:
       - "{{ dbca_output.cmd }}"
       - "{{ dbca_output.stdout_lines }}"
     #verbosity: 1
-  when: pmon_proc.stdout == "0" and check_oratab.stdout == "0"
+  when: dbca_output.cmd is defined
+  tags: db-create
+
+- name: DBCA output from command line install
+  debug:
+    msg:
+      - "{{ dbca_output_cl.cmd }}"
+      - "{{ dbca_output_cl.stdout_lines }}"
+    #verbosity: 1
+  when: dbca_output_cl.cmd is defined
+  tags: db-create
+
+- name: Enable service for FREE edition
+  systemd:
+    state: started
+    enabled: true
+    daemon_reload: true
+    name: "{{ systemd_service_name }}"
+  when:
+    - oracle_edition == 'FREE'
   tags: db-create
 
 - name: Save PDBs state

@@ -1,17 +1,17 @@
-Role Name
-=========
+# Role Name
 
-Ansible Role: hugepages 
+Ansible Role: hugepages
 
 Enable Huge Pages on Linux for oracle purposes
 
-For calculation of the hugepages usualy the math goes like this:
+For calculation of the hugepages usually the math goes like this:
 
+```
 X = grep Hugepagesize /proc/meminfo => (the default value is 2048KB = 2MB)
-Y = all client SGAs in MB  =>  (we usualy take 70% of the overall RAM since sometimes we can not plan ahead how much SGA would be required for the database but in any case we usually don't go higher then 70% of the overall RAM )
-Z = #Huge Pages needed = Y / X 
+Y = all client SGAs in MB => (we usually take 70% of the overall RAM since sometimes we can not plan ahead how much SGA would be required for the database but in any case we usually don't go higher then 70% of the overall RAM )
+Z = #Huge Pages needed = Y / X
 
-Also since database SGA size is tightly related with SHMMAX and SHMALL kernel parameters values the ansible hugepages role sets shmmax, shmall, shmmni and hugepages as bundle.  
+Also since database SGA size is tightly related with SHMMAX and SHMALL kernel parameters values the ansible hugepages role sets shmmax, shmall, shmmni and hugepages as bundle.
 
 kernel.shmmax=70% of RAM memory in Bytes
 kernel.shmall= kernel.shmmax / kernel.shmmni
@@ -21,7 +21,7 @@ Also the oracle memlock limit is set to unlimited (both: soft and hard) as per t
 The algorithm used in the ansible hugepages role is the following:
 
 if shmmax is not set in sysctl.conf
-then 
+then
         set shmmax=70% of the RAM
         set shmmni= take the value from memory (usually the default is 4096)
         set shmall=shmmax/shmmni
@@ -29,7 +29,7 @@ then
          reload sysctl
 else
       if shmmax < 70% of the RAM
-      then 
+      then
             set shmmax=70% of the RAM
             set shmmni= take the value from memory (usually the default is 4096)
             set shmall=shmmax/shmmni
@@ -48,44 +48,40 @@ else
                    set shmall=shmmax/shmmni
                    set hugepages=shmmax in MB/Hugepagesize in MB
                    reload sysctl
+```
 
-
-Requirements
-------------
+## Requirements
 
 None.
 
-Role Variables
---------------
+## Role Variables
 
 Available variables are listed below, along with default values (see 'defaults/main.yml'):
 
-   Default value for RAM percentage that we are using for shmmax
+Default value for RAM percentage that we are using for shmmax
 
-   ram_pct_used: 70
+```
+ram_pct_used: 70
+```
 
-
-Dependencies
-------------
+## Dependencies
 
 None.
 
-Example Playbook
-----------------
+## Example Playbook
 
-   - hosts: all
-     become: yes
-     roles:
-       - hugepages
+```yaml
+- hosts: all
+  become: yes
+  roles:
+    - hugepages
+```
 
-
-License
--------
+## License
 
 BSD
 
-Author Information
-------------------
+## Author Information
 
 This role was created by Vladimir Naumovski - Oracle Database Consultant @Pythian
-creation date: 07-2017 
+creation date: 07-2017

@@ -1,8 +1,8 @@
 # Oracle Brute Force Clean-up
 
-*Caution - destructive tasks - will permanentally erase software*
+_Caution - destructive tasks - will permanentally erase software_
 
-Role to do a brute force removal of all Oracle software on server.  Run with Oracle/GI services up.
+Role to do a brute force removal of all Oracle software on server. Run with Oracle/GI services up.
 
 Sample execution:
 
@@ -10,8 +10,7 @@ Sample execution:
 ansible-playbook brute-cleanup.yml --extra-vars "oracle_ver=11.2.0.4.0"
 ```
 
+## Items not covered
 
-## Items not covered ##
-
-* Removal of ASMlib packages (if installed)
-* Removal of udev rules (if configured)
+- Removal of ASMlib packages (if installed)
+- Removal of udev rules (if configured)

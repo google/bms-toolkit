@@ -14,10 +14,11 @@ rdbms_patches:
 ```
 
 These metadata numbers can be taken from consulting appropriate MOS Notes, such as:
-* Master Note for Database Proactive Patch Program (Doc ID 888.1)
-* Oracle Database 19c Proactive Patch Information (Doc ID 2521164.1)
-* Database 18c Proactive Patch Information (Doc ID 2369376.1)
-* Database 12.2.0.1 Proactive Patch Information (Doc ID 2285557.1)
+
+- Master Note for Database Proactive Patch Program (Doc ID 888.1)
+- Oracle Database 19c Proactive Patch Information (Doc ID 2521164.1)
+- Database 18c Proactive Patch Information (Doc ID 2369376.1)
+- Database 12.2.0.1 Proactive Patch Information (Doc ID 2285557.1)
 
 The md5sum can be determined by listing the file once in a GCS bucket:
 
@@ -27,6 +28,7 @@ $ gsutil ls -L gs://example-bucket/p32578973_190000_Linux-x86-64.zip | grep md5
 ```
 
 Bearing in mind that the GI RU's patch zipfile contains the patch molecules that go both into the GI_HOME as well as the RDBMS_HOME, the Combo patch of OJVM+GI is self-contained as to the necessary patches needed to patch a given host for a given quarter. For example: the patch zipfile `p31720429_190000_Linux-x86-64.zip` contains the following patch directories:
+
 ```
 ├── 31720429
 │   ├── 31668882  <================ this is the OJVM RU for that quarter
@@ -48,4 +50,5 @@ Bearing in mind that the GI RU's patch zipfile contains the patch molecules that
 └── PatchSearch.xml
 
 ```
+
 Accordingly the patch_subdir values can be edited, as noted in the foregoing.

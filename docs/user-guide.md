@@ -62,10 +62,10 @@ options, and usage scenarios. All commands run from the "control node".
 
 1. Validate media specifying GCS storage bucket and optionally database:
 
-    ```bash
-    ./check-swlib.sh --ora-swlib-bucket gs://[cloud-storage-bucket-name] \
-     --ora-version 19.3.0.0.0
-    ```
+   ```bash
+   ./check-swlib.sh --ora-swlib-bucket gs://[cloud-storage-bucket-name] \
+    --ora-version 19.3.0.0.0
+   ```
 
 1. Validate access to target server (optionally include -i and location of
    private key file):
@@ -106,10 +106,10 @@ Initial steps similar to those of the Single Instance installation.
 
 1. Validate access to target RAC nodes:
 
-    ```bash
-    ssh ${INSTANCE_SSH_USER:-`whoami`}@${INSTANCE_IP_ADDR_NODE_1} sudo -u root hostname
-    ssh ${INSTANCE_SSH_USER:-`whoami`}@${INSTANCE_IP_ADDR_NODE_2} sudo -u root hostname
-    ```
+   ```bash
+   ssh ${INSTANCE_SSH_USER:-`whoami`}@${INSTANCE_IP_ADDR_NODE_1} sudo -u root hostname
+   ssh ${INSTANCE_SSH_USER:-`whoami`}@${INSTANCE_IP_ADDR_NODE_2} sudo -u root hostname
+   ```
 
 1. Review optional toolkit parameters:
 
@@ -136,6 +136,7 @@ The primary database must exist before you can create a standby database.
 When you create the primary database, omit the `--cluster-type` option or set it to `NONE`. To create the primary database, see [Single Instance Deployments section](#command-quick-reference-for-single-instance-deployments).
 
 To create a standby database, add the following options to the command options that you used to create the primary database:
+
 - `--primary-ip-addr ${PRIMARY_IP_ADDR}`
 - `--cluster-type DG`
 
@@ -151,7 +152,6 @@ To create a standby database, add the following options to the command options t
    --primary-ip-addr ${PRIMARY_IP_ADDR} \
    --cluster-type DG
    ```
-
 
 ## Overview
 
@@ -236,7 +236,7 @@ The control node can be any server capable of ssh.
 
 The control node must have the following software installed:
 
-- [Ansible]([https://en.wikipedia.org/wiki/Ansible_(software)](https://en.wikipedia.org/wiki/Ansible_(software)))
+- [Ansible](https://en.wikipedia.org/wiki/Ansible_(software))
   version 2.9 or higher.
 - If you are using a Cloud Storage bucket to stage your Oracle installation
   media, the [Google Cloud SDK](https://cloud.google.com/sdk/docs).
@@ -299,11 +299,11 @@ Cloud](https://edelivery.oracle.com/) site (also known as Oracle "eDelivery"),
 and **patches** that you download from Oracle's [My Oracle
 Support](https://support.oracle.com/) (MOS) site.
 
-You can also download base software from 
-[Oracle Technology Network][https://www.oracle.com/database/technologies/oracle-database-software-downloads.html#db_ee).
+You can also download base software from
+[Oracle Technology Network](https://www.oracle.com/database/technologies/oracle-database-software-downloads.html#db_ee).
 In this case, please rename the downloaded files to the
 [software delivery cloud equivalent](#required-oracle-software---download-summary)
-names, and use `--no-patch` to skip patching.  Note that unpatched software may
+names, and use `--no-patch` to skip patching. Note that unpatched software may
 have known defects and security vulnerabilities.
 
 One key exception: Oracle 11g base software can be downloaded directly from My
@@ -315,7 +315,7 @@ Before you download Oracle software and patches, review and acknowledge Oracle's
 license terms.
 
 Before using the toolkit, download all of the software pieces for your Oracle
-release, including the base release, patchsets, the OPatch utility, and any
+release, including the base release, patch sets, the OPatch utility, and any
 additional patches listed by Oracle (unless using `--no-patch`, at which
 point only the base release is installed).
 
@@ -391,8 +391,6 @@ Support")</th>
 <td>COMBO OF OJVM RU COMPONENT 19.10.0.0.210119 + GI RU 19.10.0.0.210119</td>
 <td>p32126842_190000_Linux-x86-64.zip</td>
 </tr>
-
-
 
 <tr>
 <td></td>
@@ -528,7 +526,7 @@ x86-64</td>
 <td></td>
 <td>Patch - MOS</td>
 <td>COMBO OF OJVM RU COMPONENT 12.2.0.1.211019 + 12.2.0.1.211019 GIOCT2021RU</td>
-<td>p333248546_122010_Linux-x86-64.zip</td>
+<td>p33248546_122010_Linux_Linux-x86-64.zip</td>
 </tr>
 <tr>
 <td></td>
@@ -948,22 +946,22 @@ file:
 
 ```json
 [
-    {
-        "purpose": "software",
-        "blk_device": "/dev/mapper/3600a098038314352502b4f782f446138",
-        "name": "u01",
-        "fstype":"xfs",
-        "mount_point":"/u01",
-        "mount_opts":"nofail"
-    },
-    {
-        "purpose": "diag",
-        "blk_device": "/dev/mapper/3600a098038314352502b4f782f446230",
-        "name": "u02",
-        "fstype":"xfs",
-        "mount_point":"/u02",
-        "mount_opts":"nofail"
-    }
+  {
+    "purpose": "software",
+    "blk_device": "/dev/mapper/3600a098038314352502b4f782f446138",
+    "name": "u01",
+    "fstype": "xfs",
+    "mount_point": "/u01",
+    "mount_opts": "nofail"
+  },
+  {
+    "purpose": "diag",
+    "blk_device": "/dev/mapper/3600a098038314352502b4f782f446230",
+    "name": "u02",
+    "fstype": "xfs",
+    "mount_point": "/u02",
+    "mount_opts": "nofail"
+  }
 ]
 ```
 
@@ -974,7 +972,7 @@ names, and the associated block devices (the actual devices, not partitions) in
 valid JSON format.
 
 When you run the toolkit, specify the path to the configuration file by using
-either the  `--ora-asm-disks` command line option or the `ORA_ASM_DISKS`
+either the `--ora-asm-disks` command line option or the `ORA_ASM_DISKS`
 environment variable. The file path can be relative or fully qualified. The file
 name defaults to `ask_disk_config.json`.
 
@@ -982,23 +980,26 @@ The following example shows a properly formatted JSON ASM disk group
 configuration file:
 
 ```json
-[{
-  "diskgroup": "DATA",
-  "disks": [
-    { "name": "DATA_1234567538", "blk_device": "/dev/mapper/3600a098038314344382b4f1234567538" },
-    { "name": "DATA_123456752D", "blk_device": "/dev/mapper/3600a098038314344382b4f123456752d" },
-    { "name": "DATA_1234567541", "blk_device": "/dev/mapper/3600a098038314344382b4f1234567541" },
-    { "name": "DATA_1234567542", "blk_device": "/dev/mapper/3600a098038314344382b4f1234567542" },
-    { "name": "DATA_1234567543", "blk_device": "/dev/mapper/3600a098038314344382b4f1234567543" },
-    { "name": "DATA_1234567544", "blk_device": "/dev/mapper/3600a098038314344382b4f1234567544" },
-  ]},
- {
-  "diskgroup": "RECO",
-  "disks": [
-    { "name": "RECO_1234567546", "blk_device": "/dev/mapper/3600a098038314344382b4f1234567546" },
-    { "name": "RECO_1234567547", "blk_device": "/dev/mapper/3600a098038314344382b4f1234567547" },
-    { "name": "RECO_1234567548", "blk_device": "/dev/mapper/3600a098038314344382b4f1234567548" },
-  ]}
+[
+  {
+    "diskgroup": "DATA",
+    "disks": [
+      { "name": "DATA_1234567538", "blk_device": "/dev/mapper/3600a098038314344382b4f1234567538" },
+      { "name": "DATA_123456752D", "blk_device": "/dev/mapper/3600a098038314344382b4f123456752d" },
+      { "name": "DATA_1234567541", "blk_device": "/dev/mapper/3600a098038314344382b4f1234567541" },
+      { "name": "DATA_1234567542", "blk_device": "/dev/mapper/3600a098038314344382b4f1234567542" },
+      { "name": "DATA_1234567543", "blk_device": "/dev/mapper/3600a098038314344382b4f1234567543" },
+      { "name": "DATA_1234567544", "blk_device": "/dev/mapper/3600a098038314344382b4f1234567544" }
+    ]
+  },
+  {
+    "diskgroup": "RECO",
+    "disks": [
+      { "name": "RECO_1234567546", "blk_device": "/dev/mapper/3600a098038314344382b4f1234567546" },
+      { "name": "RECO_1234567547", "blk_device": "/dev/mapper/3600a098038314344382b4f1234567547" },
+      { "name": "RECO_1234567548", "blk_device": "/dev/mapper/3600a098038314344382b4f1234567548" }
+    ]
+  }
 ]
 ```
 
@@ -1825,9 +1826,9 @@ instance is created.</td>
 In the following example, environment variables are used to specify the
 following values:
 
--  The IP address of the target instance
--  The Oracle release
--  The database name
+- The IP address of the target instance
+- The Oracle release
+- The database name
 
 For all other parameters, the default values are accepted.
 
@@ -2147,11 +2148,11 @@ You can apply Oracle Release Update (RU) or Patch Set Update (PSU) patches to
 both the Grid Infrastructure and Database homes by using the
 `apply-patch.sh` script of the toolkit.
 
-By default, `install-oracle.sh` updates to the latest available patch.  To
+By default, `install-oracle.sh` updates to the latest available patch. To
 apply a specific patch instead, use the `--no-patch` option in `install-oracle.sh`
-to skip patching at installation time.  After installation is complete,  execute
-`apply-patch.sh` with the `--ora-release` option.  Specify the full release name including
-timestamp;  a list of release names is available in
+to skip patching at installation time. After installation is complete, execute
+`apply-patch.sh` with the `--ora-release` option. Specify the full release name including
+timestamp; a list of release names is available in
 https://github.com/google/bms-toolkit/tree/master/roles/common/defaults/main.yml
 under `gi-patches` and `rdbms-patches`.
 
@@ -2214,6 +2215,7 @@ TASK [patch : Update OPatch in GRID_HOME]
 
 ... output truncated for brevity
 ```
+
 #### A note on patch metadata
 
 See [patching-metadata.md](./patching-metadata.md) for details on
@@ -2306,10 +2308,32 @@ both the GI and RDBMS software:
 
 ```yaml
 gi_patches:
-  - { category: "RU", base: "19.3.0.0.0", release: "19.7.0.0.200414", patchnum: "30783556", patchfile: "p30783556_190000_Linux-x86-64.zip", patch_subdir: "/30899722", prereq_check: FALSE, method: "opatchauto apply", ocm: FALSE, upgrade: FALSE }
+  - {
+      category: "RU",
+      base: "19.3.0.0.0",
+      release: "19.7.0.0.200414",
+      patchnum: "30783556",
+      patchfile: "p30783556_190000_Linux-x86-64.zip",
+      patch_subdir: "/30899722",
+      prereq_check: FALSE,
+      method: "opatchauto apply",
+      ocm: FALSE,
+      upgrade: FALSE,
+    }
 
 rdbms_patches:
-  - { category: "RU_Combo", base: "19.3.0.0.0", release: "19.7.0.0.200414", patchnum: "30783556", patchfile: "p30783556_190000_Linux-x86-64.zip", patch_subdir: "/30805684", prereq_check: TRUE, method: "opatch apply", ocm: FALSE, upgrade: TRUE }
+  - {
+      category: "RU_Combo",
+      base: "19.3.0.0.0",
+      release: "19.7.0.0.200414",
+      patchnum: "30783556",
+      patchfile: "p30783556_190000_Linux-x86-64.zip",
+      patch_subdir: "/30805684",
+      prereq_check: TRUE,
+      method: "opatch apply",
+      ocm: FALSE,
+      upgrade: TRUE,
+    }
 ```
 
 The following example shows the specification of the YAML file by using the
@@ -2368,11 +2392,11 @@ destructive or a brute-force clean-up of Oracle databases, services, and
 software from a specified target database server. A brute-force clean-up takes
 the following actions:
 
--  Kills all running Oracle services.
--  Deconfigures the Oracle Restart software.
--  Removes Oracle related directories and files.
--  Removes Oracle software owner users and groups.
--  Re-initializes ASM storage devices and uninstalls ASMlib if installed.
+- Kills all running Oracle services.
+- Deconfigures the Oracle Restart software.
+- Removes Oracle related directories and files.
+- Removes Oracle software owner users and groups.
+- Re-initializes ASM storage devices and uninstalls ASMlib if installed.
 
 **Important**: a destructive cleanup permanently deletes the databases and any data they
 contain. Any backups that are stored local to the server are also deleted. Backups

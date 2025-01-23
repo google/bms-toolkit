@@ -11,17 +11,18 @@
     "scan_ip3": "10.0.1.258",
     "dg_name": "DG_NAME",
     "nodes": [
-      {  "node_name": "host_name",
-         "host_ip": "10.0.0.256",
-         "vip_name": "host_name-vip",
-         "vip_ip": "192.168.0.256"
+      {
+        "node_name": "host_name",
+        "host_ip": "10.0.0.256",
+        "vip_name": "host_name-vip",
+        "vip_ip": "192.168.0.256"
       },
-      {  "node_name": "host_name",
-         "host_ip": "10.0.0.257",
-         "vip_name": "host_name-vip",
-         "vip_ip": "192.168.0.257"
+      {
+        "node_name": "host_name",
+        "host_ip": "10.0.0.257",
+        "vip_name": "host_name-vip",
+        "vip_ip": "192.168.0.257"
       }
     ]
   }
 ]
-

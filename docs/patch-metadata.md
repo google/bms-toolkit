@@ -1,8 +1,8 @@
-#### A note on patch metadata
+# A note on patch metadata
 
-The patching code derives the patch metadata from the following blocks in the file role/common/default/main.yml:
+The patching code derives the patch metadata from the following blocks in the file `role/common/default/main.yml`:
 
-```
+```yaml
 gi_patches:
 ...
 - { category: "RU", base: "19.3.0.0.0", release: "19.9.0.0.201020", patchnum: "31720429", patchfile: "p31720429_190000_Linux-x86-64.zip", patch_subdir: "/31750108", prereq_check: FALSE, method: "opatchauto apply", ocm: FALSE, upgrade: FALSE, md5sum: "tTZDYSasdnt7lrNJ/MYm1g==" }
@@ -14,15 +14,15 @@ rdbms_patches:
 ```
 
 These metadata numbers can be taken from consulting appropriate MOS Notes, such as:
-
-- Master Note for Database Proactive Patch Program (Doc ID 888.1)
-- Oracle Database 19c Proactive Patch Information (Doc ID 2521164.1)
-- Database 18c Proactive Patch Information (Doc ID 2369376.1)
-- Database 12.2.0.1 Proactive Patch Information (Doc ID 2285557.1)
+- [Assistant: Download Reference for Oracle Database/GI Update, Revision, PSU, SPU(CPU), Bundle Patches, Patchsets and Base Releases (Doc ID 2118136.2)](https://support.oracle.com/epmos/faces/DocContentDisplay?id=2118136.2)
+- [Master Note for Database Proactive Patch Program (Doc ID 888.1)](https://support.oracle.com/epmos/faces/DocContentDisplay?id=888.1)
+- [Oracle Database 19c Proactive Patch Information (Doc ID 2521164.1)](https://support.oracle.com/epmos/faces/DocContentDisplay?id=2521164.1)
+- [Database 18c Proactive Patch Information (Doc ID 2369376.1)](https://support.oracle.com/epmos/faces/DocContentDisplay?id=2369376.1)
+- [Database 12.2.0.1 Proactive Patch Information (Doc ID 2285557.1)](https://support.oracle.com/epmos/faces/DocContentDisplay?id=2285557.1)
 
 The md5sum can be determined by listing the file once in a GCS bucket:
 
-```
+```bash
 $ gsutil ls -L gs://example-bucket/p32578973_190000_Linux-x86-64.zip | grep md5
     Hash (md5):             YLEOruyjCOdDvUOMBUazNQ==
 ```
@@ -50,5 +50,4 @@ Bearing in mind that the GI RU's patch zipfile contains the patch molecules that
 └── PatchSearch.xml
 
 ```
-
-Accordingly the patch_subdir values can be edited, as noted in the foregoing.
+Accordingly the `patch_subdir` values can be edited, as noted in the foregoing.

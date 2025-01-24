@@ -69,8 +69,11 @@
     lock_timeout: 180
     enablerepo: rhui-rhel-7-server-rhui-optional-rpms
   when:
-    - install_os_packages|bool and ansible_distribution == 'RedHat' and ansible_distribution_major_version == '7'
-    - redhat_repo.stat.exists|bool and rh_cloud_repo.stat.exists|bool
+    - install_os_packages | bool
+    - ansible_distribution == 'RedHat'
+    - ansible_distribution_major_version == '7'
+    - redhat_repo.stat.exists | bool
+    - rh_cloud_repo.stat.exists | bool
   tags: os-packages
 
 - name: Install Oracle required packages (base/non-rhui config) for RHEL7
@@ -81,8 +84,10 @@
     enablerepo: rhel-7-server-optional-rpms
   when:
     - rh_cloud_repo is not defined
-    - install_os_packages|bool and ansible_distribution == 'RedHat' and ansible_distribution_major_version == '7'
-    - redhat_repo.stat.exists|bool
+    - install_os_packages | bool
+    - ansible_distribution == 'RedHat'
+    - ansible_distribution_major_version == '7'
+    - redhat_repo.stat.exists | bool
   tags: os-packages
 
 - name: Stat OL7 repo
@@ -99,8 +104,10 @@
     lock_timeout: 180
     enablerepo: ol7_optional_latest
   when:
-    - install_os_packages|bool and ansible_distribution == 'OracleLinux' and ansible_distribution_major_version == '7'
-    - oraclelinux_repo.stat.exists|bool
+    - install_os_packages | bool
+    - ansible_distribution == 'OracleLinux'
+    - ansible_distribution_major_version == '7'
+    - oraclelinux_repo.stat.exists | bool
   tags: os-packages
 
 - name: Stat OL8 repo

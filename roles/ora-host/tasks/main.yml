@@ -96,7 +96,7 @@
 
 - name: Install Oracle required packages (base/non-rhui config) for OEL7
   yum:
-    name: "{{ oracle_required_rpms + oracle19c_specific_rpms if (oracle_ver_base | float) >= 19.3 else oracle_required_rpms }}"
+    name: "{{ oracle_required_rpms }}"
     state: present
     lock_timeout: 180
   when:
@@ -106,7 +106,7 @@
 
 - name: Install Oracle required packages (base/non-rhui config) for RHEL8
   yum:
-    name: "{{ oracle_required_rpms_el8 + oracle19c_specific_rpms if (oracle_ver_base | float) >= 19.3 else oracle_required_rpms_el8 }}"
+    name: "{{ oracle_required_rpms_el8 }}"
     state: present
     lock_timeout: 180
   when:
@@ -116,7 +116,7 @@
 
 - name: Install Oracle required packages (base/non-rhui config) for RHEL9
   yum:
-    name: "{{ oracle_required_rpms_el9 + oracle19c_specific_rpms if (oracle_ver_base | float) >= 19.3 else oracle_required_rpms_el9 }}"
+    name: "{{ oracle_required_rpms_el9 }}"
     state: present
     lock_timeout: 180
   when:
@@ -128,7 +128,7 @@
 
 - name: Install Oracle required packages (base/non-rhui config) for OEL8
   yum:
-    name: "{{ oracle_required_rpms_el8 + oracle19c_specific_rpms if (oracle_ver_base | float) >= 19.3 else oracle_required_rpms_el8 }}"
+    name: "{{ oracle_required_rpms_el8 }}"
     state: present
     lock_timeout: 180
   when:
@@ -138,7 +138,7 @@
 
 - name: Install Oracle required packages (base/non-rhui config) for OEL9
   yum:
-    name: "{{ oracle_required_rpms_el9 + oracle19c_specific_rpms if (oracle_ver_base | float) >= 19.3 else oracle_required_rpms_el9 }}"
+    name: "{{ oracle_required_rpms_el9 }}"
     state: present
     lock_timeout: 180
   when:
@@ -150,7 +150,7 @@
 
 - name: Install Oracle required packages (rhui config)
   yum:
-    name: "{{ oracle_required_rpms + oracle19c_specific_rpms if (oracle_ver_base | float) >= 19.3 else oracle_required_rpms }}"
+    name: "{{ oracle_required_rpms }}"
     state: present
     lock_timeout: 180
     enablerepo: rhui-rhel-7-server-rhui-optional-rpms

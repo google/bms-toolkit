@@ -50,15 +50,15 @@ ORA_DATA_MOUNTS_PARAM="^.+\.json$"
 options=$(getopt --longoptions "$GETOPT_LONG" --options "$GETOPT_SHORT" -- "$@")
 
 [ $? -eq 0 ] || {
-       echo "Invalid options provided: $*"
-       exit 1
+    echo "Invalid options provided: $*"
+    exit 1
 }
 
 eval set -- "$options"
 
 while true; do
     case "$1" in
-    --yes-i-am-sure|-y)
+    --yes-i-am-sure | -y)
         YESIAMSURE=1
         ;;
     --ora-version)
@@ -69,40 +69,40 @@ while true; do
         if [[ ${ORA_VERSION} = "12.2" ]] ; then ORA_VERSION="12.2.0.1.0"; fi
         if [[ ${ORA_VERSION} = "12.1" ]] ; then ORA_VERSION="12.1.0.2.0"; fi
         if [[ ${ORA_VERSION} = "11" ]]   ; then ORA_VERSION="11.2.0.4.0"; fi
-        shift;
+        shift
         ;;
     --inventory-file)
         INVENTORY_FILE="$2"
-        shift;
+        shift
         ;;
     --ora-role-separation)
         ORA_ROLE_SEPARATION="$2"
-        shift;
+        shift
         ;;
     --ora-swlib-path)
         ORA_SWLIB_PATH="$2"
-        shift;
+        shift
         ;;
     --ora-staging)
         ORA_STAGING="$2"
-        shift;
+        shift
         ;;
     --ora-disk-mgmt)
         ORA_DISK_MGMT="$2"
-        shift;
+        shift
         ;;
     --ora-asm-disks)
         ORA_ASM_DISKS="$2"
-        shift;
+        shift
         ;;
     --ora-data-mounts)
         ORA_DATA_MOUNTS="$2"
-        shift;
+        shift
         ;;
-    --help|-h)
-        echo -e "\tUsage: `basename $0` "
-        echo $GETOPT_MANDATORY|sed 's/,/\n/g'|sed 's/:/ <value>/'|sed 's/\(.\+\)/\t  --\1/'
-        echo $GETOPT_OPTIONAL |sed 's/,/\n/g'|sed 's/:/ <value>/'|sed 's/\(.\+\)/\t  [ --\1 ]/'
+    --help | -h)
+        echo -e "\tUsage: $(basename $0) "
+        echo $GETOPT_MANDATORY | sed 's/,/\n/g' | sed 's/:/ <value>/' | sed 's/\(.\+\)/\t  --\1/'
+        echo $GETOPT_OPTIONAL  | sed 's/,/\n/g' | sed 's/:/ <value>/' | sed 's/\(.\+\)/\t  [ --\1 ]/'
         exit 2
         ;;
     --)
@@ -176,38 +176,37 @@ export ORA_STAGING
 export ORA_SWLIB_PATH
 
 echo -e "Running with parameters from command line or environment variables:\n"
-set | egrep '^(ORA_|INVENTORY_)' | grep -v '_PARAM='
+set | grep -E '^(ORA_|INVENTORY_)' | grep -v '_PARAM='
 echo
 
 ANSIBLE_PARAMS="-i ${INVENTORY_FILE}"
 ANSIBLE_EXTRA_PARAMS="${*}"
 
-
 echo "Ansible params: ${ANSIBLE_EXTRA_PARAMS}"
 
 if [ $VALIDATE -eq 1 ]; then
     echo "Exiting because of --validate"
-    exit;
+    exit
 fi
 
 export ANSIBLE_NOCOWS=1
 
 ANSIBLE_PLAYBOOK="ansible-playbook"
-if ! type ansible-playbook > /dev/null 2>&1; then
-  echo "Ansible executable not found in path"
-  exit 3
+if ! type ansible-playbook >/dev/null 2>&1; then
+    echo "Ansible executable not found in path"
+    exit 3
 else
-  echo "Found Ansible: `type ansible-playbook`"
+    echo "Found Ansible: $(type ansible-playbook)"
 fi
 
 # exit on any error from the following scripts
 set -e
 
-for PLAYBOOK in brute-cleanup.yml ; do
+for PLAYBOOK in brute-cleanup.yml; do
     ANSIBLE_COMMAND="${ANSIBLE_PLAYBOOK} ${ANSIBLE_PARAMS} ${ANSIBLE_EXTRA_PARAMS} ${PLAYBOOK}"
     echo
     echo "Running Ansible playbook: ${ANSIBLE_COMMAND}"
-    eval ${ANSIBLE_COMMAND}
+    eval "${ANSIBLE_COMMAND}"
 done
 
-exit 0;
+exit 0

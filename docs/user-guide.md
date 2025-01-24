@@ -86,7 +86,7 @@ options, and usage scenarios. All commands run from the "control node".
    ./install-oracle.sh \
    --ora-swlib-bucket gs://[cloud-storage-bucket-name] \
    --backup-dest "+RECO" \
-   --ora-swlib-path /u02/swlib/ \
+   --ora-swlib-path <location-to-stage-installer-files> \
    --ora-swlib-type gcs \
    --instance-ip-addr ${INSTANCE_IP_ADDR}
    ```
@@ -123,7 +123,7 @@ Initial steps similar to those of the Single Instance installation.
    ./install-oracle.sh \
    --ora-swlib-bucket gs://[cloud-storage-bucket-name] \
    --backup-dest "+RECO" \
-   --ora-swlib-path /u02/swlib/ \
+   --ora-swlib-path <location-to-stage-installer-files> \
    --ora-swlib-type gcs \
    --cluster-type RAC \
    --cluster-config cluster_config.json
@@ -145,7 +145,7 @@ To create a standby database, add the following options to the command options t
    ./install-oracle.sh \
    --ora-swlib-bucket gs://[cloud-storage-bucket-name] \
    --instance-ip-addr ${INSTANCE_IP_ADDR} \
-   --ora-swlib-path /u02/swlib/ \
+   --ora-swlib-path <location-to-stage-installer-files> \
    --backup-dest "+RECO" \
    --ora-swlib-type gcs \
    --primary-ip-addr ${PRIMARY_IP_ADDR} \
@@ -299,7 +299,7 @@ Cloud](https://edelivery.oracle.com/) site (also known as Oracle "eDelivery"),
 and **patches** that you download from Oracle's [My Oracle
 Support](https://support.oracle.com/) (MOS) site.
 
-You can also download base software from 
+You can also download the base software from
 [Oracle Technology Network][https://www.oracle.com/database/technologies/oracle-database-software-downloads.html#db_ee).
 In this case, please rename the downloaded files to the
 [software delivery cloud equivalent](#required-oracle-software---download-summary)
@@ -931,8 +931,11 @@ for the data mount devices and the ASM disk group.
 
 In the data mount configuration file, you specify disk device attributes for:
 
-- Oracle software installation, which is usually mounted at /u01
-- Oracle diagnostic destination, which is usually mounted at /u02
+- Oracle software installation, which is usually mounted at `/u01`
+
+Optionally, you can specify a secondary disk device used for:
+
+- Oracle diagnostic destination, which is usually mounted at `/u0n`, where `n` represents any single digit [2-9] such as `/u02`.
 
 In the configuration file, specify the block devices (actual devices, not
 partitions), the mount point names, the file system types, and the mount options
@@ -945,6 +948,21 @@ fully qualified. The file name defaults to `data_mounts_config.json`.
 
 The following example shows a properly formatted JSON data mount configuration
 file:
+
+```json
+[
+    {
+        "purpose": "software",
+        "blk_device": "/dev/mapper/3600a098038314352502b4f782f446138",
+        "name": "u01",
+        "fstype":"xfs",
+        "mount_point":"/u01",
+        "mount_opts":"nofail"
+    }
+]
+```
+
+If desired, a secondary disk device (often desirable for the diag dest) can also be specified:
 
 ```json
 [
@@ -1051,14 +1069,14 @@ letter "u".
 Following this convention, the toolkit creates the following default file system
 mounts:
 
-- **/u01** - For Oracle software. For example, /u01/app/oracle/product.
+- **/u01** - For Oracle software. For example, `/u01/app/oracle/product`.
 
-- **/u02** - For other Oracle files, including software staging and, optionally, the
-  Oracle Automatic Diagnostic Repository (ADR).
+- **/u0n** - For other Oracle files, including software staging and, optionally, the
+  Oracle Automatic Diagnostic Repository (ADR). Where **_n_** is any number between 2-9, for example `/u02`.
 
 You don't have to use a separate file system, physical device, or logical volume
 for the software staging and other purposes. You can use the single file system,
-/u01, or whatever you choose to call it, if you want to.
+`/u01`, if you prefer.
 
 ### Database backup configuration
 
@@ -1588,15 +1606,23 @@ Specifies a file containing properly formed JSON text.</td>
 <table>
 <thead>
 <tr>
-<th>RMAN backup destination</th>
-<th><p><pre>
+<th>Attribute</th>
+<th>Parameters</th>
+<th>Parameter Values</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>RMAN backup destination</td>
+<td><p><pre>
 BACKUP_DEST
 --backup-dest
-</pre></p></th>
-<th>user defined - no default<br>
-Example: +RECO</th>
-<th>Disk group name or NFS file share location. Can include formatting options,
-such as "/u02/db_backups/ORCL_%I_%T_%s_%p.bak", for example.<br>
+</pre></p></td>
+<td>user defined - no default<br>
+Example: +RECO</td>
+<td>Disk group name or NFS file share location. Can include formatting options,
+such as "/u0n/db_backups/ORCL_%I_%T_%s_%p.bak" (where <b>n</b> is any single digit number).<br>
 <br>
 When writing to a non-ASM disk group location, include a valid RMAN format
 specification to ensure file name uniqueness, such as the example string
@@ -1604,10 +1630,9 @@ shown above.<br>
 <br>
 If you are writing to a local file system, the
 directory does not have to exist, but initial backups will fail if the
-destination is not available or writeable.</th>
+destination is not available or writeable.</td>
 </tr>
-</thead>
-<tbody>
+</tr>
 <tr>
 <td>RMAN full DB backup redundancy</td>
 <td><p><pre>
@@ -2405,8 +2430,8 @@ $ ./cleanup-oracle.sh --ora-version 19 \
 --inventory-file ./inventory_files/inventory_oracledb1_ORCL \
 --yes-i-am-sure \
 --ora-disk-mgmt udev \
---ora-swlib-path /u02/oracle_install \
---ora-staging /u02/oracle_install \
+--ora-swlib-path /u0n/oracle_install \
+--ora-staging /u0n/oracle_install \
 --ora-asm-disks asm_disk_config.json \
 --ora-data-mounts data_mounts_config.json
 

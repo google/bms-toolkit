@@ -28,7 +28,7 @@ PROJECT=$(gcloud config get-value project)   # (-p)       Project name
 #
 # The devices names and sizes we want to create or delete
 #
-declare -A disks=( [u01]=32GB [u02]=32GB [data]=10GB [reco]=12GB [demo]=10GB [swap]=32GB )
+declare -A disks=( [u01]=32GB [data]=10GB [reco]=12GB [demo]=10GB [swap]=32GB )
 #
 # Usage function
 #

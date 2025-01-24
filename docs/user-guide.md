@@ -6,52 +6,55 @@ published: True
 
 ## Table of Contents
 
-- [Command quick reference for single instance deployments](#command-quick-reference-for-single-instance-deployments)
-- [Command quick reference for RAC deployments](#command-quick-reference-for-rac-deployments)
-- [Command quick reference for DR deployments](#command-quick-reference-for-dr-deployments)
-- [Overview](#overview)
-  - [Software Stack](#software-stack)
-  - [Requirements and Prerequisites](#requirements-and-prerequisites)
-    - [Control node requirements](#control-node-requirements)
-    - [Target server requirements](#target-server-requirements)
-- [Installing the toolkit](#installing-the-toolkit)
-- [Downloading and staging the Oracle Software](#downloading-and-staging-the-oracle-software)
-  - [Downloading the Oracle installation software](#downloading-the-oracle-installation-software)
-    - [Downloading Patches from My Oracle Support](#downloading-patches-from-my-oracle-support)
-    - [Required Oracle Software - Download Summary](#required-oracle-software---download-summary)
-  - [Staging the Oracle installation media](#staging-the-oracle-installation-media)
-    - [Cloud Storage bucket](#cloud-storage-bucket)
-    - [Cloud Storage FUSE](#cloud-storage-fuse)
-    - [NFS share](#nfs-share)
-  - [Validating Media](#validating-media)
-- [Prerequisite configuration](#prerequisite-configuration)
-  - [Data mount configuration file](#data-mount-configuration-file)
-  - [ASM disk group configuration file](#asm-disk-group-configuration-file)
-  - [Specifying LVM logical volumes](#specifying-lvm-logical-volumes)
-- [Configuring Installations](#configuring-installations)
-  - [Configuration defaults](#configuration-defaults)
-  - [Oracle User Directories](#oracle-user-directories)
-  - [Database backup configuration](#database-backup-configuration)
-  - [Parameters](#parameters)
-    - [Target environment parameters](#target-environment-parameters)
-    - [Software installation parameters](#software-installation-parameters)
-    - [Storage configuration parameters](#storage-configuration-parameters)
-    - [Database configuration parameters](#database-configuration-parameters)
-    - [RAC configuration parameters](#rac-configuration-parameters)
-    - [Backup configuration parameters](#backup-configuration-parameters)
-    - [Additional operational parameters](#additional-operational-parameters)
-  - [Example Toolkit Execution](#example-toolkit-execution)
-- [Post installation tasks](#post-installation-tasks)
-  - [Reset passwords](#reset-passwords)
-  - [Validate the environment](#validate-the-environment)
-    - [Listing Oracle ASM devices](#listing-oracle-asm-devices)
-    - [Displaying cluster resource status](#displaying-cluster-resource-status)
-    - [Verify an Oracle cluster](#verify-an-oracle-cluster)
-    - [Oracle validation utilities](#oracle-validation-utilities)
-  - [Patching](#patching)
-    - [A note on patch metadata](#a-note-on-patch-metadata)
-  - [Patching RAC databases](#patching-rac-databases)
-  - [Destructive Cleanup](#destructive-cleanup)
+- [Toolkit for Bare Metal Solution: User Guide](#toolkit-for-bare-metal-solution-user-guide)
+  - [Table of Contents](#table-of-contents)
+  - [Command quick reference for single instance deployments](#command-quick-reference-for-single-instance-deployments)
+  - [Command quick reference for RAC deployments](#command-quick-reference-for-rac-deployments)
+  - [Command quick reference for DR deployments](#command-quick-reference-for-dr-deployments)
+  - [Overview](#overview)
+    - [Software Stack](#software-stack)
+    - [Requirements and Prerequisites](#requirements-and-prerequisites)
+      - [Control node requirements](#control-node-requirements)
+      - [Target server requirements](#target-server-requirements)
+  - [Installing the toolkit](#installing-the-toolkit)
+  - [Downloading and staging the Oracle Software](#downloading-and-staging-the-oracle-software)
+    - [Downloading the Oracle installation software](#downloading-the-oracle-installation-software)
+      - [Downloading Patches from My Oracle Support](#downloading-patches-from-my-oracle-support)
+      - [Required Oracle Software - Download Summary](#required-oracle-software---download-summary)
+    - [Staging the Oracle installation media](#staging-the-oracle-installation-media)
+      - [Cloud Storage bucket](#cloud-storage-bucket)
+      - [Cloud Storage FUSE](#cloud-storage-fuse)
+      - [NFS share](#nfs-share)
+    - [Validating Media](#validating-media)
+  - [Prerequisite configuration](#prerequisite-configuration)
+    - [Data mount configuration file](#data-mount-configuration-file)
+    - [ASM disk group configuration file](#asm-disk-group-configuration-file)
+    - [Specifying LVM logical volumes](#specifying-lvm-logical-volumes)
+  - [Configuring Installations](#configuring-installations)
+    - [Configuration defaults](#configuration-defaults)
+    - [Oracle User Directories](#oracle-user-directories)
+    - [Database backup configuration](#database-backup-configuration)
+    - [Parameters](#parameters)
+      - [Target environment parameters](#target-environment-parameters)
+      - [Software installation parameters](#software-installation-parameters)
+      - [Storage configuration parameters](#storage-configuration-parameters)
+      - [Database configuration parameters](#database-configuration-parameters)
+      - [RAC configuration parameters](#rac-configuration-parameters)
+      - [Backup configuration parameters](#backup-configuration-parameters)
+      - [Additional operational parameters](#additional-operational-parameters)
+    - [Example Toolkit Execution](#example-toolkit-execution)
+  - [Post installation tasks](#post-installation-tasks)
+    - [Reset passwords](#reset-passwords)
+    - [Validate the environment](#validate-the-environment)
+      - [Listing Oracle ASM devices](#listing-oracle-asm-devices)
+      - [Displaying cluster resource status](#displaying-cluster-resource-status)
+      - [Verify an Oracle cluster](#verify-an-oracle-cluster)
+      - [Oracle validation utilities](#oracle-validation-utilities)
+    - [Patching](#patching)
+      - [A note on patch metadata](#a-note-on-patch-metadata)
+    - [Patching RAC databases](#patching-rac-databases)
+      - [BMS RAC install with latest RU](#bms-rac-install-with-latest-ru)
+    - [Destructive Cleanup](#destructive-cleanup)
 
 ## Command quick reference for single instance deployments
 
@@ -358,6 +361,24 @@ Support")</th>
 <tr>
 <td></td>
 <td>Patch - MOS</TD>
+<TD>COMBO OF OJVM RU COMPONENT 19.26.0.0.250100 + GI RU 19.26.0.0.250100</td>
+<td>p00000000_190000_Linux-x86-64.zip</td>
+</tr>
+<tr>
+<td></td>
+<td>Patch - MOS</TD>
+<TD>COMBO OF OJVM RU COMPONENT 19.25.0.0.241015 + GI RU 19.25.0.0.241015</td>
+<td>p36866740_190000_Linux-x86-64.zip</td>
+</tr>
+<tr>
+<td></td>
+<td>Patch - MOS</TD>
+<TD>COMBO OF OJVM RU COMPONENT 19.24.0.0.240716 + GI RU 19.24.0.0.240716</td>
+<td>p36522439_190000_Linux-x86-64.zip</td>
+</tr>
+<tr>
+<td></td>
+<td>Patch - MOS</TD>
 <TD>COMBO OF OJVM RU COMPONENT 19.23.0.0.240416 + GI RU 19.23.0.0.240416</td>
 <td>p36209493_190000_Linux-x86-64.zip</td>
 </tr>
@@ -391,7 +412,6 @@ Support")</th>
 <td>COMBO OF OJVM RU COMPONENT 19.10.0.0.210119 + GI RU 19.10.0.0.210119</td>
 <td>p32126842_190000_Linux-x86-64.zip</td>
 </tr>
-
 <tr>
 <td></td>
 <td></td>
@@ -459,7 +479,6 @@ href="https://support.oracle.com/epmos/faces/PatchResultsNDetails?releaseId=6000
 <td>COMBO OF OJVM RU COMPONENT 18.13.0.0.210119 + GI RU 18.13.0.0.210119</td>
 <td>p32126862_180000_Linux-x86-64.zip</td>
 </tr>
-
 <tr>
 <td></td>
 <td></td>
@@ -521,6 +540,12 @@ href="https://support.oracle.com/epmos/faces/PatchResultsNDetails?releaseId=6000
 <td>Oracle Grid Infrastructure 12.2.0.1.0 for Linux x86-64 for Linux
 x86-64</td>
 <td>V840012-01.zip</td>
+</tr>
+<tr>
+<td></td>
+<td>Patch - MOS</td>
+<td>COMBO OF OJVM RU COMPONENT 12.2.0.1.220118 + 12.2.0.1.220118 GIJAN2022RU</td>
+<td>p33559966_122010_Linux-x86-64.zip</td>
 </tr>
 <tr>
 <td></td>
@@ -619,6 +644,24 @@ V77388-01_2of2.zip</td>
 <td>Oracle Grid Infrastructure 12.1.0.2.0 for Linux x86-64</td>
 <td>V46096-01_1of2.zip<br>
 V46096-01_2of2.zip</td>
+</tr>
+<tr>
+<td></td>
+<td>Patch - MOS</td>
+<td>COMBO OF OJVM COMPONENT 12.1.0.2.220719 DB PSU + GIPSU 12.1.0.2.220719</td>
+<td>p34163645_121020_Linux-x86-64.zip</td>
+</tr>
+<tr>
+<td></td>
+<td>Patch - MOS</td>
+<td>COMBO OF OJVM COMPONENT 12.1.0.2.220419 DB PSU + GIPSU 12.1.0.2.220419</td>
+<td>p33859511_121020_Linux-x86-64.zip</td>
+</tr>
+<tr>
+<td></td>
+<td>Patch - MOS</td>
+<td>COMBO OF OJVM COMPONENT 12.1.0.2.220118 DB PSU + GIPSU 12.1.0.2.220118</td>
+<td>p33560011_121020_Linux-x86-64.zip</td>
 </tr>
 <tr>
 <td></td>
@@ -2150,10 +2193,10 @@ both the Grid Infrastructure and Database homes by using the
 
 By default, `install-oracle.sh` updates to the latest available patch. To
 apply a specific patch instead, use the `--no-patch` option in `install-oracle.sh`
-to skip patching at installation time. After installation is complete, execute
-`apply-patch.sh` with the `--ora-release` option. Specify the full release name including
-timestamp; a list of release names is available in
-https://github.com/google/bms-toolkit/tree/master/roles/common/defaults/main.yml
+to skip patching at installation time.  After installation is complete,  execute
+`apply-patch.sh` with the `--ora-release` option.  Specify the full release name including
+timestamp;  a list of release names is available in [roles/common/defaults/main.yml](
+https://github.com/google/bms-toolkit/tree/master/roles/common/defaults/main.yml)
 under `gi-patches` and `rdbms-patches`.
 
 A digest of the required patch files, including checksum hashes is provided in
@@ -2184,13 +2227,13 @@ $ ./apply-patch.sh \
   --ora-swlib-path /u02/oracle_install \
   --ora-staging /u02/oracle_install \
   --ora-version 19.3.0.0.0 \
-  --ora-release 19.6.0.0.200114 \
+  --ora-release 19.25.0.0.241015 \
     --inventory-file inventory_files/inventory_toolkit-db2_ORCL
 
 Running with parameters from command line or environment variables:
 
 ORA_DB_NAME=ORCL
-ORA_RELEASE=19.6.0.0.200114
+ORA_RELEASE=19.25.0.0.241015
 ORA_STAGING=/u02/oracle_install
 ORA_SWLIB_BUCKET=gs://oracle-software
 ORA_SWLIB_PATH=/u02/oracle_install
@@ -2218,7 +2261,7 @@ TASK [patch : Update OPatch in GRID_HOME]
 
 #### A note on patch metadata
 
-See [patching-metadata.md](./patching-metadata.md) for details on
+See [patch-metadata.md](./patch-metadata.md) for details on
 updating quarterly Release Update metadata.
 
 ### Patching RAC databases

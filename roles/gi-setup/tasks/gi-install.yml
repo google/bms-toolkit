@@ -139,7 +139,7 @@
 
 - name: gi-install | Set installer command
   set_fact:
-    installer_command: "{{ installer_command }} -silent -responseFile {{ swlib_unzip_path }}/grid_install.rsp {{ rel_patch|default('') }} {{ mgmt_option|default('') }}"
+    installer_command: "{{ installer_command }} -silent -responseFile {{ swlib_unzip_path }}/grid_install.rsp {{ rel_patch | default('') }} {{ mgmt_option | default('') }}"
   tags: gi-setup
 
 - name: gi-install | Update GI OPatch
@@ -157,18 +157,6 @@
   become_user: "{{ grid_user }}"
   tags: gi-setup,opatch
 
-- name: gi-install | Patch OL8 CVU issue MOS note 2878100.1
-  become: yes
-  become_user: "{{ grid_user }}"
-  lineinfile:
-    path: "{{ install_unzip_path }}/cv/admin/cvu_config"
-    regexp: "^CV_ASSUME_DISTID"
-    line: "CV_ASSUME_DISTID=OEL7.8"
-  when:
-    - ansible_os_family == 'RedHat'
-    - ansible_distribution_major_version >= '8'
-    - oracle_ver_base == '19.3'
-
 - name: gi-install | Information
   debug:
     msg: "Using installer cmd: {{ installer_command }}"
@@ -178,6 +166,12 @@
   become: yes
   become_user: "{{ grid_user }}"
   command: "{{ installer_command }}"
+  environment:
+    CV_ASSUME_DISTID: OEL7
+  when:
+    - ansible_os_family == 'RedHat'
+    - ansible_distribution_major_version >= '8'
+    - (oracle_ver_base | float) <= 19.3
   register: install_grid_software
   failed_when: "('Successfully Setup Software' not in install_grid_software.stdout) or
                 (install_grid_software.rc not in [0,6,250])"
@@ -304,7 +298,7 @@
   register: install_grid_plugins
   when: oracle_ver not in ['11.2.0.4.0','12.1.0.2.0']
   failed_when: "(   ('Successfully Setup Software' not in install_grid_plugins.stdout) or
-                    (install_grid_plugins.rc not in [0,6]) )
-                and
-                ('The Installer has detected that there are no config tools to execute for the specified Oracle home' not in install_grid_plugins.stdout)"
+                    (install_grid_plugins.rc not in [0,6,250]) )
+               and
+               ('The Installer has detected that there are no config tools to execute for the specified Oracle home' not in install_grid_plugins.stdout)"
   tags: gi-setup

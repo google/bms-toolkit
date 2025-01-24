@@ -97,45 +97,39 @@
   become_user: "{{ oracle_user }}"
   tags: rdbms-setup,update-opatch-db
 
-- name: rdbms-install | Patch OL8 CVU issue MOS note 2878100.1
-  become: yes
-  become_user: "{{ oracle_user }}"
-  lineinfile:
-    path: "{{ oracle_home }}/cv/admin/cvu_config"
-    regexp: "^CV_ASSUME_DISTID"
-    line: "CV_ASSUME_DISTID=OEL7.8"
-  when:
-    - ansible_os_family == 'RedHat'
-    - ansible_distribution_major_version >= '8'
-    - oracle_ver_base == '19.3'
-
-- name: rdbms-install | Set installer command
+- name: rdbms-install | Set DB installer command
   set_fact:
-    installer_command: "{{ runinstaller_loc }}/runInstaller -silent -waitforcompletion -responseFile {{ swlib_unzip_path }}/db_install.rsp {{ rel_patch | default('') }} {{ prereq_option }}"
+    db_installer_cmd: "{{ runinstaller_loc }}/runInstaller -silent -waitforcompletion -responseFile {{ swlib_unzip_path }}/db_install.rsp {{ rel_patch | default('') }} {{ prereq_option | default('') }}"
   tags: rdbms-setup
 
 - name: rdbms-install | Information
   debug:
-    msg: "Using installer cmd: {{ installer_command }}"
+    msg: "Using installer cmd: {{ db_installer_cmd }}"
   tags: rdbms-setup
 
-- name: rdbms-install | Run runInstaller
+- name: rdbms-install | Run DB installer
   become: yes
   become_user: "{{ oracle_user }}"
-  command: "{{ installer_command }}"
-  register: install_db_software
-  failed_when: "('Successfully Setup Software' not in install_db_software.stdout) or
-                (install_db_software.rc not in [0,6,250])"
-  tags: rdbms-setup
+  command: "{{ db_installer_cmd }}"
+  environment:
+    CV_ASSUME_DISTID: OEL7
+  when:
+    - ansible_os_family == 'RedHat'
+    - ansible_distribution_major_version >= '8'
+    - (oracle_ver_base | float) <= 19.3
+  register: db_install_result
+  failed_when:
+    - "'Successfully Setup Software' not in db_install_result.stdout"
+    - "db_install_result.rc not in [0,6,250]"
+  tags: rdbms-install
 
 - name: rdbms-install | runInstaller output
   debug:
     msg:
-      - "{{ install_db_software.cmd }}"
-      - "{{ install_db_software.stdout_lines }}"
-    #verbosity: 1
+      - "{{ db_install_result.cmd }}"
+      - "{{ db_install_result.stdout_lines }}"
   tags: rdbms-setup
-
+      
 - name: rdbms-install | Apply one-off and OJVM patches
   become: yes
   become_user: "{{ oracle_user }}"
@@ -166,14 +160,14 @@
   become_user: root
   command: "{{ oracle_base }}/../oraInventory/orainstRoot.sh"
   ignore_errors: yes
-  when: "'skipped' not in install_db_software.stdout"
+  when: "'skipped' not in db_install_result.stdout"
   tags: rdbms-setup
 
 - name: rdbms-install | Run script root.sh
   become: yes
   become_user: root
   command: "{{ oracle_home }}/root.sh"
-  when: "'skipped' not in install_db_software.stdout"
+  when: "'skipped' not in db_install_result.stdout"
   tags: rdbms-setup
 
 - name: rdbms-install | Complete plugin configuration
@@ -183,6 +177,6 @@
   ignore_errors: yes
   register: install_db_plugins
   when: oracle_ver not in ['11.2.0.4.0','12.1.0.2.0']
-  failed_when: "(install_db_plugins.rc not in [0,6]) and
+  failed_when: "(install_db_plugins.rc not in [0,6,250]) and
                 ('The Installer has detected that there are no config tools to execute for the specified Oracle home' not in install_db_plugins.stdout)"
   tags: rdbms-setup

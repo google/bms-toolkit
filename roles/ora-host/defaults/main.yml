@@ -62,6 +62,7 @@ oracle_required_rpms:
   - make
   - mpfr
   - nfs-utils
+  - perl # OS perl is required for OJVM patching as per MOS note 2978451.1
   - psmisc
   - quota
   - quota-nls
@@ -125,7 +126,7 @@ oracle_required_rpms_el8:
   - libnsl
   - libnsl.i686
   - libnsl2
-  - libnsl2.i686  
+  - libnsl2.i686
 
 oracle_required_rpms_el9:
   - bc
@@ -179,7 +180,7 @@ oracle_required_rpms_el9:
   - libnsl
   - libnsl.i686
   - libnsl2
-  - libnsl2.i686  
+  - libnsl2.i686
 
 sysctl_entries:
   - { name: "fs.aio-max-nr", value: "1048576" }

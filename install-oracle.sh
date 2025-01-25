@@ -218,7 +218,7 @@ INSTANCE_HOSTNAME_PARAM="^[a-z0-9]+$"
 INSTANCE_SSH_KEY="${INSTANCE_SSH_KEY:-~/.ssh/id_rsa}"
 INSTANCE_SSH_KEY_PARAM="^.+$"
 
-INSTANCE_SSH_EXTRA_ARGS="${INSTANCE_SSH_EXTRA_ARGS:-'-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o IdentityAgent=no'}"
+INSTANCE_SSH_EXTRA_ARGS="${INSTANCE_SSH_EXTRA_ARGS:-'-o ServerAliveInterval=60 -o ServerAliveCountMax=3 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o IdentityAgent=no'}"
 INSTANCE_SSH_EXTRA_ARGS_PARAM="^/.+$"
 
 NTP_PREF="${NTP_PREF}"

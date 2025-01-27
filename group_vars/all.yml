@@ -126,7 +126,7 @@ run_initial_bu: true
 # Installation options:
 create_db: true
 create_listener: true
-install_gi: true
+install_gi: "{% if oracle_edition == 'FREE' %}false{% else %}true{% endif %}"
 install_rdbms: true
 disable_firewall: false
 

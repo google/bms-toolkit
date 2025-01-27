@@ -33,7 +33,6 @@
   when:
     - item.version == oracle_ver
     - patch_only is not defined
-    - oracle_edition != 'FREE'
   changed_when: "'Date    Time    Name' not in shell_result.stdout"
   delegate_to: 127.0.0.1
 
@@ -53,7 +52,6 @@
     - "{{ gi_patches }}"
   when:
     - item.release == oracle_rel
-    - oracle_edition != 'FREE'
   changed_when: "'Date    Time    Name' not in shell_result.stdout"
   delegate_to: 127.0.0.1
 
@@ -73,7 +71,6 @@
   when:
     - item.release == oracle_ver
     - oracle_rel != "base"
-    - oracle_edition != 'FREE'
   changed_when: "'Date    Time    Name' not in shell_result.stdout"
   delegate_to: 127.0.0.1
 
@@ -116,7 +113,6 @@
     - "{{ rdbms_patches }}"
   when:
     - item.release == oracle_rel
-    - oracle_edition != 'FREE'
   changed_when: "'Date    Time    Name' not in shell_result.stdout"
   delegate_to: 127.0.0.1
 

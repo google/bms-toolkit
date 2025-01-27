@@ -315,7 +315,6 @@
     backup: yes
   when:
     - role_separation|bool
-    - oracle_edition != 'FREE'
   tags: os-users
 
 - name: (asmlib) | ASM device managment via asmlib or udev?
@@ -377,7 +376,6 @@
     uuid_result_nonmultipath: []
   when:
     - udevadm_result_nonmultipath.results.0.stdout is defined
-    - oracle_edition != 'FREE'
   tags: udev-mpath
 
 - name: (udev) Add ASM non-multipath disk rules (filling dict)
@@ -385,7 +383,6 @@
     uuid_result_nonmultipath: "{{ uuid_result_nonmultipath | combine({item.stdout: item.item}) }}"
   when:
     - udevadm_result_nonmultipath.results.0.stdout is defined
-    - oracle_edition != 'FREE'
   with_items:
     - "{{ udevadm_result_nonmultipath.results }}"
   tags: udev-mpath
@@ -401,7 +398,6 @@
   register: udevRules_nonmultipath
   when:
     - uuid_result_nonmultipath is defined
-    - oracle_edition != 'FREE'
   with_dict:
     - "{{ uuid_result_nonmultipath }}"
   tags: udev-mpath
@@ -426,7 +422,6 @@
     uuid_result: []
   when:
     - udevadm_result.results.0.stdout is defined
-    - oracle_edition != 'FREE'
   tags: udev-mpath
 
 - name: (udev) Add ASM mpath disk rules on BM (filling dict)
@@ -434,7 +429,6 @@
     uuid_result: "{{ uuid_result | combine({item.stdout: item.item}) }}"
   when:
     - udevadm_result.results.0.stdout is defined
-    - oracle_edition != 'FREE'
   with_items:
     - "{{ udevadm_result.results }}"
   tags: udev-mpath
@@ -450,7 +444,6 @@
   register: udevRules
   when:
     - uuid_result is defined
-    - oracle_edition != 'FREE'
   with_dict:
     - "{{ uuid_result }}"
   tags: udev-mpath

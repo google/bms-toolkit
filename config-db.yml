@@ -62,7 +62,6 @@
       - cluster_type != "RAC"
       - lookup('env', 'PRIMARY_IP_ADDR') is defined
       - lookup('env', 'PRIMARY_IP_ADDR') | length > 0
-      - oracle_edition != 'FREE'
     tags: active-duplicate
 
   - include_role:
@@ -70,5 +69,4 @@
       tasks_from: main
     when:
       - cluster_type == "DG"
-      - oracle_edition != 'FREE'
     tags: dg-create

@@ -48,7 +48,6 @@
   when:
     - item.base == oracle_ver
     - item.release == oracle_rel
-    - oracle_edition != 'FREE'
   register: patch_repo_files
 
 # We can't reliably check hashes for opatch, as the same file name
@@ -68,7 +67,6 @@
   when:
     - item.release == oracle_ver
     - oracle_rel != "base"
-    - oracle_edition != 'FREE'
   register: opatch_repo_files
 
 - name: check-swlib | Report gsutil failures (base)

@@ -11,7 +11,7 @@ published: True
   - [Command quick reference for single instance deployments](#command-quick-reference-for-single-instance-deployments)
   - [Command quick reference for RAC deployments](#command-quick-reference-for-rac-deployments)
   - [Command quick reference for DR deployments](#command-quick-reference-for-dr-deployments)
-  - [Command quick reference for Oracle Database "Free Edition" deployments](#command-quick-reference-for-oracle-database-free-edition-deployments)
+  - [Command quick reference for Oracle Database Free Edition deployments](#command-quick-reference-for-oracle-database-free-edition-deployments)
   - [Overview](#overview)
     - [Software Stack](#software-stack)
     - [Requirements and Prerequisites](#requirements-and-prerequisites)
@@ -161,11 +161,11 @@ To create a standby database, add the following options to the command options t
    --cluster-type DG
    ```
 
-## Command quick reference for Oracle Database "Free Edition" deployments
+## Command quick reference for Oracle Database Free Edition deployments
 
 The toolkit supports installing the Oracle Database Free edition, which is downloadable from the Oracle website: [Oracle Database Free Get Started](https://www.oracle.com/database/free/get-started/).
 
-Unlike with other Oracle Database editions, the Free edition is available in [RPM package](https://en.wikipedia.org/wiki/RPM_Package_Manager) format only. Consequently, the Enterprise Linux 8 pre-installation and database RPM files must be downloaded and staged in the GCS storage bucket.
+Unlike with other Oracle Database editions, the Free edition is available in [RPM package](https://en.wikipedia.org/wiki/RPM_Package_Manager) format only. Consequently, the associated Enterprise Linux pre-installation and database RPM files must be downloaded and staged in the GCS storage bucket.
 
 1. Validate media specifying GCS storage bucket and specify `FREE` as the database edition:
 

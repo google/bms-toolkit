@@ -705,7 +705,8 @@ shopt -s nocasematch
     exit 1
 }
 
-# Oracle Database free edition parameter overrides
+# Parameter overrides for features that Free Edition does not support
+# (incl. RAC, ASM, role separation, and customized database name)
 if [ "${ORA_EDITION}" = "FREE" ]; then
   CLUSTER_TYPE=NONE
   ORA_DB_NAME=FREE

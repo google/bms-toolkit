@@ -14,6 +14,17 @@
 
 ---
 rdbms_software:
+  - name: 21c_base
+    version: 21.3.0.0.0
+    edition:
+      - EE
+      - SE2
+    files:
+      - "V1011496-01.zip"
+    sha256sum:
+      - "c05d5c32a72b9bf84ab6babb49aee99cbb403930406aabe3cf2f94f1d35e0916"
+    md5sum:
+      - "iskVqACADd8Wo4JQbTlT2w=="
   - name: 19c_base
     version: 19.3.0.0.0
     edition:

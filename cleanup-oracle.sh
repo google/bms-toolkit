@@ -27,7 +27,7 @@ VALIDATE=0
 INVENTORY_FILE="${INVENTORY_FILE:-./inventory_files/inventory}"
 
 ORA_VERSION="${ORA_VERSION}"
-ORA_VERSION_PARAM='^(19\.3\.0\.0\.0|18\.0\.0\.0\.0|12\.2\.0\.1\.0|12\.1\.0\.2\.0|11\.2\.0\.4\.0|ALL)$'
+ORA_VERSION_PARAM='^(21\.3\.0\.0\.0|19\.3\.0\.0\.0|18\.0\.0\.0\.0|12\.2\.0\.1\.0|12\.1\.0\.2\.0|11\.2\.0\.4\.0)$'
 
 ORA_ROLE_SEPARATION="${ORA_ROLE_SEPARATION:-TRUE}"
 ORA_ROLE_SEPARATION_PARAM="^(TRUE|FALSE)$"
@@ -63,6 +63,7 @@ while true; do
         ;;
     --ora-version)
         ORA_VERSION="$2"
+        if [[ ${ORA_VERSION} = "21" ]]   ; then ORA_VERSION="21.3.0.0.0"; fi
         if [[ ${ORA_VERSION} = "19" ]]   ; then ORA_VERSION="19.3.0.0.0"; fi
         if [[ ${ORA_VERSION} = "18" ]]   ; then ORA_VERSION="18.0.0.0.0"; fi
         if [[ ${ORA_VERSION} = "12" ]]   ; then ORA_VERSION="12.2.0.1.0"; fi

@@ -180,6 +180,7 @@ RUs:
 - Oracle 12.2.0.1.0
 - Oracle 18c
 - Oracle 19c
+- Oracle 21c
 
 The toolkit does not include any Oracle software. You must obtain the
 appropriate licenses and download the Oracle software on your own. This guide
@@ -347,6 +348,143 @@ Support")</th>
 </thead>
 <tbody>
 <tr>
+<td>21.3.0.0.0</td>
+<td>Base - eDelivery</td>
+<td>Oracle Database 21.3.0.0.0 for Linux x86-64</td>
+<td>V1011496-01.zip</td>
+</tr>
+<tr>
+<td></td>
+<td>Patch - MOS</td>
+<td>Database Release Update 21.8.0.0.0</td>
+<td>p34527084_210000_Linux-x86-64.zip</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>Database Release Update 21.9.0.0.0</td>
+<td>p34839741_210000_Linux-x86-64.zip</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>Database Release Update 21.10.0.0.0</td>
+<td>p35134934_210000_Linux-x86-64.zip</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>Database Release Update 21.11.0.0.0</td>
+<td>p35428978_210000_Linux-x86-64.zip</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>Database Release Update 21.12.0.0.0</td>
+<td>p35740258_210000_Linux-x86-64.zip</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>Database Release Update 21.13.0.0.0</td>
+<td>p36041222_210000_Linux-x86-64.zip</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>Database Release Update 21.14.0.0.0</td>
+<td>p36352352_210000_Linux-x86-64.zip</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>Database Release Update 21.15.0.0.0</td>
+<td>p36696242_210000_Linux-x86-64.zip</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>Database Release Update 21.16.0.0.0</td>
+<td>p36991631_210000_Linux-x86-64.zip</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>Database Release Update 21.17.0.0.0</td>
+<td>p37350281_210000_Linux-x86-64.zip</td>
+</tr>
+<tr>
+<td></td>
+<td>Oracle Grid Infrastructure 21.3.0.0.0 for Linux x86-64</td>
+<td>V1011504-01.zip</td>
+</tr>
+<tr>
+<td></td>
+<td>Patch - MOS</td>
+<td>GI Release Update 21.8.0.0.0</td>
+<td>p34526142_210000_Linux-x86-64.zip</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>GI Release Update 21.9.0.0.0</td>
+<td>p34838415_210000_Linux-x86-64.zip</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>GI Release Update 21.10.0.0.0</td>
+<td>p35132566_210000_Linux-x86-64.zip</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>GI Release Update 21.11.0.0.0</td>
+<td>p35427907_210000_Linux-x86-64.zip</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>GI Release Update 21.12.0.0.0</td>
+<td>p35738010_210000_Linux-x86-64.zip</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>GI Release Update 21.13.0.0.0</td>
+<td>p36031790_210000_Linux-x86-64.zip</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>GI Release Update 21.14.0.0.0</td>
+<td>p36352207_210000_Linux-x86-64.zip</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>GI Release Update 21.15.0.0.0</td>
+<td>p36696109_210000_Linux-x86-64.zip</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>GI Release Update 21.16.0.0.0</td>
+<td>p36990664_210000_Linux-x86-64.zip</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>GI Release Update 21.17.0.0.0</td>
+<td>p37349593_210000_Linux-x86-64.zip</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>OPatch Utility</td>
+<td><a href="https://updates.oracle.com/download/6880880.html"> p6880880_122010_Linux-x86-64.zip</a></td>
+</tr>
+<tr>
 <td>19.3.0.0.0</td>
 <td>Base - eDelivery</td>
 <td>Oracle Database 19.3.0.0.0 for Linux x86-64</td>
@@ -384,25 +522,25 @@ Support")</th>
 </tr>
 <tr>
 <td></td>
-<td>Patch - MOS</TD>
+<td></TD>
 <TD>COMBO OF OJVM RU COMPONENT 19.22.0.0.240116 + GI RU 19.22.0.0.240116</td>
 <td>p36031453_190000_Linux-x86-64.zip</td>
 </tr>
 <tr>
 <td></td>
-<td>Patch - MOS</TD>
+<td></TD>
 <TD>COMBO OF OJVM RU COMPONENT 19.21.0.0.231017 + GI RU 19.21.0.0.231017</td>
 <td>p35742441_190000_Linux-x86-64.zip</td>
 </tr>
 <tr>
 <td></td>
-<td>Patch - MOS</TD>
+<td></TD>
 <TD>COMBO OF OJVM RU COMPONENT 19.13.0.0.211019 + GI RU 19.13.0.0.211019</td>
 <td>p33248471_190000_Linux-x86-64.zip</td>
 </tr>
 <tr>
 <td></td>
-<td>Patch - MOS</td>
+<td></td>
 <td>COMBO OF OJVM RU COMPONENT 19.11.0.0.210420 + GI RU 19.11.0.0.210420</td>
 <td>p32578973_190000_Linux-x86-64.zip</td>
 </tr>
@@ -555,7 +693,7 @@ x86-64</td>
 </tr>
 <tr>
 <td></td>
-<td>Patch - MOS</td>
+<td></td>
 <td>COMBO OF OJVM RU COMPONENT 12.2.0.1.210420 + 12.2.0.1.210420 GIAPR2021RU</td>
 <td>p32579057_122010_Linux-x86-64.zip</td>
 </tr>
@@ -671,7 +809,7 @@ V46096-01_2of2.zip</td>
 </tr>
 <tr>
 <td></td>
-<td>Patch - MOS</td>
+<td></td>
 <td>COMBO OF OJVM COMPONENT 12.1.0.2.201020 DB PSU + GIPSU 12.1.0.2.201020</td>
 <td>p31720761_121020_Linux-x86-64.zip</td>
 </tr>
@@ -752,7 +890,7 @@ href="https://support.oracle.com/epmos/faces/PatchResultsNDetails?releaseId=8011
 </tr>
 <tr>
 <td></td>
-<td>Patch - MOS</td>
+<td></td>
 <td>Combo of OJVM Component 11.2.0.4.201020 DB PSU + GI PSU 11.2.0.4.201020</td>
 <td>p31720783_112040_Linux-x86-64.zip</td>
 </tr>

@@ -133,7 +133,7 @@
       - "{{ db_install_result.cmd }}"
       - "{{ db_install_result.stdout_lines }}"
   tags: rdbms-setup
-      
+
 - name: rdbms-install | Apply one-off and OJVM patches
   become: yes
   become_user: "{{ oracle_user }}"

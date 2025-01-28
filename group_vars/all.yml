@@ -82,6 +82,7 @@ asm_disk_management: "{{ lookup('env','ORA_DISK_MGMT')|lower|default('udev',true
 role_separation: "{{ lookup('env','ORA_ROLE_SEPARATION')|lower|default('true',true) }}"
 data_diskgroup: "{{ lookup('env','ORA_DATA_DISKGROUP')|default('DATA',true) }}"
 reco_diskgroup: "{{ lookup('env','ORA_RECO_DISKGROUP')|default('RECO',true) }}"
+use_omf: true  # Used for file system storage (currently applicable only for Free Edition)
 
 # Listener related variables:
 listener_port: "{{ lookup('env','ORA_LISTENER_PORT')|default('1521',true) }}"

@@ -13,6 +13,4 @@
 # limitations under the License.
 
 ---
-
-recovery_area_size: 16384
-systemd_service_name: "{% if oracle_edition == 'FREE' %}{% if oracle_ver[:4] == '23.2' or oracle_ver[:4] == '23.3' %}oracle-free-23c.service{% else %}oracle-free-{{ oracle_ver[:2] }}ai.service{% endif %}{% endif %}"
+dbca_extra_args: "{% if free_edition %}-skipDatapatch TRUE -useOMF {{ use_omf }} -recoveryAreaSize 1638{% endif %}"

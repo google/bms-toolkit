@@ -74,6 +74,10 @@ grid_dirs:
   - { name: "{{ grid_home }}", owner: "{{ grid_user }}", group: "{{ oracle_group }}", mode: "ug=rwx,o=rx" }
   - { name: "/home/{{ grid_user }}/.ansible/tmp", owner: "{{ grid_user }}", group: "{{ oracle_group }}", mode: "ug=rwx,o=rx" }
 
+fs_dirs:
+  - { name: "{{ data_diskgroup }}", owner: "{{ oracle_user }}", group: "{{ oracle_group }}", mode: "u=rwx,g=rx,o=" }
+  - { name: "{{ reco_diskgroup }}", owner: "{{ oracle_user }}", group: "{{ oracle_group }}", mode: "u=rwx,g=rx,o=" }
+
 pwgen_file: pwgen.sh
 pwgen_path: /usr/local/bin
 pass_param: "{{pwgen_path}}/{{pwgen_file}} 16"
@@ -89,6 +93,10 @@ diskgroup_compatible_rdbms: "{# assign to variable c compatible parameter and se
                             {% endif %}"
 
 run_cluvfy: false
+
+# Systemd service name used with Free Edition
+free_edition_name: "{% if free_edition %}{% if oracle_ver[:4] == '23.2' or oracle_ver[:4] == '23.3' %}23c{% else %}{{ oracle_ver[:2] }}ai{% endif %}{% endif %}"
+systemd_service_name: "{% if free_edition %}oracle-free-{{ free_edition_name }}.service{% endif %}"
 
 # ignorance of prerequisites depending on version
 prereq_option: "{% if oracle_ver_base in ('11.2', '12.1') %}-ignorePrereq{% else %}-ignorePrereqFailure{% endif %}"

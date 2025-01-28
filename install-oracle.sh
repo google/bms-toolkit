@@ -470,7 +470,7 @@ while true; do
     export ANSIBLE_DEBUG=1
     export ANSIBLE_DISPLAY_SKIPPED_HOSTS=true
     ;;
-    --allow-install-on-vm)
+  --allow-install-on-vm)
     ANSIBLE_PARAMS="${ANSIBLE_PARAMS} -e allow_install_on_vm=true"
     ;;
   --skip-database-config)

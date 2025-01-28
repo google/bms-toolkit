@@ -239,7 +239,7 @@
     owner: "{{ item.owner }}"
     group: "{{ item.group }}"
     mode: "{{ item.mode }}"
-  with_items: "{{ oracle_dirs + fs_dirs if free_edition else oracle_dirs + grid_dirs }}" # TODO
+  with_items: "{{ oracle_dirs + fs_dirs if free_edition else oracle_dirs + grid_dirs }}"
   tags: os-dirs
 
 - name: Create backup directory

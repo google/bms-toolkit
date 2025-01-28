@@ -93,7 +93,7 @@
   when:
     - item.version == oracle_ver
     - patch_only is not defined
-    - oracle_edition != 'FREE'
+    - not free_edition
   changed_when: "'Date    Time    Name' not in shell_result.stdout"
   delegate_to: 127.0.0.1
 
@@ -134,6 +134,6 @@
     - "{{ rdbms_software }}"
   when:
     - item.version == oracle_ver
-    - oracle_edition == 'FREE'
+    - free_edition
   changed_when: "'File copied' in shell_result.stdout"
   delegate_to: 127.0.0.1

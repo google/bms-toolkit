@@ -14,6 +14,9 @@
 
 ---
 
+# Defined boolean if installing Free Edition
+free_edition: "{{ oracle_edition == 'FREE' }}"
+
 # Installation related variables:
 swlib_path: "{{ lookup('env','ORA_SWLIB_PATH')|lower|default(swlib_path_default,true) }}"
 swlib_unzip_path: "{{ lookup('env','ORA_STAGING')|lower|default(swlib_path,true) }}"
@@ -44,7 +47,7 @@ asm_disks_default:
     blk_device: /dev/BOGUS
 asm_definition_file: "{{ lookup('env','ORA_ASM_DISKS')|default('asm_disk_config.json',true) }}"
 asm_disk_input: "{{ lookup('file',asm_definition_file,errors='ignore') }}"
-asm_disks: "{{ asm_disk_input | default(asm_disks_default,true) }}"
+asm_disks: "{% if free_edition %}[]{% else %}{{ asm_disk_input | default(asm_disks_default,true) }}{% endif %}"
 
 ## The toolkit can optionally configure swap space
 #If your RAM size is less than or equal to 2 GB, your swap size should be 1.5 times of the RAM. For example, if your RAM size is 2 GB, you should create swap space of 3GB
@@ -118,7 +121,7 @@ oracle_group: oinstall
 grid_user: "{% if role_separation|bool %}grid{% else %}{{ oracle_user }}{% endif %}"
 grid_group: asmadmin
 oracle_root: "/u01/app"
-home_name: "{% if oracle_edition != 'FREE' %}dbhome_1{% else %}dbhomeFree{% endif %}"
+home_name: "{% if free_edition %}dbhomeFree{% else %}dbhome_1{% endif %}"
 oracle_sid: "{% if db_config_type == 'SI' %}{{ db_name }}{% else %}{{ db_name }}{{ instance_num }}{% endif %}"
 asm_sid: "{% if db_config_type == 'SI' %}+ASM{% else %}+ASM{{ instance_num }}{% endif %}"
 run_initial_bu: true
@@ -126,7 +129,7 @@ run_initial_bu: true
 # Installation options:
 create_db: true
 create_listener: true
-install_gi: "{% if oracle_edition == 'FREE' %}false{% else %}true{% endif %}"
+install_gi: "{% if free_edition %}false{% else %}true{% endif %}"
 install_rdbms: true
 disable_firewall: false
 

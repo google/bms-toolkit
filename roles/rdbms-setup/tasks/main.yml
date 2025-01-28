@@ -49,7 +49,7 @@
     - existing_dbhome.stdout == "0"
     - osw.version == oracle_ver
     - oracle_edition in osw.edition
-    - oracle_edition != 'FREE'
+    - not free_edition
   tags: rdbms-setup
 
 - include_tasks: rdbms-rpm-install.yml
@@ -61,7 +61,7 @@
     - existing_dbhome.stdout == "0"
     - osw.version == oracle_ver
     - oracle_edition in osw.edition
-    - oracle_edition == 'FREE'
+    - free_edition
   tags: rdbms-setup
 
 - name: Create sqlnet.ora file

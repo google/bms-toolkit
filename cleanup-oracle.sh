@@ -47,10 +47,10 @@ ORA_ASM_DISKS_PARAM="^.+\.json$"
 ORA_DATA_MOUNTS="${ORA_DATA_MOUNTS:-data_mounts_config.json}"
 ORA_DATA_MOUNTS_PARAM="^.+\.json$"
 
-options=$(getopt --longoptions "$GETOPT_LONG" --options "$GETOPT_SHORT" -- "$@")
+options="$(getopt --longoptions "$GETOPT_LONG" --options "$GETOPT_SHORT" -- "$@")"
 
 [ $? -eq 0 ] || {
-    echo "Invalid options provided: $*"
+    echo "Invalid options provided: $@" >&2
     exit 1
 }
 
@@ -100,9 +100,9 @@ while true; do
         shift
         ;;
     --help | -h)
-        echo -e "\tUsage: $(basename $0) "
-        echo $GETOPT_MANDATORY | sed 's/,/\n/g' | sed 's/:/ <value>/' | sed 's/\(.\+\)/\t  --\1/'
-        echo $GETOPT_OPTIONAL  | sed 's/,/\n/g' | sed 's/:/ <value>/' | sed 's/\(.\+\)/\t  [ --\1 ]/'
+        echo -e "\tUsage: $(basename $0)" >&2
+        echo "${GETOPT_MANDATORY}" | sed 's/,/\n/g' | sed 's/:/ <value>/' | sed 's/\(.\+\)/\t --\1/'
+        echo "${GETOPT_OPTIONAL}"  | sed 's/,/\n/g' | sed 's/:/ <value>/' | sed 's/\(.\+\)/\t [ --\1 ]/'
         exit 2
         ;;
     --)

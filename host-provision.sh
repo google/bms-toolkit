@@ -20,7 +20,7 @@ echo
 shopt -s nocasematch
 
 # Check if we're using the Mac stock getopt and fail if true
-out=$(getopt -T)
+out="$(getopt -T)"
 if [ $? != 4 ]; then
     echo -e "Your getopt does not support long parameters, possibly you're on a Mac, if so please install gnu-getopt with brew"
     echo -e "\thttps://brewformulas.org/Gnu-getopt"
@@ -34,10 +34,10 @@ GETOPT_SHORT="h"
 
 INSTANCE_SSH_USER="${INSTANCE_SSH_USER:-'ansible'}"
 
-options=$(getopt --longoptions "$GETOPT_LONG" --options "$GETOPT_SHORT" -- "$@")
+options="$(getopt --longoptions "$GETOPT_LONG" --options "$GETOPT_SHORT" -- "$@")"
 
 [ $? -eq 0 ] || {
-    echo "Invalid options provided: $*"
+    echo "Invalid options provided: $@" >&2
     exit 1
 }
 
@@ -64,9 +64,9 @@ while true; do
         shift
         ;;
     --help | -h)
-        echo -e "\tUsage: $(basename $0)"
-        echo $GETOPT_MANDATORY | sed 's/,/\n/g' | sed 's/:/ <value>/' | sed 's/\(.\+\)/\t  --\1/'
-        echo $GETOPT_OPTIONAL  | sed 's/,/\n/g' | sed 's/:/ <value>/' | sed 's/\(.\+\)/\t  [ --\1 ]/'
+        echo -e "\tUsage: $(basename $0)" >&2
+        echo "${GETOPT_MANDATORY}" | sed 's/,/\n/g' | sed 's/:/ <value>/' | sed 's/\(.\+\)/\t --\1/'
+        echo "${GETOPT_OPTIONAL}"  | sed 's/,/\n/g' | sed 's/:/ <value>/' | sed 's/\(.\+\)/\t [ --\1 ]/'
         exit 2
         ;;
     --)

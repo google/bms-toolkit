@@ -18,7 +18,7 @@ echo "$0 $@"
 echo
 
 # Check if we're using the Mac stock getopt and fail if true
-out=$(getopt -T)
+out="$(getopt -T)"
 if [ $? != 4 ]; then
     echo -e "Your getopt does not support long parametrs, possibly you're on a Mac, if so please install gnu-getopt with brew"
     echo -e "\thttps://brewformulas.org/Gnu-getopt"
@@ -59,10 +59,10 @@ GETOPT_SHORT="h"
 
 VALIDATE=0
 
-options=$(getopt --longoptions "$GETOPT_LONG" --options "$GETOPT_SHORT" -- "$@")
+options="$(getopt --longoptions "$GETOPT_LONG" --options "$GETOPT_SHORT" -- "$@")"
 
 [ $? -eq 0 ] || {
-    echo "Invalid options provided: $*"
+    echo "Invalid options provided: $@" >&2
     exit 1
 }
 
@@ -108,9 +108,9 @@ while true; do
         VALIDATE=1
         ;;
     --help | -h)
-        echo -e "\tUsage: $(basename $0) "
-        echo $GETOPT_MANDATORY | sed 's/,/\n/g' | sed 's/:/ <value>/' | sed 's/\(.\+\)/\t --\1/'
-        echo $GETOPT_OPTIONAL  | sed 's/,/\n/g' | sed 's/:/ <value>/' | sed 's/\(.\+\)/\t [ --\1 ]/'
+        echo -e "\tUsage: $(basename $0)" >&2
+        echo "${GETOPT_MANDATORY}" | sed 's/,/\n/g' | sed 's/:/ <value>/' | sed 's/\(.\+\)/\t --\1/'
+        echo "${GETOPT_OPTIONAL}"  | sed 's/,/\n/g' | sed 's/:/ <value>/' | sed 's/\(.\+\)/\t [ --\1 ]/'
         echo -e "\t -- [parameters sent to ansible]"
         exit 2
         ;;
@@ -186,7 +186,7 @@ set | grep -E '^(ORA_|BACKUP_|ARCHIVE_)' | grep -v '_PARAM='
 echo
 
 ANSIBLE_PARAMS="-i ${INVENTORY_FILE} "
-ANSIBLE_PARAMS=${ANSIBLE_PARAMS}" $*"
+ANSIBLE_PARAMS="${ANSIBLE_PARAMS} $@"
 
 echo "Ansible params: ${ANSIBLE_PARAMS}"
 

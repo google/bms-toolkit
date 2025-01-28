@@ -13,11 +13,9 @@
 # limitations under the License.
 
 ---
-scripts_all_editions: []
-
-scripts_commercial_editions:
+cluster_scripts:
   - asm_disks.sh
   - crs_check.sh
   - cluvfy_checks.sh
 
-scripts_free_editions: []
+common_scripts: []

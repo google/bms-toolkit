@@ -259,11 +259,7 @@ while true; do
   case "$1" in
   --ora-version)
     ORA_VERSION="$2"
-    if [[ "${ORA_VERSION}" = "23.6" ]] ; then ORA_VERSION="23.6.0.24.10"; fi
-    if [[ "${ORA_VERSION}" = "23.5" ]] ; then ORA_VERSION="23.5.0.24.07"; fi
-    if [[ "${ORA_VERSION}" = "23.4" ]] ; then ORA_VERSION="23.4.0.24.05"; fi
-    if [[ "${ORA_VERSION}" = "23.3" ]] ; then ORA_VERSION="23.3.0.23.09"; fi
-    if [[ "${ORA_VERSION}" = "23.2" ]] ; then ORA_VERSION="23.2.0.0.0"; fi
+    if [[ "${ORA_VERSION}" = "23" ]]   ; then ORA_VERSION="23.0.0.0.0"; fi
     if [[ "${ORA_VERSION}" = "19" ]]   ; then ORA_VERSION="19.3.0.0.0"; fi
     if [[ "${ORA_VERSION}" = "18" ]]   ; then ORA_VERSION="18.0.0.0.0"; fi
     if [[ "${ORA_VERSION}" = "12" ]]   ; then ORA_VERSION="12.2.0.1.0"; fi
@@ -712,8 +708,8 @@ if [ "${ORA_EDITION}" = "FREE" ]; then
   ORA_DB_NAME=FREE
   ORA_DISK_MGMT=UDEV
   ORA_ROLE_SEPARATION=FALSE
-  if [[ "${ORA_RELEASE}" == "latest" && ! "${ORA_VERSION}" =~ ^23\.[0-9]{1,2} ]]; then
-    ORA_VERSION="23.6.0.24.10"
+  if [[ ! "${ORA_VERSION}" =~ ^23\. ]]; then
+    ORA_VERSION="23.0.0.0.0"
   fi
   [[ ! "${ORA_DATA_DISKGROUP}" =~ ^(/([^/]+))*/?$ ]] && ORA_DATA_DISKGROUP="/u02/oradata" || true
   [[ ! "${ORA_RECO_DISKGROUP}" =~ ^(/([^/]+))*/?$ ]] && ORA_RECO_DISKGROUP="/opt/oracle/fast_recovery_area" || true

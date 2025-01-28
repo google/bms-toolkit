@@ -172,15 +172,22 @@
     msg: "Using installer cmd: {{ installer_command }}"
   tags: rac-gi,rac-gi-install
 
+
+- name: rac-gi-install | Set CV_ASSUME_DISTID to OEL7 when installing on RHEL8 (MOS Note: 2878100.1)
+  set_fact:
+    cv_distid: "{{ 'OEL7' if ansible_os_family == 'RedHat'
+                           and (ansible_distribution_major_version | int) >= 8
+                           and (oracle_ver_base | float) <= 19.3
+                           else '' }}"
+  tags: rac-gi,rac-gi-install
+
 - name: rac-gi-install | Run installer
   command: "{{ installer_command }}"
   become: yes
   become_user: "{{ grid_user }}"
   register: install_rac_gi
   environment: 
-    CV_ASSUME_DISTID: OEL7  
-  when:
-    - (oracle_ver_base | float) <= 19.3
+    CV_ASSUME_DISTID: "{{ cv_distid }}"
   failed_when:
     - "'Successfully Setup Software' not in install_rac_gi.stdout"
     - "install_rac_gi.rc not in [0,6,250]"

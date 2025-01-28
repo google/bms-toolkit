@@ -107,16 +107,20 @@
     msg: "Using installer cmd: {{ db_installer_cmd }}"
   tags: rdbms-setup
 
+- name: rdbms-install | Set CV_ASSUME_DISTID to OEL7 when installing on RHEL8 (MOS Note: 2878100.1)
+  set_fact:
+    cv_distid: "{{ 'OEL7' if ansible_os_family == 'RedHat'
+                           and (ansible_distribution_major_version | int) >= 8
+                           and (oracle_ver_base | float) <= 19.3
+                           else '' }}"
+  tags: rdbms-setup
+
 - name: rdbms-install | Run DB installer
   become: yes
   become_user: "{{ oracle_user }}"
   command: "{{ db_installer_cmd }}"
   environment:
-    CV_ASSUME_DISTID: OEL7
-  when:
-    - ansible_os_family == 'RedHat'
-    - ansible_distribution_major_version >= '8'
-    - (oracle_ver_base | float) <= 19.3
+    CV_ASSUME_DISTID: "{{ cv_distid }}"
   register: db_install_result
   failed_when:
     - "'Successfully Setup Software' not in db_install_result.stdout"

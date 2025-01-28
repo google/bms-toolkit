@@ -121,16 +121,20 @@
     msg: "Using installer cmd: {{ installer_command }}"
   tags: rac-db,rac-db-install
 
+- name: rac-db-install | Set CV_ASSUME_DISTID to OEL7 when installing on RHEL8 (MOS Note: 2878100.1)
+  set_fact:
+    cv_distid: "{{ 'OEL7' if ansible_os_family == 'RedHat'
+                           and (ansible_distribution_major_version | int) >= 8
+                           and (oracle_ver_base | float) <= 19.3
+                           else '' }}"
+  tags: rac-db-setup
+
 - name: rac-db-install | Run runInstaller
   command: "{{ installer_command }}"
   become: yes
   become_user: "{{ oracle_user }}"
   environment:
-    CV_ASSUME_DISTID: OEL7
-  when:
-    - ansible_os_family == 'RedHat'
-    - ansible_distribution_major_version >= '8'
-    - (oracle_ver_base | float) <= 19.3
+    CV_ASSUME_DISTID: "{{ cv_distid }}"
   register: install_rac_db
   failed_when:
     - "'Successfully Setup Software' not in install_rac_db.stdout"

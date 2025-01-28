@@ -1,8 +1,14 @@
 source oraenv <<< {{ oracle_sid }}
 
-srvctl stop db -d {{ db_name }} -o immediate
+srvctl_status="$(srvctl status database -d {{ db_name }})"
 
-sqlplus -s / as sysdba << EOF
+if [[ "${srvctl_status}" == "Database is running." ]]; then
+  srvctl stop db -d {{ db_name }} -o immediate
+else
+  echo "shutdown immediate" | sqlplus -s -L / as sysdba
+fi
+
+sqlplus -s -L / as sysdba << EOF
 startup mount
 alter database archivelog;
 alter database open;

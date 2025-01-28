@@ -45,6 +45,7 @@ if [[ $backup_dest == "/"* ]]; then
   # Filesystem destination
   autobackup_format="${backup_dest}/${ora_inst_name}_%F"
   channel_format="${backup_dest}/${ora_inst_name}_${type}_level_${rman_level}_%U"
+  reco_diskgroup="${reco_diskgroup#+}"
 else
   # ASM destination;  no need for format specifiers
   autobackup_format="${backup_dest}"

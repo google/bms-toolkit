@@ -29,8 +29,3 @@ Sample brute force clean-up for Free Edition using the included shell script:
   --inventory-file inventory_files/inventory_10.2.80.54_FREE \
   --yes-i-am-sure
 ```
-
-## Items not covered
-
-- Removal of ASMlib packages (if installed)
-- Removal of udev rules (if configured)

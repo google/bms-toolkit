@@ -18,7 +18,7 @@ echo "$0 $@"
 echo
 
 GETOPT_MANDATORY="ora-version:,inventory-file:,yes-i-am-sure"
-GETOPT_OPTIONAL="ora-role-separation:,ora-disk-mgmt:,ora-swlib-path:,ora-staging:,ora-asm-disks:,ora-data-mounts:,help"
+GETOPT_OPTIONAL="ora-edition:,ora-role-separation:,ora-disk-mgmt:,ora-swlib-path:,ora-staging:,ora-asm-disks:,ora-data-mounts:,help"
 GETOPT_LONG="${GETOPT_MANDATORY},${GETOPT_OPTIONAL}"
 GETOPT_SHORT="yh"
 
@@ -27,7 +27,10 @@ VALIDATE=0
 INVENTORY_FILE="${INVENTORY_FILE:-./inventory_files/inventory}"
 
 ORA_VERSION="${ORA_VERSION}"
-ORA_VERSION_PARAM='^(19\.3\.0\.0\.0|18\.0\.0\.0\.0|12\.2\.0\.1\.0|12\.1\.0\.2\.0|11\.2\.0\.4\.0|ALL)$'
+ORA_VERSION_PARAM='^(23\.[0-9]{1,2}\.[0-9]{1,2}\.[0-9]{1,2}\.[0-9]{1,6}|21\.3\.0\.0\.0|19\.3\.0\.0\.0|18\.0\.0\.0\.0|12\.2\.0\.1\.0|12\.1\.0\.2\.0|11\.2\.0\.4\.0)$'
+
+ORA_EDITION="${ORA_EDITION:-EE}"
+ORA_EDITION_PARAM="^(EE|SE|SE2|FREE)$"
 
 ORA_ROLE_SEPARATION="${ORA_ROLE_SEPARATION:-TRUE}"
 ORA_ROLE_SEPARATION_PARAM="^(TRUE|FALSE)$"
@@ -63,6 +66,7 @@ while true; do
         ;;
     --ora-version)
         ORA_VERSION="$2"
+        if [[ ${ORA_VERSION} = "23" ]]   ; then ORA_VERSION="23.0.0.0.0"; fi
         if [[ ${ORA_VERSION} = "19" ]]   ; then ORA_VERSION="19.3.0.0.0"; fi
         if [[ ${ORA_VERSION} = "18" ]]   ; then ORA_VERSION="18.0.0.0.0"; fi
         if [[ ${ORA_VERSION} = "12" ]]   ; then ORA_VERSION="12.2.0.1.0"; fi
@@ -70,6 +74,10 @@ while true; do
         if [[ ${ORA_VERSION} = "12.1" ]] ; then ORA_VERSION="12.1.0.2.0"; fi
         if [[ ${ORA_VERSION} = "11" ]]   ; then ORA_VERSION="11.2.0.4.0"; fi
         shift;
+        ;;
+    --ora-edition)
+        ORA_EDITION="$(echo "$2" | tr '[:lower:]' '[:upper:]')"
+        shift
         ;;
     --inventory-file)
         INVENTORY_FILE="$2"
@@ -119,9 +127,14 @@ done
 
 shopt -s nocasematch
 
+# Oracle Database free edition parameter overrides
+if [[ "${ORA_EDITION}" = "FREE" && ! "${ORA_VERSION}" =~ ^23\. ]]; then
+    ORA_VERSION="23.0.0.0.0"
+fi
+
 # Mandatory options
 if [ "${ORA_VERSION}" = "" ]; then
-    echo "Please specify the oracle release with --ora-version"
+    echo "Please specify the oracle version with --ora-version"
     exit 2
 fi
 
@@ -137,6 +150,10 @@ fi
 
 [[ ! "$ORA_VERSION" =~ $ORA_VERSION_PARAM ]] && {
     echo "Incorrect parameter provided for ora-version: $ORA_VERSION"
+    exit 1
+}
+[[ ! "$ORA_EDITION" =~ $ORA_EDITION_PARAM ]] && {
+    echo "Incorrect parameter provided for ora-edition: $ORA_EDITION"
     exit 1
 }
 [[ ! "$ORA_ROLE_SEPARATION" =~ $ORA_ROLE_SEPARATION_PARAM ]] && {
@@ -169,6 +186,7 @@ ORA_SWLIB_PATH=${ORA_SWLIB_PATH%/}
 
 export ORA_ROLE_SEPARATION
 export ORA_VERSION
+export ORA_EDITION
 export ORA_DISK_MGMT
 export ORA_ASM_DISKS
 export ORA_DATA_MOUNTS

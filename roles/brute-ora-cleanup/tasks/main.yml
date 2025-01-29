@@ -201,7 +201,7 @@
     - /grid/bin
     - /grid/jdk
     - "-u {{ oracle_user }}"
-    - "{% if free_edition %}[]{% else %}-u {{ grid_user }}{% endif %}"
+    - "{% if role_separation | bool %}-u {{ grid_user }}{% else %}[]{% endif %}"
   ignore_errors: true
   register: kill_procs
   changed_when: kill_procs.rc == 0
@@ -229,7 +229,7 @@
     - /grid/bin
     - /grid/jdk
     - "-u {{ oracle_user }}"
-    - "{% if free_edition %}[]{% else %}-u {{ grid_user }}{% endif %}"
+    - "{% if role_separation | bool %}-u {{ grid_user }}{% else %}[]{% endif %}"
   ignore_errors: true
   register: kill_procs
   changed_when: kill_procs.rc == 0

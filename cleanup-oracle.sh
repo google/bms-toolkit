@@ -127,9 +127,11 @@ done
 
 shopt -s nocasematch
 
-# Oracle Database free edition parameter overrides
-if [[ "${ORA_EDITION}" = "FREE" && ! "${ORA_VERSION}" =~ ^23\. ]]; then
-    ORA_VERSION="23.0.0.0.0"
+# Parameter defaults and changes required for Free Edition
+# (including unsupported features such as role_separation)
+if [[ "${ORA_EDITION}" = "FREE" ]]; then
+    ORA_ROLE_SEPARATION=FALSE
+    [[ ! "${ORA_VERSION}" =~ ^23\. ]] && ORA_VERSION="23.0.0.0.0"
 fi
 
 # Mandatory options

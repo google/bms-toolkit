@@ -83,19 +83,19 @@ shopt -s nocasematch
 # Check if we're using the Mac stock getopt and fail if true
 out=`getopt -T`
 if [ $? != 4 ]; then
-  echo -e "Your getopt does not support long parametrs, possibly you're on a Mac, if so please install gnu-getopt with brew"
+  echo -e "Your getopt does not support long parameters, possibly you're on a Mac, if so please install gnu-getopt with brew"
   echo -e "\thttps://brewformulas.org/Gnu-getopt"
   exit
 fi
 
 ORA_VERSION="${ORA_VERSION:-19.3.0.0.0}"
-ORA_VERSION_PARAM='^(21\.3\.0\.0\.0|19\.3\.0\.0\.0|18\.0\.0\.0\.0|12\.2\.0\.1\.0|12\.1\.0\.2\.0|11\.2\.0\.4\.0)$'
+ORA_VERSION_PARAM='^(23\.[0-9]{1,2}\.[0-9]{1,2}\.[0-9]{1,2}\.[0-9]{1,6}|21\.3\.0\.0\.0|19\.3\.0\.0\.0|18\.0\.0\.0\.0|12\.2\.0\.1\.0|12\.1\.0\.2\.0|11\.2\.0\.4\.0)$'
 
 ORA_RELEASE="${ORA_RELEASE:-latest}"
 ORA_RELEASE_PARAM="^(base|latest|[0-9]{,2}\.[0-9]{,2}\.[0-9]{,2}\.[0-9]{,2}\.[0-9]{,6})$"
 
 ORA_EDITION="${ORA_EDITION:-EE}"
-ORA_EDITION_PARAM="^(EE|SE|SE2)$"
+ORA_EDITION_PARAM="^(EE|SE|SE2|FREE)$"
 
 CLUSTER_TYPE="${CLUSTER_TYPE:-NONE}"
 CLUSTER_TYPE_PARAM="NONE|RAC|DG"
@@ -259,6 +259,7 @@ while true; do
   case "$1" in
   --ora-version)
     ORA_VERSION="$2"
+    if [[ "${ORA_VERSION}" = "23" ]]   ; then ORA_VERSION="23.0.0.0.0"; fi
     if [[ "${ORA_VERSION}" = "21" ]]   ; then ORA_VERSION="21.3.0.0.0"; fi
     if [[ "${ORA_VERSION}" = "19" ]]   ; then ORA_VERSION="19.3.0.0.0"; fi
     if [[ "${ORA_VERSION}" = "18" ]]   ; then ORA_VERSION="18.0.0.0.0"; fi
@@ -700,6 +701,24 @@ shopt -s nocasematch
     echo "Incorrect parameter provided for compatible-rdbms: $COMPATIBLE_RDBMS"
     exit 1
 }
+
+# Parameter overrides for features that Free Edition does not support
+# (incl. RAC, ASM, role separation, and customized database name)
+if [ "${ORA_EDITION}" = "FREE" ]; then
+  CLUSTER_TYPE=NONE
+  ORA_DB_NAME=FREE
+  ORA_DISK_MGMT=UDEV
+  ORA_ROLE_SEPARATION=FALSE
+  if [[ ! "${ORA_VERSION}" =~ ^23\. ]]; then
+    ORA_VERSION="23.0.0.0.0"
+  fi
+  [[ ! "${ORA_DATA_DISKGROUP}" =~ ^(/([^/]+))*/?$ ]] && ORA_DATA_DISKGROUP="/u02/oradata" || true
+  [[ ! "${ORA_RECO_DISKGROUP}" =~ ^(/([^/]+))*/?$ ]] && ORA_RECO_DISKGROUP="/opt/oracle/fast_recovery_area" || true
+  if (( ORA_PDB_COUNT > 16 )); then
+    echo "WARNING: Maximum number of PDBs for this edition is 16: Reducing from ${ORA_PDB_COUNT} to 16"
+    ORA_PDB_COUNT=16
+  fi
+fi
 
 if [[ "${skip_compatible_rdbms}" != "true" ]]; then
   #

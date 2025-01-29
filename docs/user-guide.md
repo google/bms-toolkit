@@ -11,6 +11,7 @@ published: True
   - [Command quick reference for single instance deployments](#command-quick-reference-for-single-instance-deployments)
   - [Command quick reference for RAC deployments](#command-quick-reference-for-rac-deployments)
   - [Command quick reference for DR deployments](#command-quick-reference-for-dr-deployments)
+  - [Command quick reference for Oracle Database Free Edition deployments](#command-quick-reference-for-oracle-database-free-edition-deployments)
   - [Overview](#overview)
     - [Software Stack](#software-stack)
     - [Requirements and Prerequisites](#requirements-and-prerequisites)
@@ -42,7 +43,11 @@ published: True
       - [RAC configuration parameters](#rac-configuration-parameters)
       - [Backup configuration parameters](#backup-configuration-parameters)
       - [Additional operational parameters](#additional-operational-parameters)
-    - [Example Toolkit Execution](#example-toolkit-execution)
+  - [Example Toolkit Execution](#example-toolkit-execution)
+  - [Oracle Database Free Edition Specific Details and Changes](#oracle-database-free-edition-specific-details-and-changes)
+    - [Free Edition Version Details](#free-edition-version-details)
+    - [Sample Invocations for Oracle Database Free Edition](#sample-invocations-for-oracle-database-free-edition)
+    - [Example Toolkit Execution for Free Edition](#example-toolkit-execution-for-free-edition)
   - [Post installation tasks](#post-installation-tasks)
     - [Reset passwords](#reset-passwords)
     - [Validate the environment](#validate-the-environment)
@@ -156,6 +161,42 @@ To create a standby database, add the following options to the command options t
    --cluster-type DG
    ```
 
+## Command quick reference for Oracle Database Free Edition deployments
+
+The toolkit supports installing the Oracle Database Free edition, which is downloadable from the Oracle website: [Oracle Database Free Get Started](https://www.oracle.com/database/free/get-started/).
+
+Unlike with other Oracle Database editions, the Free edition is available in [RPM package](https://en.wikipedia.org/wiki/RPM_Package_Manager) format only. Consequently, the associated Enterprise Linux pre-installation and database RPM files must be downloaded and staged in the GCS storage bucket.
+
+1. Validate media specifying GCS storage bucket and specify `FREE` as the database edition:
+
+   ```bash
+   ./check-swlib.sh --ora-swlib-bucket gs://[cloud-storage-bucket-name] \
+    --ora-edition FREE
+   ```
+
+1. Validate access to target server (optionally include -i and location of
+   private key file):
+
+   ```bash
+   ssh ${INSTANCE_SSH_USER:-`whoami`}@${INSTANCE_IP_ADDR} sudo -u root hostname
+   ```
+
+1. Review toolkit parameters:
+
+   ```bash
+   ./install-oracle.sh --help
+   ```
+
+1. Run an installation:
+
+   ```bash
+   ./install-oracle.sh \
+   --ora-edition FREE \
+   --ora-swlib-bucket gs://[cloud-storage-bucket-name] \
+   --backup-dest [backup-directory] \
+   --instance-ip-addr ${INSTANCE_IP_ADDR}
+   ```
+
 ## Overview
 
 The Implementation Toolkit for Oracle provides an automated (scripted) mechanism
@@ -170,6 +211,8 @@ Google Cloud [Bare Metal Solution](https://cloud.google.com/bare-metal).
 The toolkit defines default values for most options, so you can run the toolkit
 with only a few specifications. Your configuration options are listed later in
 this guide.
+
+> **NOTE:** This toolkit does support installing the Oracle Database 23ai Free edition. For details on installing the free edition refer to the section [Oracle Database Free Edition Specific Details and Changes](#oracle-database-free-edition-specific-details-and-changes).
 
 The toolkit supports the following major releases of Oracle Database and applies
 the most recent quarterly patches, also known as Oracle Release Updates or
@@ -1410,7 +1453,8 @@ ORA_EDITION
 </td>
 <td>EE<br>
 SE, for 11.2.0.4.0 only<br>
-SE2, for 12.1.0.2.0 and above</td>
+SE2, for 12.1.0.2.0 and above<br>
+FREE, for Oracle Database Free</td>
 <td>SE or SE2 depending on the Oracle version chosen.</td>
 </tr>
 <tr>
@@ -2207,6 +2251,349 @@ parameter is specified.
 ```bash
 $ ./install-oracle.sh --ora-version=7.3.4 --ora-swlib-bucket gs://oracle-software --backup-dest +RECO
 Incorrect parameter provided for ora-version: 7.3.4
+```
+
+## Oracle Database Free Edition Specific Details and Changes
+
+This toolkit supports the installation of the Oracle Database "Free Edition", availble for download from [Oracle Database Free Get Started](https://www.oracle.com/database/free/get-started/).
+
+However, Oracle Database "Free Edition" has a number of differences, including:
+
+1. Does not include Oracle Grid Infrastructure and consequently does not use ASM.
+1. Does not support RAC or Data Guard (single-instance only).
+1. Only one database/instance can be created per server.
+1. Installs via RPM packages only.
+1. Requires that the [Oracle Database Preinstallation RPM](https://docs.oracle.com/en/database/oracle/oracle-database/23/ladbi/about-the-oracle-preinstallation-rpm.html) be installed as it is a dependent package.
+1. Has CPU, memory, and user-data storage limits – see [Oracle Database Free FAQ – Installation](https://www.oracle.com/database/free/faq/#installation) for details.
+
+Similar to with the other editions, creation of an initial database and implementation of RMAN based backups is possible through this toolkit for Oracle Database free edition.
+
+### Free Edition Version Details
+
+Oracle has released serveral versions of free edition, often **without chaning the RPM file name**. This toolkit can install _any_ free edition version. Which version is actually installed depends on the the actual RPM file in the software library, and possibly the command line switches.
+
+Specific supported versions of Oracle Database 23 free edition currently includes:
+
+| Product | Specific Version | Software RPM Filename                                  | Preinstall RPM Filename                                |
+| :-----: | :--------------: | :----------------------------------------------------- | :----------------------------------------------------- |
+|  23ai   |   23.6.0.24.10   | `oracle-database-preinstall-23ai-1.0-2.el8.x86_64.rpm` | `oracle-database-preinstall-23ai-1.0-2.el8.x86_64.rpm` |
+|  23ai   |   23.5.0.24.07   | `oracle-database-preinstall-23ai-1.0-2.el8.x86_64.rpm` | `oracle-database-preinstall-23ai-1.0-2.el8.x86_64.rpm` |
+|  23ai   |   23.4.0.24.05   | `oracle-database-preinstall-23ai-1.0-2.el8.x86_64.rpm` | `oracle-database-preinstall-23ai-1.0-2.el8.x86_64.rpm` |
+|   23c   |   23.3.0.23.09   | `oracle-database-preinstall-23c-1.0-1.el8.x86_64.rpm`  | `oracle-database-preinstall-23c-1.0-1.el8.x86_64.rpm`  |
+|   23c   |    23.2.0.0.0    | `oracle-database-preinstall-23c-1.0-1.el8.x86_64.rpm`  | `oracle-database-preinstall-23c-1.0-1.el8.x86_64.rpm`  |
+
+Even though the file names may be the same while the version changes, multiple files with the same name can be kept in the software library. Possibly by manually changing the file names (and then updating the `rdbms_software` variables in the YAML files accoridingly.) Or more simply, by placing the unique files with the same file name in different Google Cloud Storage bucket **folders** for uniquness.
+
+If the specific version desired is not specified via a command line switch (or corresponding environment variable) , the toolkit will default to the most recent version – currently version `23.6.0.24.10`.
+
+Otherwise, one of the following command line switches should be used to install a specific free edition version:
+
+```bash
+ --ora-version 23.6.0.24.10
+ --ora-version 23.5.0.24.07
+ --ora-version 23.4.0.24.05
+ --ora-version 23.3.0.23.09
+ --ora-version 23.2.0.0.0
+```
+
+#### Free edition specific parameter changes
+
+When using this toolkit to install the free edition, serveral toolkits parameters becomes irrelevant, or are set to specific values – possibly overriding user provided values.
+
+<table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Parameters</th>
+<th>Parameter Values</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Oracle edition</td>
+<td><p><pre>
+ORA_EDITION
+--ora-edition
+</pre></p></td>
+<td>FREE</td>
+<td>Specify "FREE" to install the free edition.</td>
+</tr>
+<tr>
+<td>Oracle version</td>
+<td><p><pre>
+ORA_VERSION
+--ora-version
+</pre></p></td>
+<td>
+23.6.0.24.10<br>
+23.5.0.24.07<br>
+23.4.0.24.05<br>
+23.3.0.23.09<br>
+23.2.0.0.0</td>
+<td>Specific version to install.<br>
+<br>
+Defaults to the latest release.</td>
+</tr>
+<tr>
+<td>Data disk group name</td>
+<td><p><pre>
+ORA_DATA_DISKGROUP
+--ora-data-diskgroup
+</pre></p></td>
+<td>user defined file system location</td>
+<td>Must be an existing Linux file system location – ASM disk groups are incompatible with the free edition.</td>
+</tr>
+<tr>
+<td>Reco disk group name</td>
+<td><p><pre>
+ORA_RECO_DISKGROUP
+--ora-reco-diskgroup
+</pre></p></td>
+<td>user defined file system location</td>
+<td>Must be an existing Linux file system location – ASM disk groups are incompatible with the free edition.</td>
+</tr>
+<tr>
+<td>PDB count</td>
+<td><p><pre>
+ORA_PDB_COUNT
+--ora-pdb-count
+</pre></p></td>
+<td>user defined integer<br>
+<br>1 (default)</td>
+<td>If greater than 1, a numeric is appended to each PDB name.<br>
+<br>
+Maximum value for free edition is 16.</td>
+</tr>
+<tr>
+<td>Database name</td>
+<td><p><pre>
+ORA_DB_NAME
+--ora-db-name
+</pre></p></td>
+<td>FREE (default)</td>
+<td>Defaults to "FREE" when installing free edition.<br>
+<br>
+User-provided values are ignored.</td>
+</tr>
+<tr>
+<td>Grid user role separation</td>
+<td><p><pre>
+ORA_ROLE_SEPARATION
+--ora-role-separation
+</pre></p></td>
+<td>FALSE (default)</td>
+<td>Grid Infrastructure is not used with free edition and therefore role separation is irrelevant.<br>
+<br>
+User-provided values are ignored.</td>
+</tr>
+<tr>
+<td>ASM disk management</td>
+<td><p><pre>
+ORA_DISK_MGMT
+--ora-disk-mgmt
+</pre></p></td>
+<td>UDEV (default)</td>
+<td>ASMlib is incompatible with free edition.<br>
+<br>
+User-provided values are ignored.</td>
+</tr>
+<tr>
+<td>Cluster type</td>
+<td><p><pre>
+CLUSTER_TYPE
+--cluster-type
+</pre></p></td>
+<td>NONE (default)</td>
+<td>Only single instance databases are possible with free edition.<br>
+<br>
+User-provided values are ignored.</td>
+</tr>
+</tbody>
+</table>
+
+Most other parameters are applicable – there usage described in the previous sections of this document.
+
+### Sample Invocations for Oracle Database Free Edition
+
+In the following sample invocations, the IP address of the target server is referenced as environment variable `INSTANCE_IP_ADDR`.
+
+Check that software is available:
+
+```bash
+./check-swlib.sh --ora-swlib-bucket gs://oracle-software --ora-edition FREE
+```
+
+Validate parameters only:
+
+```bash
+./install-oracle.sh \
+  --ora-edition FREE \
+  --ora-swlib-bucket gs://oracle-software \
+  --backup-dest /u02/backups \
+  --validate
+```
+
+Run the host (server) preparation steps only:
+
+```bash
+./install-oracle.sh \
+  --ora-edition FREE \
+  --instance-ip-addr ${INSTANCE_IP_ADDR} \
+  --ora-swlib-bucket gs://oracle-software \
+  --prep-host
+```
+
+Run the software install steps only:
+
+```bash
+./install-oracle.sh \
+  --ora-edition FREE \
+  --instance-ip-addr ${INSTANCE_IP_ADDR} \
+  --ora-swlib-bucket gs://oracle-software \
+  --install-sw
+```
+
+Run the database creation steps only:
+
+```bash
+./install-oracle.sh \
+  --ora-edition FREE \
+  --instance-ip-addr ${INSTANCE_IP_ADDR} \
+  --ora-swlib-bucket gs://oracle-software \
+  --backup-dest /u02/backups \
+  --config-db
+```
+
+Run the full toolkit end-to-end:
+
+```bash
+./install-oracle.sh \
+  --ora-edition FREE \
+  --instance-ip-addr ${INSTANCE_IP_ADDR} \
+  --ora-swlib-bucket gs://oracle-software \
+  --backup-dest /opt/oracle/fast_recovery_area/FREE \
+  --ora-pdb-count 2 \
+  --ora-pdb-name-prefix FREEPDB
+```
+
+### Example Toolkit Execution for Free Edition
+
+In the following example, environment variables are used to specify the
+following values:
+
+- The IP address of the target instance
+
+For all other parameters, command line provided values are used, or default values are accepted.
+
+Note: Unless you specify a hostname on the `INSTANCE_HOSTNAME` environment
+variable or the `--instance-hostname` command line argument, the target hostname
+defaults to the target IP address.
+
+```bash
+$ export INSTANCE_IP_ADDR=10.2.83.197
+$ ./install-oracle.sh \
+>   --ora-edition FREE \
+>   --instance-ip-addr ${INSTANCE_IP_ADDR} \
+>   --ora-swlib-bucket gs://oracle-software \
+>   --backup-dest /opt/oracle/fast_recovery_area/FREE \
+>   --ora-pdb-count 2 \
+>   --ora-pdb-name-prefix FREEPDB
+
+Command used:
+./install-oracle.sh --ora-edition FREE --instance-ip-addr 10.2.83.197 --ora-swlib-bucket gs://oracle-software --backup-dest /opt/oracle/fast_recovery_area/FREE --ora-pdb-count 2 --ora-pdb-name-prefix FREEPDB --allow-install-on-vm
+
+
+Inventory file for this execution: ./inventory_files/inventory_10.2.83.197_FREE.
+
+Running with parameters from command line or environment variables:
+
+ANSIBLE_DISPLAY_SKIPPED_HOSTS=false
+ANSIBLE_LOG_PATH=./logs/log_10.2.83.197_FREE_20250109_115429.log
+ARCHIVE_BACKUP_MIN=30
+ARCHIVE_ONLINE_DAYS=7
+ARCHIVE_REDUNDANCY=2
+BACKUP_DEST=/opt/oracle/fast_recovery_area/FREE
+BACKUP_LEVEL0_DAYS=0
+BACKUP_LEVEL1_DAYS=1-6
+BACKUP_LOG_LOCATION=/home/oracle/logs
+BACKUP_REDUNDANCY=2
+BACKUP_SCRIPT_LOCATION=/home/oracle/scripts
+BACKUP_START_HOUR=01
+BACKUP_START_MIN=00
+CLUSTER_CONFIG=cluster_config.json
+CLUSTER_TYPE=NONE
+INSTANCE_HOSTGROUP_NAME=dbasm
+INSTANCE_HOSTNAME=10.2.83.197
+INSTANCE_IP_ADDR=10.2.83.197
+INSTANCE_SSH_EXTRA_ARGS=''\''-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o IdentityAgent=no'\'''
+INSTANCE_SSH_KEY='~/.ssh/id_rsa'
+INSTANCE_SSH_USER=pane
+ORA_ASM_DISKS=asm_disk_config.json
+ORA_DATA_DISKGROUP=/u02/oradata
+ORA_DATA_MOUNTS=data_mounts_config.json
+ORA_DB_CHARSET=AL32UTF8
+ORA_DB_CONTAINER=TRUE
+ORA_DB_DOMAIN=
+ORA_DB_NAME=FREE
+ORA_DB_NCHARSET=AL16UTF16
+ORA_DB_TYPE=MULTIPURPOSE
+ORA_DISK_MGMT=UDEV
+ORA_EDITION=FREE
+ORA_LISTENER_NAME=LISTENER
+ORA_LISTENER_PORT=1521
+ORA_PDB_COUNT=2
+ORA_PDB_NAME_PREFIX=FREEPDB
+ORA_RECO_DISKGROUP=/opt/oracle/fast_recovery_area
+ORA_REDO_LOG_SIZE=100MB
+ORA_RELEASE=latest
+ORA_ROLE_SEPARATION=FALSE
+ORA_STAGING=/u01/swlib
+ORA_SWLIB_BUCKET=gs://oracle-software
+ORA_SWLIB_CREDENTIALS=
+ORA_SWLIB_PATH=/u01/swlib
+ORA_SWLIB_TYPE=GCS
+ORA_VERSION=23.0.0.0.0
+PB_CHECK_INSTANCE=check-instance.yml
+PB_CONFIG_DB=config-db.yml
+PB_CONFIG_RAC_DB=config-rac-db.yml
+PB_INSTALL_SW=install-sw.yml
+PB_LIST='check-instance.yml prep-host.yml install-sw.yml config-db.yml'
+PB_PREP_HOST=prep-host.yml
+PRIMARY_IP_ADDR=
+
+Ansible params:
+Found Ansible: ansible-playbook is /usr/bin/ansible-playbook
+
+Running Ansible playbook: ansible-playbook -i ./inventory_files/inventory_10.2.83.197_FREE  -e allow_install_on_vm=true  check-instance.yml
+
+PLAY [dbasm] *************************************************************************************************************************************************************************************************
+
+TASK [Verify that Ansible on control node meets the version requirements] ************************************************************************************************************************************
+ok: [10.2.83.197] => {
+    "changed": false,
+    "msg": "Ansible version is 2.16.3, continuing"
+}
+
+TASK [Confirm JSON parsing works] ****************************************************************************************************************************************************************************
+ok: [10.2.83.197] => {
+    "changed": false,
+    "msg": "All assertions passed"
+}
+
+TASK [Test connectivity to target instance via ping] *********************************************************************************************************************************************************
+ok: [10.2.83.197]
+
+TASK [Abort if ping module fails] ****************************************************************************************************************************************************************************
+ok: [10.2.83.197] => {
+    "changed": false,
+    "msg": "The instance has an usable python installation, continuing"
+}
+
+TASK [Collect facts from target] *****************************************************************************************************************************************************************************
+ok: [10.2.83.197]
+
+... output truncated for brevity
 ```
 
 ## Post installation tasks

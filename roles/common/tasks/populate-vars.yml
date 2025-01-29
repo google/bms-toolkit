@@ -25,8 +25,24 @@
         {{ matched_patch.release | default((gi_patches | selectattr('base', 'equalto', oracle_ver) | list | last | default({})).release) if matched_patch is defined else (gi_patches | selectattr('base', 'equalto', oracle_ver) | list | last | default({})).release }}
       {% endif %}
   when:
+    - not free_edition
     - oracle_rel is defined
     - oracle_rel != "base"
+  tags: oracle-rel
+
+- name: populate-vars | Resolve Free Edition software release
+  set_fact:
+    oracle_ver: "{{
+      (oracle_rel == 'latest') and (free_versions | last) or
+      (oracle_rel == 'base') and (free_versions | first) or
+      (oracle_rel in free_versions) and oracle_rel or
+      (free_versions | last)
+    }}"
+  vars:
+    free_versions: "{{ rdbms_software | selectattr('edition', 'equalto', 'FREE') | map(attribute='version') | sort | list }}"
+  when:
+    - free_edition
+    - oracle_ver == "23.0.0.0.0"
   tags: oracle-rel
 
 - name: populate-vars | Show resolved release

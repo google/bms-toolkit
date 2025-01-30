@@ -164,10 +164,7 @@
 
 - name: gi-install | Set CV_ASSUME_DISTID to OEL7 when installing on RHEL8 (MOS Note: 2878100.1)
   set_fact:
-    cv_distid: "{{ 'OEL7' if ansible_os_family == 'RedHat' 
-                           and (ansible_distribution_major_version | int) >= 8 
-                           and (oracle_ver_base | float) <= 19.3 
-                           else '' }}"
+    cv_distid: "{{ 'OEL7' if ansible_os_family == 'RedHat' and (ansible_distribution_major_version | int) >= 8 and (oracle_ver_base | float) <= 19.3 else '' }}"
   tags: gi-setup
 
 - name: gi-install | Run installer

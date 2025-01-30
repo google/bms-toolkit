@@ -18,7 +18,7 @@ echo "$0 $@"
 echo
 
 GETOPT_MANDATORY="ora-version:,inventory-file:,yes-i-am-sure"
-GETOPT_OPTIONAL="ora-role-separation:,ora-disk-mgmt:,ora-swlib-path:,ora-staging:,ora-asm-disks:,ora-data-mounts:,help"
+GETOPT_OPTIONAL="ora-edition:,ora-role-separation:,ora-disk-mgmt:,ora-swlib-path:,ora-staging:,ora-asm-disks:,ora-data-mounts:,help"
 GETOPT_LONG="${GETOPT_MANDATORY},${GETOPT_OPTIONAL}"
 GETOPT_SHORT="yh"
 
@@ -27,7 +27,10 @@ VALIDATE=0
 INVENTORY_FILE="${INVENTORY_FILE:-./inventory_files/inventory}"
 
 ORA_VERSION="${ORA_VERSION}"
-ORA_VERSION_PARAM='^(21\.3\.0\.0\.0|19\.3\.0\.0\.0|18\.0\.0\.0\.0|12\.2\.0\.1\.0|12\.1\.0\.2\.0|11\.2\.0\.4\.0)$'
+ORA_VERSION_PARAM='^(23\.[0-9]{1,2}\.[0-9]{1,2}\.[0-9]{1,2}\.[0-9]{1,6}|21\.3\.0\.0\.0|19\.3\.0\.0\.0|18\.0\.0\.0\.0|12\.2\.0\.1\.0|12\.1\.0\.2\.0|11\.2\.0\.4\.0)$'
+
+ORA_EDITION="${ORA_EDITION:-EE}"
+ORA_EDITION_PARAM="^(EE|SE|SE2|FREE)$"
 
 ORA_ROLE_SEPARATION="${ORA_ROLE_SEPARATION:-TRUE}"
 ORA_ROLE_SEPARATION_PARAM="^(TRUE|FALSE)$"
@@ -47,22 +50,23 @@ ORA_ASM_DISKS_PARAM="^.+\.json$"
 ORA_DATA_MOUNTS="${ORA_DATA_MOUNTS:-data_mounts_config.json}"
 ORA_DATA_MOUNTS_PARAM="^.+\.json$"
 
-options=$(getopt --longoptions "$GETOPT_LONG" --options "$GETOPT_SHORT" -- "$@")
+options="$(getopt --longoptions "$GETOPT_LONG" --options "$GETOPT_SHORT" -- "$@")"
 
 [ $? -eq 0 ] || {
-       echo "Invalid options provided: $*"
-       exit 1
+    echo "Invalid options provided: $@" >&2
+    exit 1
 }
 
 eval set -- "$options"
 
 while true; do
     case "$1" in
-    --yes-i-am-sure|-y)
+    --yes-i-am-sure | -y)
         YESIAMSURE=1
         ;;
     --ora-version)
         ORA_VERSION="$2"
+        if [[ ${ORA_VERSION} = "23" ]]   ; then ORA_VERSION="23.0.0.0.0"; fi
         if [[ ${ORA_VERSION} = "21" ]]   ; then ORA_VERSION="21.3.0.0.0"; fi
         if [[ ${ORA_VERSION} = "19" ]]   ; then ORA_VERSION="19.3.0.0.0"; fi
         if [[ ${ORA_VERSION} = "18" ]]   ; then ORA_VERSION="18.0.0.0.0"; fi
@@ -70,40 +74,44 @@ while true; do
         if [[ ${ORA_VERSION} = "12.2" ]] ; then ORA_VERSION="12.2.0.1.0"; fi
         if [[ ${ORA_VERSION} = "12.1" ]] ; then ORA_VERSION="12.1.0.2.0"; fi
         if [[ ${ORA_VERSION} = "11" ]]   ; then ORA_VERSION="11.2.0.4.0"; fi
-        shift;
+        shift
+        ;;
+    --ora-edition)
+        ORA_EDITION="$(echo "$2" | tr '[:lower:]' '[:upper:]')"
+        shift
         ;;
     --inventory-file)
         INVENTORY_FILE="$2"
-        shift;
+        shift
         ;;
     --ora-role-separation)
         ORA_ROLE_SEPARATION="$2"
-        shift;
+        shift
         ;;
     --ora-swlib-path)
         ORA_SWLIB_PATH="$2"
-        shift;
+        shift
         ;;
     --ora-staging)
         ORA_STAGING="$2"
-        shift;
+        shift
         ;;
     --ora-disk-mgmt)
         ORA_DISK_MGMT="$2"
-        shift;
+        shift
         ;;
     --ora-asm-disks)
         ORA_ASM_DISKS="$2"
-        shift;
+        shift
         ;;
     --ora-data-mounts)
         ORA_DATA_MOUNTS="$2"
-        shift;
+        shift
         ;;
-    --help|-h)
-        echo -e "\tUsage: `basename $0` "
-        echo $GETOPT_MANDATORY|sed 's/,/\n/g'|sed 's/:/ <value>/'|sed 's/\(.\+\)/\t  --\1/'
-        echo $GETOPT_OPTIONAL |sed 's/,/\n/g'|sed 's/:/ <value>/'|sed 's/\(.\+\)/\t  [ --\1 ]/'
+    --help | -h)
+        echo -e "\tUsage: $(basename $0)" >&2
+        echo "${GETOPT_MANDATORY}" | sed 's/,/\n/g' | sed 's/:/ <value>/' | sed 's/\(.\+\)/\t --\1/'
+        echo "${GETOPT_OPTIONAL}"  | sed 's/,/\n/g' | sed 's/:/ <value>/' | sed 's/\(.\+\)/\t [ --\1 ]/'
         exit 2
         ;;
     --)
@@ -120,9 +128,16 @@ done
 
 shopt -s nocasematch
 
+# Parameter defaults and changes required for Free Edition
+# (including unsupported features such as role_separation)
+if [[ "${ORA_EDITION}" = "FREE" ]]; then
+    ORA_ROLE_SEPARATION=FALSE
+    [[ ! "${ORA_VERSION}" =~ ^23\. ]] && ORA_VERSION="23.0.0.0.0"
+fi
+
 # Mandatory options
 if [ "${ORA_VERSION}" = "" ]; then
-    echo "Please specify the oracle release with --ora-version"
+    echo "Please specify the oracle version with --ora-version"
     exit 2
 fi
 
@@ -138,6 +153,10 @@ fi
 
 [[ ! "$ORA_VERSION" =~ $ORA_VERSION_PARAM ]] && {
     echo "Incorrect parameter provided for ora-version: $ORA_VERSION"
+    exit 1
+}
+[[ ! "$ORA_EDITION" =~ $ORA_EDITION_PARAM ]] && {
+    echo "Incorrect parameter provided for ora-edition: $ORA_EDITION"
     exit 1
 }
 [[ ! "$ORA_ROLE_SEPARATION" =~ $ORA_ROLE_SEPARATION_PARAM ]] && {
@@ -170,6 +189,7 @@ ORA_SWLIB_PATH=${ORA_SWLIB_PATH%/}
 
 export ORA_ROLE_SEPARATION
 export ORA_VERSION
+export ORA_EDITION
 export ORA_DISK_MGMT
 export ORA_ASM_DISKS
 export ORA_DATA_MOUNTS
@@ -177,38 +197,37 @@ export ORA_STAGING
 export ORA_SWLIB_PATH
 
 echo -e "Running with parameters from command line or environment variables:\n"
-set | egrep '^(ORA_|INVENTORY_)' | grep -v '_PARAM='
+set | grep -E '^(ORA_|INVENTORY_)' | grep -v '_PARAM='
 echo
 
 ANSIBLE_PARAMS="-i ${INVENTORY_FILE}"
 ANSIBLE_EXTRA_PARAMS="${*}"
 
-
 echo "Ansible params: ${ANSIBLE_EXTRA_PARAMS}"
 
 if [ $VALIDATE -eq 1 ]; then
     echo "Exiting because of --validate"
-    exit;
+    exit
 fi
 
 export ANSIBLE_NOCOWS=1
 
 ANSIBLE_PLAYBOOK="ansible-playbook"
-if ! type ansible-playbook > /dev/null 2>&1; then
-  echo "Ansible executable not found in path"
-  exit 3
+if ! type ansible-playbook >/dev/null 2>&1; then
+    echo "Ansible executable not found in path"
+    exit 3
 else
-  echo "Found Ansible: `type ansible-playbook`"
+    echo "Found Ansible: $(type ansible-playbook)"
 fi
 
 # exit on any error from the following scripts
 set -e
 
-for PLAYBOOK in brute-cleanup.yml ; do
+for PLAYBOOK in brute-cleanup.yml; do
     ANSIBLE_COMMAND="${ANSIBLE_PLAYBOOK} ${ANSIBLE_PARAMS} ${ANSIBLE_EXTRA_PARAMS} ${PLAYBOOK}"
     echo
     echo "Running Ansible playbook: ${ANSIBLE_COMMAND}"
-    eval ${ANSIBLE_COMMAND}
+    eval "${ANSIBLE_COMMAND}"
 done
 
-exit 0;
+exit 0

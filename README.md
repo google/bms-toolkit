@@ -3,7 +3,7 @@
 Toolkit for installing and creating an initial Oracle database on:
 
 - [Bare Metal Solution](https://cloud.google.com/bare-metal)
-- [Compute Engines](https://cloud.google.com/products/compute)
+- [Google Compute Engine](https://cloud.google.com/products/compute)
 
 ## Quick Start
 

@@ -150,9 +150,8 @@
   when:
     - item.release == oracle_rel
   register: apply_oneoff
-  failed_when:
-    - not (('OPatch succeeded' in apply_oneoff.stdout) or ('OPatch completed with warnings' in apply_oneoff.stdout)
-      or (apply_oneoff.rc | int in [0, 6, 250]))
+  failed_when: "('OPatch succeeded' not in apply_oneoff.stdout and 'OPatch completed with warnings' not in apply_oneoff.stdout)
+                or (apply_oneoff.rc | int not in [0, 6, 250])"
   tags: rdbms-setup,opatch
 
 - name: rdbms-install | opatch output

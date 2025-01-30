@@ -40,3 +40,4 @@
   debug:
     msg: "{{ swap_partition_id }}"
   tags: populate-swap-partition-id
+

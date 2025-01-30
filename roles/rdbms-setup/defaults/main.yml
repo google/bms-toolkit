@@ -59,6 +59,17 @@ rdbms_software:
     sha256sum:
       - "f41059c22a610a2180cc6286179a7da148bfe14b0d88211f006c9998ce03ba0e"
       - "63b6c0ec9464682cfd9814e7e2a5d533139e5c6aeb9d3e7997a5f976d6677ca6"
+  - name: 21c_base
+    version: 21.3.0.0.0
+    edition:
+      - EE
+      - SE2
+    files:
+      - "V1011496-01.zip"
+    sha256sum:
+      - "c05d5c32a72b9bf84ab6babb49aee99cbb403930406aabe3cf2f94f1d35e0916"
+    md5sum:
+      - "iskVqACADd8Wo4JQbTlT2w=="
   - name: 19c_base
     version: 19.3.0.0.0
     edition:

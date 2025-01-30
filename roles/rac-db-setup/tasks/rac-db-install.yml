@@ -31,8 +31,8 @@
 
 - name: rac-db-install | Set facts
   set_fact:
-    install_unzip_path: "{% if oracle_ver_base in ('19.3','18.0') %}{{ oracle_home }}{% else %}{{ swlib_unzip_path }}{% endif %}"
-    runinstaller_loc: "{% if oracle_ver_base in ('19.3','18.0') %}{{ oracle_home }}{% else %}{{ swlib_unzip_path }}/database{% endif %}"
+    install_unzip_path: "{% if oracle_ver_base in ('21.3', '19.3', '18.0') %}{{ oracle_home }}{% else %}{{ swlib_unzip_path }}{% endif %}"
+    runinstaller_loc: "{% if oracle_ver_base in ('21.3', '19.3', '18.0') %}{{ oracle_home }}{% else %}{{ swlib_unzip_path }}/database{% endif %}"
   tags: rac-db
 
 - name: rac-db-install | Installer confirmations
@@ -161,8 +161,9 @@
   when:
     - item.release == oracle_rel
   register: apply_oneoff
-  failed_when: "('OPatch succeeded' not in apply_oneoff.stdout) or
-                (apply_oneoff.rc not in [0,6,250])"
+  failed_when:
+    - not (('OPatch succeeded' in apply_oneoff.stdout) or ('OPatch completed with warnings' in apply_oneoff.stdout)
+      or (apply_oneoff.rc | int in [0, 6, 250]))
   tags: rac-db,rac-db-install,opatch
 
 - name: rac-db-install | opatch output

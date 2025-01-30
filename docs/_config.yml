@@ -1,5 +1,5 @@
-title: bms-toolkit
-description: Toolkit for installing and creating an initial database on Bare Metal Solution
+title: oracle-toolkit
+description: Toolkit for installing and creating an initial database on Google Cloud Platform
 remote_theme: pages-themes/cayman
 plugins:
   - jekyll-remote-theme

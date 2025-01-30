@@ -28,7 +28,7 @@ Running into an error? Here are a few sample error messages and solutions.
 fatal: [racnode1.orcl]: FAILED! => {"msg": "'ansible.vars.hostvars.HostVarsVars object' has no attribute 'dg_name'"}
 ```
 
-- Possible place to check will be `bms-toolkit/cluster_config.json`:
+- Possible place to check will be `oracle-toolkit/cluster_config.json`:
 
 ```json
 [
@@ -65,15 +65,15 @@ fatal: [racnode1.orcl]: FAILED! => {"msg": "'ansible.vars.hostvars.HostVarsVars 
 
 ```
 TASK [rac-gi-setup : rac-gi-install | Get symlinks for devices] ************************************************************************************************
-task path: /home/janedoe/git-clone-holder/bms-toolkit/roles/rac-gi-setup/tasks/rac-gi-install.yml:127
-File lookup using /home/janedoe/git-clone-holder/bms-toolkit/asm_disk_config.json as file
+task path: /home/janedoe/git-clone-holder/oracle-toolkit/roles/rac-gi-setup/tasks/rac-gi-install.yml:127
+File lookup using /home/janedoe/git-clone-holder/oracle-toolkit/asm_disk_config.json as file
 fatal: [racnode1.orcl]: FAILED! => {
     "msg": "Invalid data passed to 'loop', it requires a list, got this instead: . Hint: If you passed a list/dict of just one element, try adding wantlist=True to your lookup invocation or use q/query instead of lookup."
 }
 ```
 
 - Check that: `dg_name=DATA` points to a valid diskgroup name.
-- Rationale: the following expression in the [source code](https://github.com/google/bms-toolkit/blob/master/roles/rac-gi-setup/tasks/rac-gi-install.yml#L133):
+- Rationale: the following expression in the [source code](https://github.com/google/oracle-toolkit/blob/master/roles/rac-gi-setup/tasks/rac-gi-install.yml#L133):
 
 ```
 "{{ asm_disks | json_query('[?diskgroup==`' + hostvars[groups['dbasm'].0]['dg_name'] + '`].disks[*].blk_device') | list | join() }}"
@@ -237,10 +237,11 @@ fatal: [racnode2.orcl]: UNREACHABLE! => {"changed": false, "msg": "Failed to con
   Reason for the error is as follows:
 - By, `--instance-ssh-user ansible --instance-ssh-key ~/.ssh/id_rsa` typically provided in the command line to `install-oracle.sh`, we are asking Ansible to connect:
   - from the current jump host/VM as the user (say) `janedoe`
-  - to the BM host as the OS user called `ansible`
+  - to the Google Cloud server host as the OS user called `ansible`
   - using the SSH key file in the jump host under the current users home directory's: `~/.ssh/id_rsa`
 
-As noted in [bms documentation](https://github.com/google/bms-toolkit/blob/master/docs/user-guide.md#command-quick-reference-for-rac-deployments):
+As noted in [oracle-toolkit documentation](https://github.com/google/oracle-toolkit/blob/master/docs/user-guide.md#command-quick-reference-for-rac-deployments):
+
 we want to ensure we can connect to the backend nodes with ssh and sudo to the account we want ansible to escalate to:
 
 ```bash
@@ -286,7 +287,7 @@ total 20
 -r--------. 1 janedoe janedoe  105 Nov 20 20:52 id_ed25519.pub
 -rwxr-xr-x. 1 janedoe janedoe  578 Dec 15 18:52 known_hosts
 drwx------. 9 janedoe janedoe  237 Dec 15 19:06 ..
--rw-r--r--. 1 janedoe janedoe  751 Dec 16 15:39 id_rsa.pub <======== Goes to BM server under ansible users home directory's: ${home}/.ssh/authorized_keys file
+-rw-r--r--. 1 janedoe janedoe  751 Dec 16 15:39 id_rsa.pub <======== Goes to Google Cloud server under ansible users home directory's: ${home}/.ssh/authorized_keys file
 -rw-------. 1 janedoe janedoe 3243 Dec 16 15:39 id_rsa.  <======= Should be protected
 drwxrwxr-x. 2 janedoe janedoe   97 Dec 16 15:39 .
 ```
@@ -350,7 +351,7 @@ failed: [racnode1.orcl] (item={u'files': [u'V982068-01.zip'], u'version': u'19.3
 ```
 
 ```
-[root@racnode1 ~]# #Add this in both BM servers to instruct the OS to reach out to the VM jump host as a NTP server:
+[root@racnode1 ~]# #Add this in both GC servers to instruct the OS to reach out to the VM jump host as a NTP server:
 [root@racnode1 ~]# diff /etc/ntp.conf /etc/ntp.conf.bk.jc.01.21.2021
 21d20
 < server 10.210.1.7 prefer
@@ -370,7 +371,7 @@ Thu Jan 21 22:40:34 UTC 2021
 - There may arise situations where we may want to pass extra flags to ansible and this may be done as follows (taking an example of passing the debug flag):
 
 ```bash
- ~/git-clone-holder/bms-toolkit [master L|✚ 3…2]
+ ~/git-clone-holder/oracle-toolkit [master L|✚ 3…2]
 23:17 $ ./install-oracle.sh \
 --ora-swlib-bucket gs://bmaas-testing-oracle-software \
 --instance-ssh-user ansible \
@@ -386,7 +387,7 @@ Thu Jan 21 22:40:34 UTC 2021
 --ora-data-diskgroup DATA \
 --ora-reco-diskgroup RECO \
 --ora-db-name orcl \
---ora-db-container false >> ~/git-clone-holder/bms-toolkit/logs/sydney-1.out \
+--ora-db-container false >> ~/git-clone-holder/oracle-toolkit/logs/sydney-1.out \
 -- -vvvv 2>&1   <-----------------------------------------------------------------------------
 ```
 

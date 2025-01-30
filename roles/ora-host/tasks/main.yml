@@ -387,7 +387,7 @@
 
 ######## Udev rules for multipath disks ########
 
-- name: (udev) Add ASM mpath disk rules on BM (udevadm info)
+- name: (udev) Add ASM mpath disk rules (udevadm info)
   become: yes
   become_user: root
   shell: udevadm info --query=all --name={{ item.1.blk_device }} | grep DM_UUID | awk -F'=' '{print $2}'
@@ -398,14 +398,14 @@
     - disks
   tags: udev-mpath
 
-- name: (udev) Add ASM mpath disk rules on BM (init dict)
+- name: (udev) Add ASM mpath disk rules (init dict)
   set_fact:
     uuid_result: []
   when:
     - udevadm_result.results.0.stdout is defined
   tags: udev-mpath
 
-- name: (udev) Add ASM mpath disk rules on BM (filling dict)
+- name: (udev) Add ASM mpath disk rules (filling dict)
   set_fact:
     uuid_result: "{{ uuid_result | combine({item.stdout: item.item}) }}"
   when:
@@ -414,7 +414,7 @@
     - "{{ udevadm_result.results }}"
   tags: udev-mpath
 
-- name: (udev) Add ASM mpath disk rules on BM (udev rules file)
+- name: (udev) Add ASM mpath disk rules (udev rules file)
   become: yes
   become_user: root
   blockinfile:

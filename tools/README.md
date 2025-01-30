@@ -1,7 +1,7 @@
-# bms-toolkit tools
+# oracle-toolkit tools
 
 The `tools/` folder is intended for helpful tools and scripts that aren't
-part of the main bms-toolkit codebase.
+part of the main oracle-toolkit codebase.
 
 ## gen_patch_metadata
 

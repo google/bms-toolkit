@@ -19,6 +19,7 @@
 
 # set up ssh from pod to database server
 # using sydney for initial testing
+# Keep permissions at 100755 to allow tests to run
 oracle_host=10.100.1.1
 install -d -m 0700 ~/.ssh
 ssh-keyscan "${oracle_host}" > ~/.ssh/known_hosts

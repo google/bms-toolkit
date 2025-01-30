@@ -213,8 +213,6 @@ The toolkit defines default values for most options, so you can run the toolkit
 with only a few specifications. Your configuration options are listed later in
 this guide.
 
-> **NOTE:** This toolkit does support installing Oracle Database 23ai Free edition. For details on installing the free edition refer to the section [Oracle Database Free Edition Specific Details and Changes](#oracle-database-free-edition-specific-details-and-changes).
-
 The toolkit supports the following major releases of Oracle Database and applies
 the most recent quarterly patches, also known as Oracle Release Updates or
 RUs:
@@ -2279,7 +2277,7 @@ Similar to with the other editions, creation of an initial database and implemen
 
 ### Free Edition Version Details
 
-Oracle has released serveral versions of free edition, often **without chaning the RPM file name**. The toolkit can install _any_ free edition version. Which version is actually installed depends on the the actual RPM file in the software library, and possibly the command line switches.
+Oracle has released serveral versions of free edition, often **without chaning the RPM file name**. This toolkit can install _any_ free edition version. Which version is actually installed depends on the the actual RPM file in the software library, and possibly the command line switches.
 
 Specific supported versions of Oracle Database 23 free edition currently includes:
 

@@ -1,6 +1,8 @@
 # oracle-toolkit
 
-Toolkit for installing and creating an initial Oracle database on:
+Toolkit for managing Oracle databases on Google Cloud.
+
+Supports usage with:
 
 - [Bare Metal Solution](https://cloud.google.com/bare-metal)
 - [Google Compute Engine](https://cloud.google.com/products/compute)

@@ -17,7 +17,7 @@
 ### into this test script
 ### context / reference: (internal) at: http://b/202240337#comment22
 
-# set up ssh from pod to GCE host
+# set up ssh from pod to database server
 # using sydney for initial testing
 oracle_host=10.100.1.1
 install -d -m 0700 ~/.ssh

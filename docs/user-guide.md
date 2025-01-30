@@ -199,9 +199,9 @@ Unlike with other Oracle Database editions, the Free edition is available in [RP
 
 ## Overview
 
-The Oracle Toolkit for GCP provides an automated (scripted) mechanism
+Oracle Toolkit for GCP provides an automated (scripted) mechanism
 to help you install Oracle software and configure an initial Oracle database on
-Google Cloud Compute Engine (CGE) virtual machines or Google Bare Metal Solution. You can also use
+Google Cloud virtual machines or Bare Metal Solution servers. You can also use
 the toolkit to provision initial Oracle Database Recovery Manager (RMAN) backups
 to Google Cloud Storage or another storage system.
 
@@ -225,6 +225,7 @@ RUs:
 - Oracle 18c
 - Oracle 19c
 - Oracle 21c
+- Oracle 23ai (currently [Free Edition](#oracle-database-free-edition-specific-details-and-changes))
 
 The toolkit does not include any Oracle software. You must obtain the
 appropriate licenses and download the Oracle software on your own. This guide
@@ -274,7 +275,8 @@ You need at least two servers to install Oracle software by using the toolkit:
 
 A second database server (or node) is required for RAC deployments.
 
-The following diagrams are similar, showing the architecture in both Bare Metal Solution and GCE environments.
+The following diagrams are similar, showing the architecture in both Bare Metal
+Solution and Google Cloud virtual machine environments
 
 ![Shows workflow from user through control node to staging repository and then
 to servers in the Bare Metal Solution environment. A dotted line goes to Cloud
@@ -328,8 +330,7 @@ certification matrix in the "My Oracle Support" (MOS) site (sign in required):
 ## Installing the toolkit
 
 The latest version of the toolkit can be downloaded from Google Git
-Repositories:
-[https://github.com/google/oracle-toolkit](https://github.com/google/oracle-toolkit)
+Repositories: https://github.com/google/oracle-toolkit
 
 On the `google/oracle-toolkit` home page in GitHub, download the toolkit to your
 control node by clicking the **Clone or Download** button and selecting

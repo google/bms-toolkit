@@ -240,7 +240,7 @@ fatal: [racnode2.orcl]: UNREACHABLE! => {"changed": false, "msg": "Failed to con
   - to the Google Cloud server host as the OS user called `ansible`
   - using the SSH key file in the jump host under the current users home directory's: `~/.ssh/id_rsa`
 
-As noted in [oracle-toolkit documentation](https://github.com/google/oracle-toolkit/blob/master/docs/user-guide.md#command-quick-reference-for-rac-deployments):
+As noted in the [oracle-toolkit documentation](user-guide.md#command-quick-reference-for-rac-deployments):
 
 we want to ensure we can connect to the backend nodes with ssh and sudo to the account we want ansible to escalate to:
 
@@ -287,7 +287,7 @@ total 20
 -r--------. 1 janedoe janedoe  105 Nov 20 20:52 id_ed25519.pub
 -rwxr-xr-x. 1 janedoe janedoe  578 Dec 15 18:52 known_hosts
 drwx------. 9 janedoe janedoe  237 Dec 15 19:06 ..
--rw-r--r--. 1 janedoe janedoe  751 Dec 16 15:39 id_rsa.pub <======== Goes to Google Cloud server under ansible users home directory's: ${home}/.ssh/authorized_keys file
+-rw-r--r--. 1 janedoe janedoe  751 Dec 16 15:39 id_rsa.pub <======== Transfer to the database server under the Ansible user's home directory: ${home}/.ssh/authorized_keys
 -rw-------. 1 janedoe janedoe 3243 Dec 16 15:39 id_rsa.  <======= Should be protected
 drwxrwxr-x. 2 janedoe janedoe   97 Dec 16 15:39 .
 ```
@@ -351,7 +351,7 @@ failed: [racnode1.orcl] (item={u'files': [u'V982068-01.zip'], u'version': u'19.3
 ```
 
 ```
-[root@racnode1 ~]# #Add this in both GC servers to instruct the OS to reach out to the VM jump host as a NTP server:
+[root@racnode1 ~]# #Add this in both RAC nodes to instruct the OS to reach out to the VM jump host as a NTP server:
 [root@racnode1 ~]# diff /etc/ntp.conf /etc/ntp.conf.bk.jc.01.21.2021
 21d20
 < server 10.210.1.7 prefer

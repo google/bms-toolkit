@@ -1,5 +1,5 @@
 title: oracle-toolkit
-description: Toolkit for installing and creating an initial database on Google Cloud Platform
+description: Toolkit for managing Oracle databases on Google Cloud
 remote_theme: pages-themes/cayman
 plugins:
   - jekyll-remote-theme

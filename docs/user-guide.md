@@ -43,6 +43,7 @@ published: True
       - [RAC configuration parameters](#rac-configuration-parameters)
       - [Backup configuration parameters](#backup-configuration-parameters)
       - [Additional operational parameters](#additional-operational-parameters)
+      - [Using tags to run or skip specific parts of the toolkit](#using-tags-to-run-or-skip-specific-parts-of-the-toolkit)
   - [Example Toolkit Execution](#example-toolkit-execution)
   - [Oracle Database Free Edition Specific Details and Changes](#oracle-database-free-edition-specific-details-and-changes)
     - [Free Edition Version Details](#free-edition-version-details)
@@ -1907,6 +1908,62 @@ instance is created.</td>
 </tr>
 </tbody>
 </table>
+
+### Using tags to run or skip specific parts of the toolkit
+
+Tasks in the toolkit are tagged. If required, specific tasks can be run using the --tags option on the command line.
+
+Following is an example of running tasks with oscheck tags from role base-provision in prep-host.yml
+
+```bash
+./install-oracle.sh \
+--ora-swlib-bucket gs://[cloud-storage-bucket-name] \
+--backup-dest "+RECO" \
+--ora-swlib-path /u02/swlib/ \
+--ora-swlib-type gcs \
+--instance-ip-addr ${INSTANCE_IP_ADDR} \
+--instance-hostname ${INSTANCE_HOSTNAME} \
+-- "--tags oscheck"
+```
+
+Example of running tasks with tags validation-scripts from role validation-scripts in config-db.yml
+
+```bash
+./install-oracle.sh \
+--ora-swlib-bucket gs://[cloud-storage-bucket-name] \
+--backup-dest "+RECO" \
+--ora-swlib-path /u02/swlib/ \
+--ora-swlib-type gcs \
+--instance-ip-addr ${INSTANCE_IP_ADDR} \
+--instance-hostname ${INSTANCE_HOSTNAME} \
+-- "--tags primary-db,validation-scripts"
+```
+
+A specific role can also be run using tags. Following is an example of running the base-provision role
+
+```bash
+./install-oracle.sh \
+--ora-swlib-bucket gs://[cloud-storage-bucket-name] \
+--backup-dest "+RECO" \
+--ora-swlib-path /u02/swlib/ \
+--ora-swlib-type gcs \
+--instance-ip-addr ${INSTANCE_IP_ADDR} \
+--instance-hostname ${INSTANCE_HOSTNAME} \
+-- "--tags base-provision"
+```
+
+Tasks can also be skipped using tags. If the toolkit fails while executing a task or a role, the tasks that were completed successfully up to the failure point can be skipped using --skip-tags option. Following is an example of skipping all the tasks defined in base-provision & host-storage roles and executing all other tasks
+
+```bash
+./install-oracle.sh \
+--ora-swlib-bucket gs://[cloud-storage-bucket-name] \
+--backup-dest "+RECO" \
+--ora-swlib-path /u02/swlib/ \
+--ora-swlib-type gcs \
+--instance-ip-addr ${INSTANCE_IP_ADDR} \
+--instance-hostname ${INSTANCE_HOSTNAME} \
+-- "--skip-tags base-provision,host-storage"
+```
 
 ### Example Toolkit Execution
 

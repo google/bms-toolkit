@@ -290,7 +290,7 @@ The control node can be any server capable of ssh.
 
 The control node must have the following software installed:
 
-- [Ansible](<https://en.wikipedia.org/wiki/Ansible_(software)>)
+- [Ansible](https://en.wikipedia.org/wiki/Ansible_(software))
   version 2.9 or higher.
 - If you are using a Cloud Storage bucket to stage your Oracle installation
   media, the [Google Cloud SDK](https://cloud.google.com/sdk/docs).
@@ -2262,7 +2262,7 @@ Incorrect parameter provided for ora-version: 7.3.4
 
 ## Oracle Database Free Edition Specific Details and Changes
 
-This toolkit supports the installation of the Oracle Database "Free Edition", availble for download from [Oracle Database Free Get Started](https://www.oracle.com/database/free/get-started/).
+The toolkit supports the installation of the Oracle Database "Free Edition", availble for download from [Oracle Database Free Get Started](https://www.oracle.com/database/free/get-started/).
 
 However, Oracle Database "Free Edition" has a number of differences, including:
 

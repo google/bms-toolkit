@@ -118,9 +118,9 @@
   become: yes
   become_user: "{{ oracle_user }}"
   register: install_rac_db
-  failed_when:
-    - "'Successfully Setup Software' not in install_rac_db.stdout"
-    - "install_rac_db.rc not in [0,6,250]"
+  failed_when: >
+    ('Successfully Setup Software' not in install_rac_db.stdout) or
+    (install_rac_db.rc not in [0,6,250])
   tags: rac-db,rac-db-install
 
 - name: rac-db-install | Installer output

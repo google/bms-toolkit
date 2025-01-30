@@ -122,9 +122,9 @@
   environment:
     CV_ASSUME_DISTID: "{{ cv_distid }}"
   register: db_install_result
-  failed_when:
-    - "'Successfully Setup Software' not in db_install_result.stdout"
-    - "db_install_result.rc not in [0,6,250]"
+  failed_when: >
+    ('Successfully Setup Software' not in db_install_result.stdout) or
+    (db_install_result.rc not in [0,6,250])
   tags: rdbms-install
 
 - name: rdbms-install | runInstaller output

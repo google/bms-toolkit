@@ -188,9 +188,9 @@
   register: install_rac_gi
   environment: 
     CV_ASSUME_DISTID: "{{ cv_distid }}"
-  failed_when:
-    - "'Successfully Setup Software' not in install_rac_gi.stdout"
-    - "install_rac_gi.rc not in [0,6,250]"
+  failed_when: >
+    ('Successfully Setup Software' not in install_rac_gi.stdout) or
+    (install_rac_gi.rc not in [0,6,250])
   tags: rac-gi,rac-gi-install
 
 - name: rac-gi-install | Installer output

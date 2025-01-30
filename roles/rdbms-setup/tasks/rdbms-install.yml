@@ -15,16 +15,18 @@
 ---
 - name: rdbms-install | Set facts
   set_fact:
-    install_unzip_path: "{% if oracle_ver_base in ('19.3','18.0') %}{{ oracle_home }}{% else %}{{ swlib_unzip_path }}{% endif %}"
-    runinstaller_loc: "{% if oracle_ver_base in ('19.3','18.0') %}{{ oracle_home }}{% else %}{{ swlib_unzip_path }}/database{% endif %}"
+    install_unzip_path: "{% if oracle_ver_base in ('21.3', '19.3','18.0') %}{{ oracle_home }}{% else %}{{ swlib_unzip_path }}{% endif %}"
+    runinstaller_loc: "{% if oracle_ver_base in ('21.3', '19.3','18.0') %}{{ oracle_home }}{% else %}{{ swlib_unzip_path }}/database{% endif %}"
   tags: rdbms-setup
 
 - name: rdbms-install | Installer confirmations
   debug:
     msg:
-      - "Installing from file : {{ osw.files }}"
-      - "Unzipping into dir   : {{ install_unzip_path }}"
-      - "Using installer dir  : {{ runinstaller_loc }}"
+      - "Installing from file(osw.files)          : {{ osw.files }}"
+      - "Unzipping into dir(install_unzip_path)   : {{ install_unzip_path }}"
+      - "installer dir(runinstaller_loc)          : {{ runinstaller_loc }}"
+      - "Src (swlib_path)                         : {{ swlib_path }}"
+      - "Dest (swlib_unzip_path)                  : {{ swlib_unzip_path }}"
     #verbosity: 1
   tags: rdbms-setup
 
@@ -148,8 +150,8 @@
   when:
     - item.release == oracle_rel
   register: apply_oneoff
-  failed_when: "('OPatch succeeded' not in apply_oneoff.stdout) or
-                (apply_oneoff.rc not in [0,6,250])"
+  failed_when: "('OPatch succeeded' not in apply_oneoff.stdout and 'OPatch completed with warnings' not in apply_oneoff.stdout)
+                or (apply_oneoff.rc | int not in [0, 6, 250])"
   tags: rdbms-setup,opatch
 
 - name: rdbms-install | opatch output

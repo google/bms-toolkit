@@ -136,7 +136,7 @@
     msg:
       - "{{ dbca_output.cmd }}"
       - "{{ dbca_output.stdout_lines }}"
-    #verbosity: 1
+      # verbosity: 1
   when:
     - pmon_proc.stdout == "0"
     - check_oratab.stdout == "0"

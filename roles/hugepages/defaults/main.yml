@@ -14,5 +14,5 @@
 
 ---
 # Default value for RAM percentage that we are using for shmmax
-#ram_pct_used: "{% if memory_pct is defined %}{{ memory_pct }}{% else %}70{% endif %}"
+# ram_pct_used: "{% if memory_pct is defined %}{{ memory_pct }}{% else %}70{% endif %}"
 ram_pct_used: 65

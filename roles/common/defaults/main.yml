@@ -13,7 +13,6 @@
 # limitations under the License.
 
 ---
-
 # Variables used by more than one role
 oracle_ver_dir: "{% if free_edition %}{% if oracle_ver[:4] == '23.2' or oracle_ver[:4] == '23.3' %}23c{% else %}{{ oracle_ver[:2] }}ai{% endif %}{% else %}{{ oracle_ver[:6] }}{% endif %}"
 oracle_inventory: "{{ oracle_root }}/oraInventory"
@@ -103,11 +102,11 @@ prereq_option: "{% if oracle_ver_base in ('11.2', '12.1') %}-ignorePrereq{% else
 
 # section for DR
 
-#db_unique_name identifies uniqueness of a database in Data Guard configuration.
-#By default in the script it set to "_s" so it might be helpful to overwrite the variable
-#and set it to the suffix which identifies location of the standby database
-#(like "_sydney" for example)
-#The same suffix will be "attached" to the db name in DG configuration as well.
+# db_unique_name identifies uniqueness of a database in Data Guard configuration.
+# By default in the script it set to "_s" so it might be helpful to overwrite the variable
+# and set it to the suffix which identifies location of the standby database
+# (like "_sydney" for example)
+# The same suffix will be "attached" to the db name in DG configuration as well.
 standby_suffix: _s
 
 # section size to use during RMAN duplicate
@@ -320,7 +319,6 @@ opatch_patches:
   - { category: "OPatch", release: "19.3.0.0.0", patchnum: "6880880", patchfile: "p6880880_190000_Linux-x86-64.zip", md5sum: "" }
   - { category: "OPatch", release: "21.3.0.0.0", patchnum: "6880880", patchfile: "p6880880_122010_Linux-x86-64.zip", md5sum: "" }
 
-
 gi_interim_patches:
   - category: "HAS_interim_patch"
     version: 12.2.0.1.0
@@ -350,11 +348,11 @@ gi_patches:
   - { category: "PSU", base: "11.2.0.4.0", release: "11.2.0.4.190716", patchnum: "29698727", patchfile: "p29698727_112040_Linux-x86-64.zip", patch_subdir: "", prereq_check: FALSE, method: "opatch auto", ocm: TRUE, upgrade: FALSE, md5sum: "hv8qYGobWRdQM//gICgkFg==" }
   - { category: "PSU", base: "11.2.0.4.0", release: "11.2.0.4.191015", patchnum: "30070097", patchfile: "p30070097_112040_Linux-x86-64.zip", patch_subdir: "", prereq_check: FALSE, method: "opatch auto", ocm: TRUE, upgrade: FALSE, md5sum: "C2JxZrBm7Pzbe2SFKLoPrg==" }
   - { category: "PSU", base: "11.2.0.4.0", release: "11.2.0.4.200114", patchnum: "30501155", patchfile: "p30501155_112040_Linux-x86-64.zip", patch_subdir: "", prereq_check: FALSE, method: "opatch auto", ocm: TRUE, upgrade: FALSE, md5sum: "U1hYEdLgaCPZsovWJ770TQ==" }
-  - { category: "PSU", base: "11.2.0.4.0", release: "11.2.0.4.200414", patchnum: "30783890", patchfile: "p30783890_112040_Linux-x86-64.zip", patch_subdir: "/30805461", prereq_check: FALSE, method: "opatchauto apply", ocm:  TRUE, upgrade: FALSE, md5sum: "el5hDLXpWaYeJOYcEP7lew==" }
-  - { category: "PSU", base: "11.2.0.4.0", release: "11.2.0.4.200714", patchnum: "31326410", patchfile: "p31326410_112040_Linux-x86-64.zip", patch_subdir: "/31305209", prereq_check: FALSE, method: "opatchauto apply", ocm:  TRUE, upgrade: FALSE, md5sum: "1phFT1FCLSNV8EfilxVxEg==" }
-  - { category: "PSU", base: "11.2.0.4.0", release: "11.2.0.4.201020", patchnum: "31720783", patchfile: "p31720783_112040_Linux-x86-64.zip", patch_subdir: "/31718723", prereq_check: FALSE, method: "opatchauto apply", ocm:  TRUE, upgrade: FALSE, md5sum: "aTpGukOFYiqAJK82pI5BzQ==" }
+  - { category: "PSU", base: "11.2.0.4.0", release: "11.2.0.4.200414", patchnum: "30783890", patchfile: "p30783890_112040_Linux-x86-64.zip", patch_subdir: "/30805461", prereq_check: FALSE, method: "opatchauto apply", ocm: TRUE, upgrade: FALSE, md5sum: "el5hDLXpWaYeJOYcEP7lew==" }
+  - { category: "PSU", base: "11.2.0.4.0", release: "11.2.0.4.200714", patchnum: "31326410", patchfile: "p31326410_112040_Linux-x86-64.zip", patch_subdir: "/31305209", prereq_check: FALSE, method: "opatchauto apply", ocm: TRUE, upgrade: FALSE, md5sum: "1phFT1FCLSNV8EfilxVxEg==" }
+  - { category: "PSU", base: "11.2.0.4.0", release: "11.2.0.4.201020", patchnum: "31720783", patchfile: "p31720783_112040_Linux-x86-64.zip", patch_subdir: "/31718723", prereq_check: FALSE, method: "opatchauto apply", ocm: TRUE, upgrade: FALSE, md5sum: "aTpGukOFYiqAJK82pI5BzQ==" }
 # 12.1.0.2 PSU
-#    - { category: "PSU", base: "12.1.0.2.0", release: "12.1.0.2.190416", patchnum: "29176115", patchfile: "p29176115_121020_Linux-x86-64.zip", patch_subdir: "", prereq_check: FALSE, method: "opatchauto apply", ocm: FALSE, upgrade: FALSE, md5sum: "njxyp0Ao6+v9hhmZaumaKQ==" }
+# - { category: "PSU", base: "12.1.0.2.0", release: "12.1.0.2.190416", patchnum: "29176115", patchfile: "p29176115_121020_Linux-x86-64.zip", patch_subdir: "", prereq_check: FALSE, method: "opatchauto apply", ocm: FALSE, upgrade: FALSE, md5sum: "njxyp0Ao6+v9hhmZaumaKQ==" }
   - { category: "PSU", base: "12.1.0.2.0", release: "12.1.0.2.190416", patchnum: "29252164", patchfile: "p29252164_121020_Linux-x86-64.zip", patch_subdir: "/29176115", prereq_check: FALSE, method: "opatchauto apply", ocm: FALSE, upgrade: FALSE, md5sum: "cyJcYdm3kjyYKFRvbWrK0Q==" }
   - { category: "PSU", base: "12.1.0.2.0", release: "12.1.0.2.190716", patchnum: "29699244", patchfile: "p29699244_121020_Linux-x86-64.zip", patch_subdir: "/29698592", prereq_check: FALSE, method: "opatchauto apply", ocm: FALSE, upgrade: FALSE, md5sum: "Qy4fsb8Z3xGVFQX9QI4Hcg==" }
   - { category: "PSU", base: "12.1.0.2.0", release: "12.1.0.2.191015", patchnum: "30133443", patchfile: "p30133443_121020_Linux-x86-64.zip", patch_subdir: "/30070257", prereq_check: FALSE, method: "opatchauto apply", ocm: FALSE, upgrade: FALSE, md5sum: "nsTCkCA+O4NHaOL8+JPh0Q==" }
@@ -399,8 +397,8 @@ gi_patches:
   - { category: "RU", base: "19.3.0.0.0", release: "19.8.0.0.200714", patchnum: "31326369", patchfile: "p31326369_190000_Linux-x86-64.zip", patch_subdir: "/31305339", prereq_check: FALSE, method: "opatchauto apply", ocm: FALSE, upgrade: FALSE, md5sum: "6Vm4aGIszIQ7NzbuNDBFEw==" }
   - { category: "RU", base: "19.3.0.0.0", release: "19.9.0.0.201020", patchnum: "31720429", patchfile: "p31720429_190000_Linux-x86-64.zip", patch_subdir: "/31750108", prereq_check: FALSE, method: "opatchauto apply", ocm: FALSE, upgrade: FALSE, md5sum: "tTZDYSasdnt7lrNJ/MYm1g==" }
 # Warning: GIRU 32126842 for 19.10.0.0.210119 has critical regressions and password protected. Development recommends 19.11.0.0.210420 Patch 32545008 instead of the JAN 2021 quarter RU
-#  - { category: "RU", base: "19.3.0.0.0", release: "19.10.0.0.210119", patchnum: "32126842", patchfile: "p32126842_190000_Linux-x86-64.zip", patch_subdir: "/32226239", prereq_check: FALSE, method: "opatchauto apply", ocm: FALSE, upgrade: FALSE, md5sum: "opnaS/8dS13yGypZCCN8WA==" }
-#  - { category: "RU", base: "19.3.0.0.0", release: "19.11.0.0.210420", patchnum: "32578973", patchfile: "p32578973_190000_Linux-x86-64.zip", patch_subdir: "/32545008", prereq_check: FALSE, method: "opatchauto apply", ocm: FALSE, upgrade: FALSE, md5sum: "YLEOruyjCOdDvUOMBUazNQ==" }
+# - { category: "RU", base: "19.3.0.0.0", release: "19.10.0.0.210119", patchnum: "32126842", patchfile: "p32126842_190000_Linux-x86-64.zip", patch_subdir: "/32226239", prereq_check: FALSE, method: "opatchauto apply", ocm: FALSE, upgrade: FALSE, md5sum: "opnaS/8dS13yGypZCCN8WA==" }
+# - { category: "RU", base: "19.3.0.0.0", release: "19.11.0.0.210420", patchnum: "32578973", patchfile: "p32578973_190000_Linux-x86-64.zip", patch_subdir: "/32545008", prereq_check: FALSE, method: "opatchauto apply", ocm: FALSE, upgrade: FALSE, md5sum: "YLEOruyjCOdDvUOMBUazNQ==" }
   - { category: "RU", base: "19.3.0.0.0", release: "19.13.0.0.211019", patchnum: "33248471", patchfile: "p33248471_190000_Linux-x86-64.zip", patch_subdir: "/33182768", prereq_check: FALSE, method: "opatchauto apply", ocm: FALSE, upgrade: FALSE, md5sum: "3LgQa6fZ/UHs3XZ8GvtwrQ==" }
   - { category: "RU", base: "19.3.0.0.0", release: "19.14.0.0.220118", patchnum: "33567274", patchfile: "p33567274_190000_Linux-x86-64.zip", patch_subdir: "/33509923", prereq_check: FALSE, method: "opatchauto apply", ocm: FALSE, upgrade: FALSE, md5sum: "JgJsqbGaGcxEPEP6j79BPQ==" }
   - { category: "RU", base: "19.3.0.0.0", release: "19.15.0.0.220419", patchnum: "33859214", patchfile: "p33859214_190000_Linux-x86-64.zip", patch_subdir: "/33803476", prereq_check: FALSE, method: "opatchauto apply", ocm: FALSE, upgrade: FALSE, md5sum: "EkC61Y9W1vKIcG7hpeayiA==" }
@@ -483,8 +481,8 @@ rdbms_patches:
   - { category: "RU_Combo", base: "19.3.0.0.0", release: "19.7.0.0.200414", patchnum: "30783556", patchfile: "p30783556_190000_Linux-x86-64.zip", patch_subdir: "/30805684", prereq_check: TRUE, method: "opatch apply", ocm: FALSE, upgrade: TRUE, md5sum: "9PajEXNsYfGqI7GU+XscqQ==" }
   - { category: "RU_Combo", base: "19.3.0.0.0", release: "19.8.0.0.200714", patchnum: "31326369", patchfile: "p31326369_190000_Linux-x86-64.zip", patch_subdir: "/31219897", prereq_check: TRUE, method: "opatch apply", ocm: FALSE, upgrade: TRUE, md5sum: "6Vm4aGIszIQ7NzbuNDBFEw==" }
   - { category: "RU_Combo", base: "19.3.0.0.0", release: "19.9.0.0.201020", patchnum: "31720429", patchfile: "p31720429_190000_Linux-x86-64.zip", patch_subdir: "/31668882", prereq_check: TRUE, method: "opatch apply", ocm: FALSE, upgrade: TRUE, md5sum: "tTZDYSasdnt7lrNJ/MYm1g==" }
-#  - { category: "RU_Combo", base: "19.3.0.0.0", release: "19.10.0.0.210119", patchnum: "32126842", patchfile: "p32126842_190000_Linux-x86-64.zip", patch_subdir: "/32067171", prereq_check: TRUE, method: "opatch apply", ocm: FALSE, upgrade: TRUE, md5sum: "opnaS/8dS13yGypZCCN8WA==" }
-#  - { category: "RU_Combo", base: "19.3.0.0.0", release: "19.11.0.0.210420", patchnum: "32578973", patchfile: "p32578973_190000_Linux-x86-64.zip", patch_subdir: "/32399816", prereq_check: TRUE, method: "opatch apply", ocm: FALSE, upgrade: TRUE, md5sum: "YLEOruyjCOdDvUOMBUazNQ==" }
+# - { category: "RU_Combo", base: "19.3.0.0.0", release: "19.10.0.0.210119", patchnum: "32126842", patchfile: "p32126842_190000_Linux-x86-64.zip", patch_subdir: "/32067171", prereq_check: TRUE, method: "opatch apply", ocm: FALSE, upgrade: TRUE, md5sum: "opnaS/8dS13yGypZCCN8WA==" }
+# - { category: "RU_Combo", base: "19.3.0.0.0", release: "19.11.0.0.210420", patchnum: "32578973", patchfile: "p32578973_190000_Linux-x86-64.zip", patch_subdir: "/32399816", prereq_check: TRUE, method: "opatch apply", ocm: FALSE, upgrade: TRUE, md5sum: "YLEOruyjCOdDvUOMBUazNQ==" }
   - { category: "RU_Combo", base: "19.3.0.0.0", release: "19.13.0.0.211019", patchnum: "33248471", patchfile: "p33248471_190000_Linux-x86-64.zip", patch_subdir: "/33192694", prereq_check: TRUE, method: "opatch apply", ocm: FALSE, upgrade: TRUE, md5sum: "3LgQa6fZ/UHs3XZ8GvtwrQ==" }
   - { category: "RU_Combo", base: "19.3.0.0.0", release: "19.14.0.0.220118", patchnum: "33567274", patchfile: "p33567274_190000_Linux-x86-64.zip", patch_subdir: "/33561310", prereq_check: TRUE, method: "opatch apply", ocm: FALSE, upgrade: TRUE, md5sum: "JgJsqbGaGcxEPEP6j79BPQ==" }
   - { category: "RU_Combo", base: "19.3.0.0.0", release: "19.15.0.0.220419", patchnum: "33859214", patchfile: "p33859214_190000_Linux-x86-64.zip", patch_subdir: "/33808367", prereq_check: TRUE, method: "opatch apply", ocm: FALSE, upgrade: TRUE, md5sum: "EkC61Y9W1vKIcG7hpeayiA==" }

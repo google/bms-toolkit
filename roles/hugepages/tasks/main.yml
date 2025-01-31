@@ -28,9 +28,9 @@
   register: v_shmmni_sysctl
   changed_when: False
 
-#- name: get total RAM
-#  shell: set -o pipefail; cat /proc/meminfo | ( grep MemTotal || true ) | awk '{print $2*1024}'
-#  register: v_ram
+# - name: get total RAM
+#   shell: set -o pipefail; cat /proc/meminfo | ( grep MemTotal || true ) | awk '{print $2*1024}'
+#   register: v_ram
 
 - name: get shmmax from memory if not configured in sysctl
   shell: cat /proc/sys/kernel/shmmax || true

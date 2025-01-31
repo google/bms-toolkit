@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
+---
 - name: config-tasks | Validate ssh equivalence (passwordless connection) and sudo escalation for new user
   ping:
   tags: host-provision
@@ -24,17 +24,16 @@
   # vgremove -y <VG>
   # vgcreate -y <VG> <block device WWID>
   shell: |
-    vgremove -y db 
+    vgremove -y db
     vgcreate -y db {{ u01_lun }}
   when:
     - u01_lun | length > 0
-  ignore_errors: yes #to ignore when vgremove tries to remove non-existent vg the very first time this is run
+  ignore_errors: yes  # to ignore when vgremove tries to remove non-existent vg the very first time this is run
   tags: host-provision
 
 - name: config-tasks | Create LVM layer - lvcreate
   # lvcreate -l 100%FREE -n <LV> <VG>
   shell: lvcreate -l 100%FREE -n sw db
   when:
-    - u01_lun | length > 0    
+    - u01_lun | length > 0
   tags: host-provision
-

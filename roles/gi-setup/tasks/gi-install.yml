@@ -162,7 +162,7 @@
     msg: "Using installer cmd: {{ installer_command }}"
   tags: gi-setup
 
-- name: gi-install | Set CV_ASSUME_DISTID to OEL7 when installing on RHEL8 # MOS Note: 2878100.1
+- name: gi-install | Set CV_ASSUME_DISTID to OEL7 when installing on RHEL8  # MOS Note: 2878100.1
   set_fact:
     cv_distid: "{{ 'OEL7' if ansible_os_family == 'RedHat' and (ansible_distribution_major_version | int) >= 8 and (oracle_ver_base | float) <= 19.3 else '' }}"
   tags: gi-setup
@@ -184,7 +184,7 @@
     msg:
       - "{{ install_grid_software.cmd }}"
       - "{{ install_grid_software.stdout_lines }}"
-    #verbosity: 1
+      # verbosity: 1
   tags: gi-setup
 
 - name: gi-install | Create OCM response file (if neccessary)
@@ -253,8 +253,7 @@
     - "{{ gi_interim_patches }}"
   when: item.version == osw.version and item.category == "HAS_interim_patch"
   register: patch_output
-  failed_when: "('OPatch succeeded' not in patch_output.stdout) and
-                ('Successfully applied the patch' not in patch_output.stdout)"
+  failed_when: "('OPatch succeeded' not in patch_output.stdout) and ('Successfully applied the patch' not in patch_output.stdout)"
   tags: gi-setup,patch
 
 - name: gi-install | OPatch ouptut

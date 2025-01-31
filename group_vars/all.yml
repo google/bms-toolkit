@@ -13,14 +13,13 @@
 # limitations under the License.
 
 ---
-
 # Defined boolean if installing Free Edition
 free_edition: "{{ oracle_edition == 'FREE' }}"
 
 # Installation related variables:
 swlib_path: "{{ lookup('env','ORA_SWLIB_PATH')|lower|default(swlib_path_default,true) }}"
 swlib_unzip_path: "{{ lookup('env','ORA_STAGING')|lower|default(swlib_path,true) }}"
-swlib_mount_type: "{{ lookup('env','ORA_SWLIB_TYPE')|lower|default('gcs',true) }}" #absent for gcsfuse or nfs
+swlib_mount_type: "{{ lookup('env','ORA_SWLIB_TYPE')|lower|default('gcs',true) }}"  # absent for gcsfuse or nfs
 swlib_mount_src: "{{ lookup('env','ORA_SWLIB_BUCKET')|default('',true) | regex_replace ('^gs://') }}"
 swlib_gcs_service_account_file: "{{ lookup('env','ORA_SWLIB_CREDENTIALS')|default('',true) }}"
 swlib_path_default: "{{ oracle_user_data_mounts|selectattr('purpose', 'match', '^software$') | map(attribute='mount_point') | list | first }}/swlib"
@@ -33,26 +32,26 @@ data_mounts_definition_file: "{{ lookup('env','ORA_DATA_MOUNTS')|default('data_m
 data_mounts_input: "{{ lookup('file',data_mounts_definition_file,errors='ignore') }}"
 oracle_user_data_mounts: "{{ data_mounts_input | default(oracle_user_data_mounts_default,true) }}"
 asm_disks_default:
-- diskgroup: "{{ data_diskgroup }}"
-  disks:
-  - name: DATA1
-    blk_device: /dev/BOGUS
-- diskgroup: "{{ reco_diskgroup }}"
-  disks:
-  - name: RECO1
-    blk_device: /dev/BOGUS
-- diskgroup: DEMO
-  disks:
-  - name: DEMO1
-    blk_device: /dev/BOGUS
+  - diskgroup: "{{ data_diskgroup }}"
+    disks:
+      - name: DATA1
+        blk_device: /dev/BOGUS
+  - diskgroup: "{{ reco_diskgroup }}"
+    disks:
+      - name: RECO1
+        blk_device: /dev/BOGUS
+  - diskgroup: DEMO
+    disks:
+      - name: DEMO1
+        blk_device: /dev/BOGUS
 asm_definition_file: "{{ lookup('env','ORA_ASM_DISKS')|default('asm_disk_config.json',true) }}"
 asm_disk_input: "{{ lookup('file',asm_definition_file,errors='ignore') }}"
 asm_disks: "{% if free_edition %}[]{% else %}{{ asm_disk_input | default(asm_disks_default,true) }}{% endif %}"
 
 ## The toolkit can optionally configure swap space
-#If your RAM size is less than or equal to 2 GB, your swap size should be 1.5 times of the RAM. For example, if your RAM size is 2 GB, you should create swap space of 3GB
-#If your RAM size is between 2 GB and 16 GB, your swap size should be the same size of the RAM. For example, if your RAM size is 4 GB, you should create swap space of 4GB
-#If your RAM size is more than 16 GB, your swap size should be 16 GB. For example, if your RAM size is 32 GB, it is enough if you create a swap space of 16GB
+# If your RAM size is less than or equal to 2 GB, your swap size should be 1.5 times of the RAM. For example, if your RAM size is 2 GB, you should create swap space of 3GB
+# If your RAM size is between 2 GB and 16 GB, your swap size should be the same size of the RAM. For example, if your RAM size is 4 GB, you should create swap space of 4GB
+# If your RAM size is more than 16 GB, your swap size should be 16 GB. For example, if your RAM size is 32 GB, it is enough if you create a swap space of 16GB
 swap_blk_device: "{{ lookup('env','SWAP_BLK_DEVICE')|lower|default('',true) }}"
 
 # ntp preferred server
@@ -101,9 +100,8 @@ full_bu_start_hour: "{{ lookup('env','BACKUP_START_HOUR')|default('01',true) }}"
 full_bu_start_min: "{{ lookup('env','BACKUP_START_MIN')|default('00',true) }}"
 arch_bu_start_min: "{{ lookup('env','ARCHIVE_BACKUP_MIN')|default('30',true) }}"
 
-#backup_mount_src: "192.168.185.82:/backups" #an nfs share of some sort
-#backup_mount_path: "/backups" #an nfs mount point
-
+# backup_mount_src: "192.168.185.82:/backups" #an nfs share of some sort
+# backup_mount_path: "/backups" #an nfs mount point
 
 ## End of customizable Global Variables
 

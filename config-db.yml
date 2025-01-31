@@ -24,40 +24,40 @@
         fail_msg: "You must update Ansible to at least 2.8 to use these playbooks"
         success_msg: "Ansible version is {{ ansible_version.full }}, continuing"
   tasks:
-  - include_role:
-      name: lsnr-create
-    when: create_listener|bool
-    tags: lsnr-create
+    - include_role:
+        name: lsnr-create
+      when: create_listener|bool
+      tags: lsnr-create
 
-  - include_role:
-      name: "{{ role_item }}"
-      tasks_from: main
-    loop:
-      - db-create
-      - db-adjustements
-      - db-backups
-      - validation-scripts
-    loop_control:
-      loop_var: role_item
-    when:
-      - create_db|bool
-      - cluster_type != "RAC"
-      - lookup('env', 'PRIMARY_IP_ADDR') is not defined or lookup('env', 'PRIMARY_IP_ADDR') | length == 0
-    tags: primary-db
+    - include_role:
+        name: "{{ role_item }}"
+        tasks_from: main
+      loop:
+        - db-create
+        - db-adjustements
+        - db-backups
+        - validation-scripts
+      loop_control:
+        loop_var: role_item
+      when:
+        - create_db|bool
+        - cluster_type != "RAC"
+        - lookup('env', 'PRIMARY_IP_ADDR') is not defined or lookup('env', 'PRIMARY_IP_ADDR') | length == 0
+      tags: primary-db
 
-  - include_role:
-      name: db-copy
-      tasks_from: active-copy
-    when:
-      - create_db|bool
-      - cluster_type != "RAC"
-      - lookup('env', 'PRIMARY_IP_ADDR') is defined
-      - lookup('env', 'PRIMARY_IP_ADDR') | length > 0
-    tags: active-duplicate
+    - include_role:
+        name: db-copy
+        tasks_from: active-copy
+      when:
+        - create_db|bool
+        - cluster_type != "RAC"
+        - lookup('env', 'PRIMARY_IP_ADDR') is defined
+        - lookup('env', 'PRIMARY_IP_ADDR') | length > 0
+      tags: active-duplicate
 
-  - include_role:
-      name: dg-config
-      tasks_from: main
-    when:
-      - cluster_type == "DG"
-    tags: dg-create
+    - include_role:
+        name: dg-config
+        tasks_from: main
+      when:
+        - cluster_type == "DG"
+      tags: dg-create

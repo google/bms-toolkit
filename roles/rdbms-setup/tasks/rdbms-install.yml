@@ -27,7 +27,7 @@
       - "installer dir(runinstaller_loc)          : {{ runinstaller_loc }}"
       - "Src (swlib_path)                         : {{ swlib_path }}"
       - "Dest (swlib_unzip_path)                  : {{ swlib_unzip_path }}"
-    #verbosity: 1
+      # verbosity: 1
   tags: rdbms-setup
 
 - name: rdbms-install | Set variable for release patch
@@ -109,7 +109,7 @@
     msg: "Using installer cmd: {{ db_installer_cmd }}"
   tags: rdbms-setup
 
-- name: rdbms-install | Set CV_ASSUME_DISTID to OEL7 when installing on RHEL8 # MOS Note 2878100.1
+- name: rdbms-install | Set CV_ASSUME_DISTID to OEL7 when installing on RHEL8  # MOS Note 2878100.1
   set_fact:
     cv_distid: "{{ 'OEL7' if ansible_os_family == 'RedHat'
                            and (ansible_distribution_major_version | int) >= 8

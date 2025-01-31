@@ -30,9 +30,8 @@
       fail:
         msg: "Python jmespath is missing; please install the python2-jmespath package on control node."
       when: test_json.failed
-  
-  tasks:
 
+  tasks:
     - name: Test connectivity to target instance via ping
       ping:
       register: pingrc
@@ -47,7 +46,7 @@
 
     - name: Collect facts from target
       setup:
- 
+
     - name: Test privilege escalation on target
       raw: sudo -u root whoami
       register: rawrc

@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 ---
 - name: Active-copy | Check pmon process
   shell: "set -o pipefail; ps -ef | ( grep pmon || true ) | ( grep -i {{ oracle_sid }}$ || true ) | ( grep -v grep || true ) | wc -l"
@@ -22,7 +23,7 @@
   lineinfile:
     path: /etc/oratab
     regexp: '^{{ oracle_sid }}\:'
-    line: '{{ oracle_sid }}:{{ oracle_home }}:N'
+    line: "{{ oracle_sid }}:{{ oracle_home }}:N"
     owner: "{{ oracle_user }}"
     group: "{{ oracle_group }}"
   become: yes

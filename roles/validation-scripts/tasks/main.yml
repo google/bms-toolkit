@@ -31,18 +31,18 @@
   become_user: "{{ oracle_user }}"
   tags: validation-scripts
 
-#- name: Run validation scripts
-#  shell: |
-#    {{ scripts_dir }}/{{ item }} {{ oracle_sid }}
-#  with_items:
-#    - "{{ script_list }}"
-#  register: script_output
-#  become: yes
-#  become_user: "{{ oracle_user }}"
-#  tags: validation-scripts,run-validation-scripts
+# - name: Run validation scripts
+#   shell: |
+#     {{ scripts_dir }}/{{ item }} {{ oracle_sid }}
+#   with_items:
+#     - "{{ script_list }}"
+#   register: script_output
+#   become: yes
+#   become_user: "{{ oracle_user }}"
+#   tags: validation-scripts,run-validation-scripts
 
-#- name: Validation script execution results
-#  debug:
-#    msg: "{{ script_output.results }}"
-#    verbosity: 1
-#  tags: validation-scripts,run-validation-scripts
+# - name: Validation script execution results
+#   debug:
+#     msg: "{{ script_output.results }}"
+#     verbosity: 1
+#   tags: validation-scripts,run-validation-scripts

@@ -62,7 +62,7 @@ oracle_required_rpms:
   - make
   - mpfr
   - nfs-utils
-  - perl # OS perl is required for OJVM patching as per MOS note 2978451.1
+  - perl  # OS perl is required for OJVM patching as per MOS note 2978451.1
   - psmisc
   - quota
   - quota-nls
@@ -94,6 +94,10 @@ oracle_required_rpms_el8:
   - libini_config
   - libmpc
   - libnfsidmap
+  - libnsl
+  - libnsl.i686
+  - libnsl2
+  - libnsl2.i686
   - libpath_utils
   - libref_array
   - libSM
@@ -123,10 +127,6 @@ oracle_required_rpms_el8:
   - sysstat
   - xorg-x11-utils
   - xorg-x11-xauth
-  - libnsl
-  - libnsl.i686
-  - libnsl2
-  - libnsl2.i686
 
 oracle_required_rpms_el9:
   - bc
@@ -149,6 +149,10 @@ oracle_required_rpms_el9:
   - libini_config
   - libmpc
   - libnfsidmap
+  - libnsl
+  - libnsl.i686
+  - libnsl2
+  - libnsl2.i686
   - libpath_utils
   - libref_array
   - libSM
@@ -177,18 +181,14 @@ oracle_required_rpms_el9:
   - sysstat
   - xorg-x11-utils
   - xorg-x11-xauth
-  - libnsl
-  - libnsl.i686
-  - libnsl2
-  - libnsl2.i686
 
 sysctl_entries:
   - { name: "fs.aio-max-nr", value: "1048576" }
   - { name: "fs.file-max", value: "6815744" }
   - { name: "kernel.panic_on_oops", value: "1" }
-  #- { name: "kernel.shmall", value: "{{ (ansible_memtotal_mb * 1024 * 1024 / 4096 * 0.6) | int }}" }
-  #- { name: "kernel.shmmax", value: "{{ (ansible_memtotal_mb * 1024 * 1024 * 0.6) | int }}" }
-  #- { name: "kernel.shmmni", value: "4096" }
+  # - { name: "kernel.shmall", value: "{{ (ansible_memtotal_mb * 1024 * 1024 / 4096 * 0.6) | int }}" }
+  # - { name: "kernel.shmmax", value: "{{ (ansible_memtotal_mb * 1024 * 1024 * 0.6) | int }}" }
+  # - { name: "kernel.shmmni", value: "4096" }
   - { name: "kernel.sem", value: "250 32000 100 128" }
   - { name: "net.ipv4.ip_local_port_range", value: "9000 65500" }
   - { name: "net.core.rmem_default", value: "262144" }

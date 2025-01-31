@@ -15,7 +15,7 @@
 ---
 - name: DG | SQL to add standby logs
   set_fact:
-    sql_for_dg:  |
+    sql_for_dg: |
       alter system set dg_broker_start = true sid='*';
       alter system set standby_file_management = auto sid='*';
       begin

@@ -13,13 +13,12 @@
 # limitations under the License.
 
 ---
-
 - name: Populate variables
   hosts: dbasm
   tasks:
-  - include_role:
-      name: common
-      tasks_from: populate-vars.yml
+    - include_role:
+        name: common
+        tasks_from: populate-vars.yml
   tags: populate-vars
 
 - hosts: dbasm

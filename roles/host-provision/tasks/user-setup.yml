@@ -12,12 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+---
 - name: user-setup | Create ansible user
   user:
     name: "{{ instance_ssh_user }}"
     comment: "User created for oracle-toolkit github.com/oracle-toolkit"
   tags: host-provision
-
 
 # the following 2 tasks are required so as not to hard code the public key file path
 # and derive it from group_vars.yml's: instance_ssh_user: "~/.ssh/id_rsa_oracle_toolkit"
@@ -47,4 +47,3 @@
     src: hostprovision_ansible_user.j2
     dest: "/etc/sudoers.d/{{ instance_ssh_user }}"
   tags: host-provision
-

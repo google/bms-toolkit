@@ -39,18 +39,18 @@
   register: opatch_analyze
   changed_when: false
   ignore_errors: true
-  #failed_when: "'Analysis for the patches failed' in opatch_analyze.results.0.stdout"
+  # failed_when: "'Analysis for the patches failed' in opatch_analyze.results.0.stdout"
   become: yes
   tags: rac-opatch
 
 - name: rac-opatch | If patch to apply then variable is true
   block:
-  - name: check is apply is needed
-    set_fact:
-      apply_needed: "{{ opatch_analyze.results.0.stdout_lines is search('Following patches were SUCCESSFULLY analyzed to be applied') }}"
-  - name: show the variable value
-    debug:
-      msg: "apply needed? - {{ apply_needed }}"
+    - name: check is apply is needed
+      set_fact:
+        apply_needed: "{{ opatch_analyze.results.0.stdout_lines is search('Following patches were SUCCESSFULLY analyzed to be applied') }}"
+    - name: show the variable value
+      debug:
+        msg: "apply needed? - {{ apply_needed }}"
   tags: rac-opatch
 
 - name: rac-opatch | GI opatch analyze output

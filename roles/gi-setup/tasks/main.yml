@@ -83,7 +83,7 @@
     msg:
       - "{{ crsctl_res.cmd }}"
       - "{{ crsctl_res.stdout_lines }}"
-    #verbosity: 1
+      # verbosity: 1
   tags: gi-setup,crsctl
 
 - name: Final GI permission adjustments
@@ -95,10 +95,10 @@
     mode: "{{ item.mode }}"
     recurse: "{{ item.recurse }}"
   with_items:
-    - {name: "{{ oracle_base }}/diag", owner: "{{ oracle_user }}", mode: "ug=rwx,o=rx", recurse: "no" }
-    - {name: "{{ oracle_base }}/diag/crs", owner: "{{ grid_user }}", mode: "g+w", recurse: "yes" }
-    - {name: "{{ oracle_base }}/diag/kfod", owner: "{{ grid_user }}", mode: "g+w", recurse: "yes" }
-    - {name: "{{ oracle_base }}/admin", owner: "{{ oracle_user }}", mode: "g+w", recurse: "yes" }
+    - { name: "{{ oracle_base }}/diag", owner: "{{ oracle_user }}", mode: "ug=rwx,o=rx", recurse: "no" }
+    - { name: "{{ oracle_base }}/diag/crs", owner: "{{ grid_user }}", mode: "g+w", recurse: "yes" }
+    - { name: "{{ oracle_base }}/diag/kfod", owner: "{{ grid_user }}", mode: "g+w", recurse: "yes" }
+    - { name: "{{ oracle_base }}/admin", owner: "{{ oracle_user }}", mode: "g+w", recurse: "yes" }
   become: yes
   become_user: root
   tags: gi-setup

@@ -26,5 +26,5 @@ full_bu_start_hour: "01"
 full_bu_start_min: "00"
 arch_bu_start_min: "30"
 
-#backup_mount_src: ""
-#backup_mount_path: ""
+# backup_mount_src: ""
+# backup_mount_path: ""

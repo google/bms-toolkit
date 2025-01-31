@@ -16,34 +16,34 @@
 - name: Populate variables
   hosts: dbasm
   tasks:
-  - include_role:
-      name: common
-      tasks_from: populate-vars.yml
+    - include_role:
+        name: common
+        tasks_from: populate-vars.yml
 
 - name: Download patches
   hosts: dbasm
   pre_tasks:
-  - name: Verify that Ansible on control node meets the version requirements
-    assert:
-      that: "ansible_version.full is version_compare('2.8', '>=')"
-      fail_msg: "You must update Ansible to at least 2.8 to use these playbooks"
-      success_msg: "Ansible version is {{ ansible_version.full }}, continuing"
+    - name: Verify that Ansible on control node meets the version requirements
+      assert:
+        that: "ansible_version.full is version_compare('2.8', '>=')"
+        fail_msg: "You must update Ansible to at least 2.8 to use these playbooks"
+        success_msg: "Ansible version is {{ ansible_version.full }}, continuing"
   tasks:
-  - include_role:
-      name: swlib
-      tasks_from: main.yml
-    vars:
-      patch_only: yes
+    - include_role:
+        name: swlib
+        tasks_from: main.yml
+      vars:
+        patch_only: yes
   become: no
   tags: download-patches
 
 - name: OPatch Restart patch
   hosts: dbasm
   tasks:
-  - include_role:
-      name: patch
-      tasks_from: main.yml
-    when: hostvars[groups['dbasm'].0]['cluster_name']|default('', true)|length == 0
+    - include_role:
+        name: patch
+        tasks_from: main.yml
+      when: hostvars[groups['dbasm'].0]['cluster_name']|default('', true)|length == 0
   remote_user: "{{ oracle_user }}"
   become: yes
   become_user: root
@@ -52,12 +52,12 @@
 - name: RAC install opatch
   hosts: dbasm
   tasks:
-  - include_role:
-      name: patch
-      tasks_from: rac-ins-opatch.yml
-    vars:
-      db_config_type: RAC
-    when: hostvars[groups['dbasm'].0]['cluster_name']|default('', true)|length > 0
+    - include_role:
+        name: patch
+        tasks_from: rac-ins-opatch.yml
+      vars:
+        db_config_type: RAC
+      when: hostvars[groups['dbasm'].0]['cluster_name']|default('', true)|length > 0
   tags: rac-ins-opatch
 
 - name: RAC patch apply
@@ -65,21 +65,21 @@
   serial: 1
   order: inventory
   tasks:
-  - include_role:
-      name: patch
-      tasks_from: rac-opatch.yml
-    vars:
-      db_config_type: RAC
-    when: hostvars[groups['dbasm'].0]['cluster_name']|default('', true)|length > 0
+    - include_role:
+        name: patch
+        tasks_from: rac-opatch.yml
+      vars:
+        db_config_type: RAC
+      when: hostvars[groups['dbasm'].0]['cluster_name']|default('', true)|length > 0
   tags: rac-opatch
 
 - name: RAC database patch
   hosts: dbasm[0]
   tasks:
-  - include_role:
-      name: patch
-      tasks_from: rac-dbpatch.yml
-    vars:
-      db_config_type: RAC
-    when: hostvars[groups['dbasm'].0]['cluster_name']|default('', true)|length > 0
+    - include_role:
+        name: patch
+        tasks_from: rac-dbpatch.yml
+      vars:
+        db_config_type: RAC
+      when: hostvars[groups['dbasm'].0]['cluster_name']|default('', true)|length > 0
   tags: rac-dbpatch

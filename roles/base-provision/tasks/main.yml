@@ -47,8 +47,7 @@
     name: "{{ item }}"
     enabled: false
     state: stopped
-  when:
-    cluster_name is defined
+  when: cluster_name is defined
   ignore_errors: yes
   with_items:
     - avahi-daemon.socket
@@ -66,7 +65,7 @@
   blockinfile:
     path: /etc/chrony.conf
     marker: "# {mark} ANSIBLE MANAGED BLOCK"
-    insertafter: '^server '
+    insertafter: "^server "
     block: "server {{ ntp_preferred }} prefer iburst"
     state: "{{ (ntp_preferred != \"\" ) | ternary('present', 'absent') }}"
   notify: restart chronyd
@@ -129,7 +128,7 @@
 - name: Add fqdn to /etc/hosts if needed
   lineinfile:
     path: /etc/hosts
-    regexp: '.*{{ ansible_fqdn }}$'
+    regexp: ".*{{ ansible_fqdn }}$"
     line: "{{ ansible_ssh_host }} {{ ansible_hostname }} {{ ansible_fqdn }}"
     state: present
   when: cluster_type in ("NONE", "DG")

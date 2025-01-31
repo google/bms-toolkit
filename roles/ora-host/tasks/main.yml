@@ -41,8 +41,8 @@
 - name: Ensure NOZEROCONF=yes is in /etc/sysconfig/network
   lineinfile:
     dest: /etc/sysconfig/network
-    regexp: '^NOZEROCONF'
-    line: 'NOZEROCONF=yes'
+    regexp: "^NOZEROCONF"
+    line: "NOZEROCONF=yes"
 
 - name: Ensure /dev/shm is present in /etc/fstab
   mount:
@@ -258,7 +258,7 @@
     limit_item: "{{ item[1].name }}"
     value: "{{ item[1].value }}"
   with_nested:
-    - [ "{{ oracle_user }}", "{{ grid_user }}" ]
+    - ["{{ oracle_user }}", "{{ grid_user }}"]
     - "{{ resource_limits }}"
   tags: kernel-setup
 
@@ -315,7 +315,7 @@
   lineinfile:
     dest: /etc/systemd/logind.conf
     regexp: '^#\s*RemoveIPC.*$'
-    line: 'RemoveIPC=no'
+    line: "RemoveIPC=no"
 
 - name: Append database variables to bash_profile
   become: yes
@@ -364,9 +364,9 @@
 - name: (debug) asm disk configuration
   debug:
     msg:
-     - asm_disks {{ asm_disks }}
-     - asm_def_file {{ asm_definition_file }}
-     - asm_disk_input {{ asm_disk_input }}
+      - asm_disks {{ asm_disks }}
+      - asm_def_file {{ asm_definition_file }}
+      - asm_disk_input {{ asm_disk_input }}
   tags: asm-disks
 
 ######## Udev rules for non-multipath disks ########
@@ -532,8 +532,8 @@
 - name: (asmlib) ASM listing results
   debug:
     msg:
-    - "{{ item.stderr_lines }}"
-    - "{{ item.stdout_lines }}"
+      - "{{ item.stderr_lines }}"
+      - "{{ item.stdout_lines }}"
   with_items:
     - "{{ asmconfig }}"
     - "{{ listdisks }}"

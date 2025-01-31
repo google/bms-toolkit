@@ -20,7 +20,7 @@
     chdir: "{{ swlib_unzip_path }}/{{ patch.patchnum }}/{{ patch.patch_subdir }}"
   when: patch.prereq_check
   failed_when: opatch_prereq.rc != 0
-  become: yes
+  become: true
   become_user: "{{ sw_user }}"
   tags: opatch-prereq
 
@@ -37,7 +37,7 @@
     chdir: "{{ swlib_unzip_path }}/{{ patch.patchnum }}/{{ patch.patch_subdir }}"
   when: not patch.prereq_check and oracle_ver != '11.2.0.4.0'
   failed_when: opatch_analyze.rc != 0
-  become: yes
+  become: true
   become_user: "{{ sw_user }}"
   tags: opatch-analyze
 
@@ -60,7 +60,7 @@
     chdir: "{{ swlib_unzip_path }}/{{ patch.patchnum }}{{ patch.patch_subdir }}"
   register: opatch_apply
   failed_when: opatch_apply.rc != 0
-  become: yes
+  become: true
   become_user: "{{ sw_user }}"
   tags: opatch-apply
 
@@ -82,7 +82,7 @@
     chdir: "{{ grid_home }}/bin"
   when: oracle_ver == '12.1.0.2.0'
   register: setasmgidwrap_output
-  become: yes
+  become: true
   become_user: "{{ grid_user }}"
   tags: opatch-apply
 

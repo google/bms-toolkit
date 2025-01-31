@@ -28,7 +28,7 @@
     vgcreate -y db {{ u01_lun }}
   when:
     - u01_lun | length > 0
-  ignore_errors: yes  # to ignore when vgremove tries to remove non-existent vg the very first time this is run
+  ignore_errors: true  # to ignore when vgremove tries to remove non-existent vg the very first time this is run
   tags: host-provision
 
 - name: config-tasks | Create LVM layer - lvcreate

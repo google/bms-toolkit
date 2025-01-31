@@ -16,9 +16,9 @@
 - name: Check if software is already installed
   shell: cat "{{ oracle_inventory }}/ContentsXML/inventory.xml" 2>&1 | ( grep -w {{ oracle_home }} || true ) | wc -l
   register: existing_dbhome
-  become: yes
+  become: true
   become_user: root
-  ignore_errors: yes
+  ignore_errors: true
   changed_when: false
   failed_when: false
   tags: rdbms-setup
@@ -71,6 +71,6 @@
     owner: "{{ oracle_user }}"
     group: "{{ oracle_group }}"
     mode: u=rw,g=r,o=
-  become: yes
+  become: true
   become_user: "{{ oracle_user }}"
   tags: rdbms-setup

@@ -14,11 +14,11 @@
 
 ---
 - name: rac-db-install | Check if software is already installed
-  become: yes
+  become: true
   become_user: root
   shell: cat "{{ oracle_inventory }}/ContentsXML/inventory.xml" 2>&1 | ( grep -w {{ oracle_home }} || true ) | wc -l
   register: existing_dbhome
-  ignore_errors: yes
+  ignore_errors: true
   changed_when: false
   failed_when: false
   tags: rac-db
@@ -52,7 +52,7 @@
   tags: rac-db,rel-patch
 
 - name: rac-db-install | Create DB directories
-  become: yes
+  become: true
   become_user: root
   file:
     path: "{{ install_unzip_path }}"
@@ -68,28 +68,28 @@
   unarchive:
     src: "{{ swlib_path }}/{{ item.patchfile }}"
     dest: "{{ swlib_unzip_path }}"
-    remote_src: yes
+    remote_src: true
     owner: "{{ oracle_user }}"
     group: "{{ oracle_group }}"
   with_items:
     - "{{ rdbms_patches }}"
   when: item.release == oracle_rel
-  become: yes
+  become: true
   tags: rac-db,sw-unzip
 
 - name: rac-db-install | Unzipping software
-  become: yes
+  become: true
   become_user: "{{ oracle_user }}"
   unarchive:
     src: "{{ swlib_path }}/{{ item }}"
     dest: "{{ install_unzip_path }}"
-    remote_src: yes
+    remote_src: true
   with_items:
     - "{{ osw_files }}"
   tags: rac-db,sw_unzip
 
 - name: rac-db-install | Create DB response file script
-  become: yes
+  become: true
   become_user: "{{ oracle_user }}"
   template:
     src: db_install.rsp.{{ oracle_ver }}.j2
@@ -100,14 +100,14 @@
   unarchive:
     src: "{{ swlib_path }}/{{ item.patchfile }}"
     dest: "{{ oracle_home }}"
-    remote_src: yes
+    remote_src: true
   with_items:
     - "{{ opatch_patches }}"
   when:
     - item.release == oracle_ver
     - item.category == "OPatch"
     - oracle_rel != "base"
-  become: yes
+  become: true
   become_user: "{{ oracle_user }}"
   tags: rac-db,update-opatch-db
 
@@ -131,7 +131,7 @@
 
 - name: rac-db-install | Run runInstaller
   command: "{{ installer_command }}"
-  become: yes
+  become: true
   become_user: "{{ oracle_user }}"
   environment:
     CV_ASSUME_DISTID: "{{ cv_distid }}"
@@ -148,7 +148,7 @@
   tags: rac-db,rac-db-install
 
 - name: rac-db-install | Apply one-off and OJVM patches
-  become: yes
+  become: true
   become_user: "{{ oracle_user }}"
   command: "{{ oracle_home }}/OPatch/{{ item.method }} -silent -oh {{ oracle_home }} {{ swlib_unzip_path }}/{{ item.patchnum }}{{ item.patch_subdir }}"
   environment:
@@ -170,11 +170,11 @@
       - "{{ item.stdout_lines }}"
   with_items: "{{ apply_oneoff.results }}"
   when: item.changed
-  ignore_errors: yes
+  ignore_errors: true
   tags: rac-db,rac-db-install,opatch
 
 - name: rac-db-install | Run script root.sh
-  become: yes
+  become: true
   become_user: root
   command: "{{ oracle_home }}/root.sh"
   loop: "{{ lookup('inventory_hostnames', 'dbasm', wantlist=True) }}"

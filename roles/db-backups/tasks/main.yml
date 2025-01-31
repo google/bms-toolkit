@@ -14,7 +14,7 @@
 
 ---
 - name: Create required directories
-  become: yes
+  become: true
   become_user: "{{ oracle_user }}"
   file:
     path: "{{ item }}"
@@ -34,7 +34,7 @@
     - backup_mount_path is defined
 
 - name: Copy backup scripts to target server
-  become: yes
+  become: true
   become_user: "{{ oracle_user }}"
   template:
     src: "{{ item }}.j2"
@@ -49,7 +49,7 @@
   tags: db-backups,add-backups
 
 - name: Schedule full backups
-  become: yes
+  become: true
   become_user: "{{ oracle_user }}"
   cron:
     name: "{{ oracle_sid }} RMAN weekly LEVEL={{ item.level }}"
@@ -64,7 +64,7 @@
   tags: db-backups,add-backups
 
 - name: Schedule archived redo log backups
-  become: yes
+  become: true
   become_user: "{{ oracle_user }}"
   cron:
     name: "{{ oracle_sid }} ARCH backups"
@@ -74,7 +74,7 @@
   tags: db-backups,add-backups
 
 - name: Run initial full backup
-  become: yes
+  become: true
   become_user: "{{ oracle_user }}"
   shell: |
     export PATH={{ oracle_home }}/bin:/usr/local/bin:${PATH}
@@ -84,7 +84,7 @@
   tags: db-backups,run-backups
 
 - name: Run initial archivelog backup
-  become: yes
+  become: true
   become_user: "{{ oracle_user }}"
   shell: |
     export PATH={{ oracle_home }}/bin:/usr/local/bin:${PATH}

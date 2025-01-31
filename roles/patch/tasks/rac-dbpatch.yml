@@ -26,7 +26,7 @@
     ORACLE_HOME: "{{ oracle_home }}"
     ORACLE_SID: "{{ oracle_sid }}"
     PATH: "{{ oracle_home }}/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin"
-  become: yes
+  become: true
   become_user: "{{ oracle_user }}"
   tags: patch_rdbms,cluster-mode
 
@@ -39,7 +39,7 @@
     ORACLE_SID: "{{ oracle_sid }}"
     PATH: "{{ oracle_home }}/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin"
   register: shutdown_db
-  become: yes
+  become: true
   become_user: "{{ oracle_user }}"
   tags: patch_rdbms,upgrade_db
 
@@ -52,7 +52,7 @@
     ORACLE_SID: "{{ oracle_sid }}"
     PATH: "{{ oracle_home }}/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin"
   register: startup_db
-  become: yes
+  become: true
   become_user: "{{ oracle_user }}"
   tags: patch_rdbms,upgrade_db
 
@@ -73,8 +73,8 @@
     ORACLE_SID: "{{ oracle_sid }}"
     PATH: "{{ oracle_home }}/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin"
   register: startup_pdb
-  ignore_errors: yes
-  become: yes
+  ignore_errors: true
+  become: true
   become_user: "{{ oracle_user }}"
   when: oracle_ver != '11.2.0.4.0'
   tags: patch_rdbms,start_pdb
@@ -88,8 +88,8 @@
     PATH: "{{ oracle_home }}/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin"
   when: oracle_ver != '11.2.0.4.0'
   register: datapatch_output
-  ignore_errors: yes
-  become: yes
+  ignore_errors: true
+  become: true
   become_user: "{{ oracle_user }}"
   tags: patch_rdbms,datapatch
 
@@ -111,7 +111,7 @@
   when: oracle_ver == '11.2.0.4.0'
   register: catbundle_output
   failed_when: "catbundle_output.rc != 0"
-  become: yes
+  become: true
   become_user: "{{ oracle_user }}"
   tags: patch_rdbms,catbundle
 
@@ -128,7 +128,7 @@
     ORACLE_HOME: "{{ oracle_home }}"
     ORACLE_SID: "{{ oracle_sid }}"
     PATH: "{{ oracle_home }}/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin"
-  become: yes
+  become: true
   become_user: "{{ oracle_user }}"
   tags: patch_rdbms,utlrp
 
@@ -149,7 +149,7 @@
     PATH: "{{ oracle_home }}/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin"
   when: oracle_ver != '11.2.0.4.0'
   register: patch_registry
-  become: yes
+  become: true
   become_user: "{{ oracle_user }}"
   tags: patch_rdbms
 
@@ -165,7 +165,7 @@
     ORACLE_HOME: "{{ oracle_home }}"
     ORACLE_SID: "{{ oracle_sid }}"
     PATH: "{{ oracle_home }}/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin"
-  become: yes
+  become: true
   become_user: "{{ oracle_user }}"
   tags: patch_rdbms,cluster-mode
 
@@ -178,7 +178,7 @@
     ORACLE_HOME: "{{ oracle_home }}"
     PATH: "{{ oracle_home }}/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin"
   register: restart_db
-  become: yes
+  become: true
   become_user: "{{ oracle_user }}"
   tags: patch_rdbms,upgrade_db
 
@@ -199,8 +199,8 @@
     ORACLE_SID: "{{ oracle_sid }}"
     PATH: "{{ oracle_home }}/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin"
   register: startup_pdb
-  ignore_errors: yes
-  become: yes
+  ignore_errors: true
+  become: true
   become_user: "{{ oracle_user }}"
   when: oracle_ver != '11.2.0.4.0'
   tags: patch_rdbms,start_pdb
@@ -215,8 +215,8 @@
   when:
     - oracle_ver != '11.2.0.4.0'
   register: datapatch_output2
-  ignore_errors: yes
-  become: yes
+  ignore_errors: true
+  become: true
   become_user: "{{ oracle_user }}"
   tags: patch_rdbms,datapatch
 
@@ -233,7 +233,7 @@
     ORACLE_HOME: "{{ oracle_home }}"
     ORACLE_SID: "{{ oracle_sid }}"
     PATH: "{{ oracle_home }}/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin"
-  become: yes
+  become: true
   become_user: "{{ oracle_user }}"
   tags: patch_rdbms,utlrp
 
@@ -255,8 +255,8 @@
     ORACLE_SID: "{{ oracle_sid }}"
     PATH: "{{ oracle_home }}/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin"
   register: restart_pdb
-  ignore_errors: yes
-  become: yes
+  ignore_errors: true
+  become: true
   become_user: "{{ oracle_user }}"
   when: oracle_ver != '11.2.0.4.0'
   tags: patch_rdbms,start_pdb

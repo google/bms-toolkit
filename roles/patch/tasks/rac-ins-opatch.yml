@@ -23,7 +23,7 @@
   when:
     - item.ocm
     - item.release == oracle_ver
-  become: yes
+  become: true
   become_user: "{{ oracle_user }}"
   tags: rac-ins-opatch
 
@@ -31,25 +31,25 @@
   copy:
     src: "{{ oracle_root }}/oraInventory/oraInst.loc"
     dest: "{{ grid_home }}/oraInst.loc"
-    remote_src: yes
+    remote_src: true
     owner: "{{ grid_user }}"
     group: "{{ oracle_group }}"
     mode: u=rw,g=r,o=
   when: oracle_ver == '12.2.0.1.0'
-  become: yes
+  become: true
   become_user: root
 
 - name: rac-ins-opatch | Update GI OPatch
   unarchive:
     src: "{{ swlib_path }}/{{ item.patchfile }}"
     dest: "{{ grid_home }}"
-    remote_src: yes
+    remote_src: true
   with_items:
     - "{{ opatch_patches }}"
   when:
     - item.release == oracle_ver
     - item.category == "OPatch"
-  become: yes
+  become: true
   become_user: "{{ grid_user }}"
   tags: rac-ins-opatch
 
@@ -57,12 +57,12 @@
   unarchive:
     src: "{{ swlib_path }}/{{ item.patchfile }}"
     dest: "{{ oracle_home }}"
-    remote_src: yes
+    remote_src: true
   with_items:
     - "{{ opatch_patches }}"
   when:
     - item.release == oracle_ver
     - item.category == "OPatch"
-  become: yes
+  become: true
   become_user: "{{ oracle_user }}"
   tags: rac-ins-opatch

@@ -22,7 +22,7 @@
     mode: u=rwx,go=r
   with_items:
     - "{{ db_script_files }}"
-  become: yes
+  become: true
   become_user: "{{ oracle_user }}"
   tags: db-adjustments
 
@@ -33,8 +33,8 @@
   with_items:
     - "{{ db_script_files }}"
   register: scripts_output
-  ignore_errors: yes
-  become: yes
+  ignore_errors: true
+  become: true
   become_user: "{{ oracle_user }}"
   tags: db-adjustments
 
@@ -50,6 +50,6 @@
     state: absent
   with_items:
     - "{{ db_script_files }}"
-  become: yes
+  become: true
   become_user: "{{ oracle_user }}"
   tags: db-adjustments

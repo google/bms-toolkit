@@ -39,7 +39,7 @@
     dest: /etc/hosts
     regexp: ".*gateway-instance.*"
     line: "{{ proxy_ip }} gateway-instance gateway-instance."
-    backup: yes
+    backup: true
   tags: host-provision
 
 - name: proxy | Add client side proxy environment variables to /etc/profile.d
@@ -50,7 +50,7 @@
       export http_proxy="http://gateway-instance:3128"
       export https_proxy="http://gateway-instance:3128"
       export ftp_proxy="http://gateway-instance:3128"
-    backup: yes
+    backup: true
   tags: host-provision
 
 - name: proxy | Update proxy in sudoers
@@ -60,5 +60,5 @@
     regexp: ".*env_keep.*proxy.*"
     line: 'Defaults env_keep += "ftp_proxy http_proxy https_proxy no_proxy"'
     validate: "visudo -cf %s"
-    backup: yes
+    backup: true
   tags: host-provision

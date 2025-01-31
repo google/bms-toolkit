@@ -19,7 +19,7 @@
     dest: "{{ pwgen_path }}/{{ pwgen_file }}"
     owner: root
     mode: u=rwx,go=rx
-  become: yes
+  become: true
   become_user: root
 
 - name: Generate random password

@@ -16,10 +16,10 @@
 - name: Open listener port in firewall
   firewalld:
     port: "{{ listener_port }}/tcp"
-    permanent: yes
-    immediate: yes
+    permanent: true
+    immediate: true
     state: enabled
-  become: yes
+  become: true
   register: firewall_output
   failed_when:
     - "'firewall is not currently running' not in firewall_output.msg"
@@ -28,7 +28,7 @@
   tags: lsnr-create
 
 - name: Test whether port is free
-  become: yes
+  become: true
   become_user: root
   shell: "set -o pipefail; netstat -lnpt | ( grep {{ listener_port }} || true ) | wc -l"
   changed_when: false
@@ -37,7 +37,7 @@
   tags: lsnr-create
 
 - name: Check if listener has already been created
-  become: yes
+  become: true
   become_user: root
   shell: "set -o pipefail; ps -ef | ( grep [t]ns ||true ) | ( grep -w {{ listener_name }} || true ) | wc -l"
   changed_when: false
@@ -56,7 +56,7 @@
   tags: lsnr-create
 
 - name: Create listener via srvctl
-  become: yes
+  become: true
   become_user: "{{ grid_user }}"
   shell: |
     export PATH={{ grid_home }}/bin:${PATH}
@@ -82,7 +82,7 @@
   tags: lsnr-create
 
 - name: Create listener via netca
-  become: yes
+  become: true
   become_user: "{{ oracle_user }}"
   shell: |
     set -o pipefail

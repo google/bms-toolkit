@@ -40,14 +40,14 @@
   unarchive:
     src: "{{ swlib_path }}/{{ item.patchfile }}"
     dest: "{{ swlib_unzip_path }}"
-    remote_src: yes
+    remote_src: true
     creates: .gi_patch_{{ oracle_rel }}
     owner: "{{ grid_user }}"
     group: "{{ oracle_group }}"
   with_items:
     - "{{ gi_patches }}"
   when: item.release == oracle_rel and item.category == 'RU' and item.category != "HAS_interim_patch"
-  become: yes
+  become: true
   tags: gi-setup,sw-unzip
 
 - name: gi-install | Set variable for release patch
@@ -59,18 +59,18 @@
   tags: gi-setup,rel-patch
 
 - name: gi-install | Unzipping GI software
-  become: yes
+  become: true
   become_user: "{{ grid_user }}"
   unarchive:
     src: "{{ swlib_path }}/{{ item }}"
     dest: "{{ install_unzip_path }}"
-    remote_src: yes
+    remote_src: true
   with_items:
     - "{{ osw.files }}"
   tags: gi-setup,sw-unzip
 
 - name: gi-install | Find the cvuqdisk RPM
-  become: yes
+  become: true
   become_user: root
   find:
     paths: "{{ grid_home }}/cv/rpm/"
@@ -79,7 +79,7 @@
   tags: gi-setup,cvuqdisk
 
 - name: gi-install | Install the cvuqdisk RPM
-  become: yes
+  become: true
   become_user: root
   yum:
     name: "{{ r.files | map(attribute='path') | list }}"
@@ -92,14 +92,14 @@
   tags: gi-setup,cvuqdisk
 
 - name: gi-install | Run cluvfy utility
-  become: yes
+  become: true
   become_user: "{{ grid_user }}"
   command: "{{ cluvfy_command }}"
   when: run_cluvfy|bool
   register: cluvfy_res
   failed_when: cluvfy_res.rc != 0 and oracle_ver != '11.2.0.4.0'  # Exclude 11gR2 due to elfutils & pdksh bug, MOS Doc ID 1962046.1
-  ignore_errors: yes
-  no_log: True
+  ignore_errors: true
+  no_log: true
   tags: gi-setup,cluvfy
 
 - name: gi-install | cluvfy results
@@ -110,7 +110,7 @@
   tags: gi-setup,cluvfy
 
 - name: gi-install | Create GI response file script
-  become: yes
+  become: true
   become_user: "{{ grid_user }}"
   template:
     src: grid_install.rsp.sh.j2
@@ -118,14 +118,14 @@
   tags: gi-setup
 
 - name: gi-install | Run GI response file script
-  become: yes
+  become: true
   become_user: "{{ grid_user }}"
   command: "sh {{ swlib_unzip_path }}/grid_install.rsp.sh"
   args:
   tags: gi-setup
 
 - name: gi-install | Script cleanup
-  become: yes
+  become: true
   become_user: "{{ grid_user }}"
   file:
     path: "{{ swlib_unzip_path }}/grid_install.rsp.sh"
@@ -146,14 +146,14 @@
   unarchive:
     src: "{{ swlib_path }}/{{ item.patchfile }}"
     dest: "{{ grid_home }}"
-    remote_src: yes
+    remote_src: true
   with_items:
     - "{{ opatch_patches }}"
   when:
     - item.release == oracle_ver
     - item.category == "OPatch"
     - oracle_rel != "base"
-  become: yes
+  become: true
   become_user: "{{ grid_user }}"
   tags: gi-setup,opatch
 
@@ -168,7 +168,7 @@
   tags: gi-setup
 
 - name: gi-install | Run installer
-  become: yes
+  become: true
   become_user: "{{ grid_user }}"
   command: "{{ installer_command }}"
   environment:
@@ -188,7 +188,7 @@
   tags: gi-setup
 
 - name: gi-install | Create OCM response file (if neccessary)
-  become: yes
+  become: true
   become_user: "{{ grid_user }}"
   script: expect_rsp.sh {{ oracle_base }} {{ grid_home }} {{ swlib_unzip_path }}
   with_items:
@@ -197,19 +197,19 @@
   tags: gi-setup,patch
 
 - name: gi-install | 12.2 bug resolution - MOS (Doc ID 2401455.1)
-  become: yes
+  become: true
   become_user: root
   copy:
     src: "{{ oracle_root }}/oraInventory/oraInst.loc"
     dest: "{{ grid_home }}/oraInst.loc"
-    remote_src: yes
+    remote_src: true
     owner: "{{ grid_user }}"
     group: "{{ oracle_group }}"
     mode: u=rw,g=r,o=
   when: oracle_ver == '12.2.0.1.0'
 
 - name: gi-install | Create patch directories
-  become: yes
+  become: true
   become_user: "{{ grid_user }}"
   file:
     path: "{{ swlib_unzip_path }}/{{ item.files.0 | replace('.zip','') }}"
@@ -223,19 +223,19 @@
   tags: gi-setup,patch
 
 - name: gi-install | Unzip other pre-HAS critical interim patches
-  become: yes
+  become: true
   become_user: "{{ grid_user }}"
   unarchive:
     src: "{{ swlib_path }}/{{ item.files.0 }}"
     dest: "{{ swlib_unzip_path }}/{{ item.files.0 | replace('.zip','') }}"
-    remote_src: yes
+    remote_src: true
   with_items:
     - "{{ gi_interim_patches }}"
   when: item.version == osw.version and item.category == "HAS_interim_patch"
   tags: gi-setup,patch
 
 - name: gi-install | Install pre-HAS critical interim patches
-  become: yes
+  become: true
   become_user: "{{ grid_user }}"
   shell: |
     export PATH={{ grid_home }}/OPatch:${PATH}
@@ -267,7 +267,7 @@
   tags: gi-setup,patch
 
 - name: gi-install | OCM response file cleanup
-  become: yes
+  become: true
   become_user: "{{ grid_user }}"
   file:
     path: "{{ swlib_unzip_path }}/ocm.rsp"
@@ -278,22 +278,22 @@
   tags: gi-setup,patch
 
 - name: gi-install | Run script orainstRoot.sh
-  become: yes
+  become: true
   become_user: root
   command: "{{ oracle_root }}/oraInventory/orainstRoot.sh"
-  ignore_errors: yes
+  ignore_errors: true
   when: "'skipped' not in install_grid_software.stdout"
   tags: gi-setup,root-scripts
 
 - name: gi-install | Run script root.sh
-  become: yes
+  become: true
   become_user: root
   command: "{{ grid_home }}/root.sh"
   when: "'skipped' not in install_grid_software.stdout"
   tags: gi-setup,root-scripts
 
 - name: gi-install | Complete plugin configuration
-  become: yes
+  become: true
   become_user: "{{ grid_user }}"
   command: "{{ grid_home }}/gridSetup.sh -executeConfigTools -silent -responseFile {{ swlib_unzip_path }}/grid_install.rsp"
   register: install_grid_plugins

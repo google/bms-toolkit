@@ -66,7 +66,7 @@
   tags: rac-db-create
 
 - name: rac-db-create | Adjust directories
-  become: yes
+  become: true
   become_user: root
   file:
     path: "{{ item.1 }}"
@@ -79,7 +79,7 @@
   tags: rac-db-create
 
 - name: rac-db-create | Adjust local DBCA directory
-  become: yes
+  become: true
   become_user: root
   file:
     path: "{{ oracle_base }}/cfgtoollogs/dbca"
@@ -90,7 +90,7 @@
   tags: rac-db-create
 
 - name: rac-db-create | Create DBCA response file
-  become: yes
+  become: true
   become_user: root
   template:
     src: rac-dbca.rsp{% if oracle_ver == '11.2.0.4.0' %}.{{ oracle_ver }}{% endif %}.sh.j2
@@ -103,7 +103,7 @@
 - name: rac-db-create | Run DBCA response file script
   block:
     - name: rac-db-create | Run DBCA
-      become: yes
+      become: true
       become_user: "{{ oracle_user }}"
       shell: |
         set -o pipefail
@@ -139,7 +139,7 @@
   when:
     - oracle_ver != '11.2.0.4.0'
     - pdb_prefix is defined
-  become: yes
+  become: true
   become_user: "{{ oracle_user }}"
   tags: rac-db-create,pdbs-state
 
@@ -149,7 +149,7 @@
     export ORACLE_HOME={{ oracle_home }}
     export PATH=${ORACLE_HOME}/bin:${PATH}:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin
     {% if oracle_ver == '11.2.0.4.0' %}srvctl status instance -d {{ db_name }} -n {{ ansible_hostname }} -v |awk '{ print $2 }'{% else %}srvctl status db -d {{ db_name }} -sid{% endif %}
-  become: yes
+  become: true
   become_user: "{{ oracle_user }}"
   changed_when: false
   register: sid_node
@@ -160,7 +160,7 @@
     path: /etc/oratab
     regexp: '^{{ sid_node.stdout }}\:'
     line: "{{ sid_node.stdout }}:{{ oracle_home }}:N"
-  become: yes
+  become: true
   tags: rac-db-create
 
 # Run the block of tasks to patch database to the latest release
@@ -176,7 +176,7 @@
         ORACLE_HOME: "{{ oracle_home }}"
         ORACLE_SID: "{{ oracle_sid }}"
         PATH: "{{ oracle_home }}/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin"
-      become: yes
+      become: true
       become_user: "{{ oracle_user }}"
 
     - name: rac-db-create | Stop database
@@ -188,7 +188,7 @@
         ORACLE_SID: "{{ oracle_sid }}"
         PATH: "{{ oracle_home }}/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin"
       register: shutdown_db
-      become: yes
+      become: true
       become_user: "{{ oracle_user }}"
 
     - name: rac-db-create | Startup upgrade
@@ -200,7 +200,7 @@
         ORACLE_SID: "{{ oracle_sid }}"
         PATH: "{{ oracle_home }}/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin"
       register: startup_db
-      become: yes
+      become: true
       become_user: "{{ oracle_user }}"
 
     - name: rac-db-create | Open pluggable databases in upgrade mode
@@ -220,8 +220,8 @@
         ORACLE_SID: "{{ oracle_sid }}"
         PATH: "{{ oracle_home }}/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin"
       when: oracle_ver != '11.2.0.4.0'
-      ignore_errors: yes
-      become: yes
+      ignore_errors: true
+      become: true
       become_user: "{{ oracle_user }}"
 
     - name: rac-db-create | Run datapatch
@@ -233,8 +233,8 @@
         PATH: "{{ oracle_home }}/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin"
       when: oracle_ver != '11.2.0.4.0'
       register: datapatch_output
-      ignore_errors: yes
-      become: yes
+      ignore_errors: true
+      become: true
       become_user: "{{ oracle_user }}"
 
     - name: rac-db-create | Show datapatch results
@@ -249,7 +249,7 @@
         ORACLE_HOME: "{{ oracle_home }}"
         ORACLE_SID: "{{ oracle_sid }}"
         PATH: "{{ oracle_home }}/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin"
-      become: yes
+      become: true
       become_user: "{{ oracle_user }}"
 
     - name: rac-db-create | Restart database
@@ -261,7 +261,7 @@
         ORACLE_HOME: "{{ oracle_home }}"
         PATH: "{{ oracle_home }}/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin"
       register: restart_db
-      become: yes
+      become: true
       become_user: "{{ oracle_user }}"
 
     - name: rac-db-create | Close and open pluggable databases
@@ -281,8 +281,8 @@
         ORACLE_HOME: "{{ oracle_home }}"
         ORACLE_SID: "{{ oracle_sid }}"
         PATH: "{{ oracle_home }}/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin"
-      ignore_errors: yes
-      become: yes
+      ignore_errors: true
+      become: true
       become_user: "{{ oracle_user }}"
       when: oracle_ver != '11.2.0.4.0'
 
@@ -296,8 +296,8 @@
         ORACLE_HOME: "{{ oracle_home }}"
         ORACLE_SID: "{{ oracle_sid }}"
         PATH: "{{ oracle_home }}/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin"
-      ignore_errors: yes
-      become: yes
+      ignore_errors: true
+      become: true
       become_user: "{{ oracle_user }}"
       when: oracle_ver != '11.2.0.4.0'
   when: oracle_rel != "base"

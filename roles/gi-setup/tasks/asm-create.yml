@@ -17,7 +17,7 @@
   template:
     src: init.ora.j2
     dest: "{{ grid_home }}/dbs/init{{ asm_sid }}.ora"
-  become: yes
+  become: true
   become_user: "{{ grid_user }}"
   tags: gi-setup,start-asm
 
@@ -47,7 +47,7 @@
     ORACLE_SID: "{{ asm_sid }}"
     LD_LIBRARY_PATH: "{{ grid_home }}/lib:${LD_LIBRARY_PATH}"
   register: start_asm
-  become: yes
+  become: true
   become_user: "{{ grid_user }}"
   tags: gi-setup,start-asm
 
@@ -79,7 +79,7 @@
     - "{{ asm_disks }}"
   register: create_dg
   failed_when: "'ERROR' in create_dg.stdout"
-  become: yes
+  become: true
   become_user: "{{ grid_user }}"
   tags: gi-setup,start-asm
 
@@ -105,7 +105,7 @@
     - "{{ asm_disks }}"
   register: create_dg
   failed_when: "'ERROR' in create_dg.stdout"
-  become: yes
+  become: true
   become_user: "{{ grid_user }}"
   tags: gi-setup,start-asm
 

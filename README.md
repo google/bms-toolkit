@@ -1,16 +1,22 @@
-# bms-toolkit
+# oracle-toolkit
 
-Toolkit for installing and creating an initial Oracle database on [Bare Metal Solution](https://cloud.google.com/bare-metal).
+Toolkit for managing Oracle databases on Google Cloud.
+
+Supports usage with:
+
+- [Bare Metal Solution](https://cloud.google.com/bare-metal)
+- [Google Compute Engine](https://cloud.google.com/products/compute)
 
 ## Quick Start
 
 1. Create a Google Cloud VM to act as a [control node](/docs/user-guide.md#control-node-requirements); it should be on a VPC network that has SSH access to the database hosts.
 1. [Extract the toolkit code](/docs/user-guide.md#installing-the-toolkit) on the control node.
 1. Create a Cloud Storage bucket to host Oracle software images.
-   ```bash
-   gsutil mb -b on gs://installation-media-1234
-   ```
+     ```bash
+     gsutil mb -b on gs://installation-media-1234
+     ```
 1. [Download software](/docs/user-guide.md#downloading-and-staging-the-oracle-software) from Oracle and populate the bucket. Use [check-swlib.sh](/docs/user-guide.md#validating-media) to determine which files are required for your Oracle version.
+
 1. Create an SSH key, and populate to an Ansible user on each database host.
 1. Create a JSON file `db1_asm.json` with ASM disk devices:
    ```json

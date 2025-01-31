@@ -15,13 +15,13 @@
 - name: user-setup | Create ansible user
   user:
     name: "{{ instance_ssh_user }}"
-    comment: "User created for bms-toolkit github.com/bms-toolkit"
+    comment: "User created for oracle-toolkit github.com/oracle-toolkit"
   tags: host-provision
 
 
-# the following 2 tasks are required so as not to hard code the public key file path 
-# and derive it from group_vars.yml's: instance_ssh_user: "~/.ssh/id_rsa_bms_toolkit"
-- name: user-setup | Slurp public key contents 
+# the following 2 tasks are required so as not to hard code the public key file path
+# and derive it from group_vars.yml's: instance_ssh_user: "~/.ssh/id_rsa_oracle_toolkit"
+- name: user-setup | Slurp public key contents
   slurp:
     src: "{{ control_node_key_file }}.pub"
   register: public_key_content_scrambled

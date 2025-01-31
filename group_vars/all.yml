@@ -139,6 +139,6 @@ disable_firewall: false
 ## host provision variables
 instance_ssh_user: "{{ lookup('env','INSTANCE_SSH_USER')|lower|default('ansible',true) }}"
 firsttime_connect_user: "customeradmin"
-control_node_key_file: "~/.ssh/id_rsa_bms_toolkit"
+control_node_key_file: "~/.ssh/id_rsa_oracle_toolkit"
 proxy_setup: "{{ lookup('env','ORA_PROXY_SETUP')|lower|default('false',true) }}"
 u01_lun: "{{ lookup('env','ORA_U01_LUN')|lower|default('',true) }}"

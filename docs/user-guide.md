@@ -2,11 +2,11 @@
 published: True
 ---
 
-# Toolkit for Bare Metal Solution: User Guide
+# Oracle Toolkit for GCP: User Guide
 
 ## Table of Contents
 
-- [Toolkit for Bare Metal Solution: User Guide](#toolkit-for-bare-metal-solution-user-guide)
+- [Oracle Toolkit for GCP: User Guide](#oracle-toolkit-for-gcp-user-guide)
   - [Table of Contents](#table-of-contents)
   - [Command quick reference for single instance deployments](#command-quick-reference-for-single-instance-deployments)
   - [Command quick reference for RAC deployments](#command-quick-reference-for-rac-deployments)
@@ -199,20 +199,19 @@ Unlike with other Oracle Database editions, the Free edition is available in [RP
 
 ## Overview
 
-The Implementation Toolkit for Oracle provides an automated (scripted) mechanism
+Oracle Toolkit for GCP provides an automated (scripted) mechanism
 to help you install Oracle software and configure an initial Oracle database on
-the Google Cloud Bare Metal Solution. You can also use the toolkit to provision
-initial Oracle Database Recovery Manager (RMAN) backups to Google Cloud Storage
-or another storage system.
+Google Cloud virtual machines or Bare Metal Solution servers. You can also use
+the toolkit to provision initial Oracle Database Recovery Manager (RMAN) backups
+to Google Cloud Storage or another storage system.
 
 This guide is for experienced professional users of Oracle software who are
 deploying Oracle Database software and preparing initial Oracle databases on
-Google Cloud [Bare Metal Solution](https://cloud.google.com/bare-metal).
+Google Cloud [Bare Metal Solution](https://cloud.google.com/bare-metal), or on
+Google Cloud [Compute Engine](https://cloud.google.com/products/compute) .
 The toolkit defines default values for most options, so you can run the toolkit
 with only a few specifications. Your configuration options are listed later in
 this guide.
-
-> **NOTE:** This toolkit does support installing the Oracle Database 23ai Free edition. For details on installing the free edition refer to the section [Oracle Database Free Edition Specific Details and Changes](#oracle-database-free-edition-specific-details-and-changes).
 
 The toolkit supports the following major releases of Oracle Database and applies
 the most recent quarterly patches, also known as Oracle Release Updates or
@@ -224,6 +223,7 @@ RUs:
 - Oracle 18c
 - Oracle 19c
 - Oracle 21c
+- Oracle 23ai (currently [Free Edition](#oracle-database-free-edition-specific-details-and-changes))
 
 The toolkit does not include any Oracle software. You must obtain the
 appropriate licenses and download the Oracle software on your own. This guide
@@ -273,9 +273,16 @@ You need at least two servers to install Oracle software by using the toolkit:
 
 A second database server (or node) is required for RAC deployments.
 
+The following diagrams are similar, showing the architecture in both Bare Metal
+Solution and Google Cloud virtual machine environments
+
 ![Shows workflow from user through control node to staging repository and then
 to servers in the Bare Metal Solution environment. A dotted line goes to Cloud
-Storage for backups.](bms-toolkit-architecture.png)
+Storage for backups.](oracle-toolkit-bm-architecture.png)
+
+![Shows workflow from user through control node to staging repository and then
+to servers in the GCE Solution environment. A dotted line goes to Cloud
+Storage for backups.](oracle-toolkit-vm-architecture.png)
 
 #### Control node requirements
 
@@ -321,10 +328,9 @@ certification matrix in the "My Oracle Support" (MOS) site (sign in required):
 ## Installing the toolkit
 
 The latest version of the toolkit can be downloaded from Google Git
-Repositories:
-[https://github.com/google/bms-toolkit](https://github.com/google/bms-toolkit)
+Repositories: https://github.com/google/oracle-toolkit
 
-On the `google/bms-toolkit` home page in GitHub, download the toolkit to your
+On the `google/oracle-toolkit` home page in GitHub, download the toolkit to your
 control node by clicking the **Clone or Download** button and selecting
 **Download zip**.
 
@@ -348,6 +354,7 @@ Support](https://support.oracle.com/) (MOS) site.
 
 You can also download base software from
 [Oracle Technology Network](https://www.oracle.com/database/technologies/oracle-database-software-downloads.html#db_ee).
+
 In this case, please rename the downloaded files to the
 [software delivery cloud equivalent](#required-oracle-software---download-summary)
 names, and use `--no-patch` to skip patching. Note that unpatched software may
@@ -2255,7 +2262,7 @@ Incorrect parameter provided for ora-version: 7.3.4
 
 ## Oracle Database Free Edition Specific Details and Changes
 
-This toolkit supports the installation of the Oracle Database "Free Edition", availble for download from [Oracle Database Free Get Started](https://www.oracle.com/database/free/get-started/).
+The toolkit supports the installation of the Oracle Database "Free Edition", availble for download from [Oracle Database Free Get Started](https://www.oracle.com/database/free/get-started/).
 
 However, Oracle Database "Free Edition" has a number of differences, including:
 
@@ -2284,7 +2291,7 @@ Specific supported versions of Oracle Database 23 free edition currently include
 
 Even though the file names may be the same while the version changes, multiple files with the same name can be kept in the software library. Possibly by manually changing the file names (and then updating the `rdbms_software` variables in the YAML files accoridingly.) Or more simply, by placing the unique files with the same file name in different Google Cloud Storage bucket **folders** for uniquness.
 
-If the specific version desired is not specified via a command line switch (or corresponding environment variable) , the toolkit will default to the most recent version – currently version `23.6.0.24.10`.
+If the specific version desired is not specified via a command line switch (or corresponding environment variable), the toolkit will default to the most recent version – currently version `23.6.0.24.10`.
 
 Otherwise, one of the following command line switches should be used to install a specific free edition version:
 
@@ -2298,7 +2305,7 @@ Otherwise, one of the following command line switches should be used to install 
 
 #### Free edition specific parameter changes
 
-When using this toolkit to install the free edition, serveral toolkits parameters becomes irrelevant, or are set to specific values – possibly overriding user provided values.
+When using this toolkit to install the free edition, serveral toolkit parameters becomes irrelevant, or are set to specific values – possibly overriding user provided values.
 
 <table>
 <thead>
@@ -2600,7 +2607,7 @@ ok: [10.2.83.197]
 
 ### Reset passwords
 
-The Oracle toolkit does not use or store any passwords. At runtime, passwords
+The toolkit does not use or store any passwords. At runtime, passwords
 for the Oracle SYS and SYSTEM database users are set with strong, unique, and
 randomized passwords that are not written to or persisted in any OS files.
 
@@ -2718,10 +2725,9 @@ both the Grid Infrastructure and Database homes by using the
 
 By default, `install-oracle.sh` updates to the latest available patch. To
 apply a specific patch instead, use the `--no-patch` option in `install-oracle.sh`
-to skip patching at installation time.  After installation is complete,  execute
-`apply-patch.sh` with the `--ora-release` option.  Specify the full release name including
-timestamp;  a list of release names is available in [roles/common/defaults/main.yml](
-https://github.com/google/bms-toolkit/tree/master/roles/common/defaults/main.yml)
+to skip patching at installation time. After installation is complete, execute
+`apply-patch.sh` with the `--ora-release` option. Specify the full release name including
+timestamp; a list of release names is available in [roles/common/defaults/main.yml](https://github.com/google/oracle-toolkit/tree/master/roles/common/defaults/main.yml)
 under `gi-patches` and `rdbms-patches`.
 
 A digest of the required patch files, including checksum hashes is provided in
@@ -2839,10 +2845,10 @@ is the default behavior:
   --ora-version 19.3.0.0.0 \
   --ora-swlib-type gcs \
   --compatible-rdbms "11.2.0.4.0" \
-  --ora-asm-disks bms_asm.json \
-  --ora-data-mounts bms_mounts.json \
+  --ora-asm-disks asm_disk_config.json \
+  --ora-data-mounts data_mounts_config.json \
   --cluster-type RAC \
-  --cluster-config bms_cluster.json \
+  --cluster-config cluster_config.json \
   --ora-reco-diskgroup DATA \
   --ora-db-name ORCL
 ```
@@ -2918,10 +2924,10 @@ The following example shows the specification of the YAML file by using the
   --ora-version 19.3.0.0.0 \
   --ora-swlib-type gcs \
   --compatible-rdbms "11.2.0.4.0" \
-  --ora-asm-disks bms_asm.json
-  --ora-data-mounts bms_mounts.json \
+  --ora-asm-disks asm_disk_config.json \
+  --ora-data-mounts data_mounts_config.json \
   --cluster-type RAC \
-  --cluster-config bms_cluster.json \
+  --cluster-config cluster_config.json \
   --ora-reco-diskgroup DATA \
   --ora-db-name ORCL \
   -- "--extra-vars @patches.yaml"

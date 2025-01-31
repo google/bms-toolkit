@@ -17,11 +17,12 @@
 ### into this test script
 ### context / reference: (internal) at: http://b/202240337#comment22
 
-# set up ssh from pod to BMX host
+# set up ssh from pod to database server
 # using sydney for initial testing
-bms_host=10.100.1.1
+# Keep permissions at 100755 to allow tests to run
+oracle_host=10.100.1.1
 install -d -m 0700 ~/.ssh
-ssh-keyscan "${bms_host}" > ~/.ssh/known_hosts
+ssh-keyscan "${oracle_host}" > ~/.ssh/known_hosts
 
 # install pre-reqs
 pip install jmespath

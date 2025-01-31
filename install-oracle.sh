@@ -473,6 +473,7 @@ while true; do
     export ANSIBLE_DISPLAY_SKIPPED_HOSTS=true
     ;;
   --allow-install-on-vm)
+    # No-op argument for backwards compatibility only
     ;;
   --skip-database-config)
     PB_LIST="${PB_CHECK_INSTANCE} ${PB_PREP_HOST} ${PB_INSTALL_SW}"

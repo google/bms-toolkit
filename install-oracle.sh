@@ -473,7 +473,6 @@ while true; do
     export ANSIBLE_DISPLAY_SKIPPED_HOSTS=true
     ;;
   --allow-install-on-vm)
-    ANSIBLE_PARAMS="${ANSIBLE_PARAMS} -e allow_install_on_vm=true"
     ;;
   --skip-database-config)
     PB_LIST="${PB_CHECK_INSTANCE} ${PB_PREP_HOST} ${PB_INSTALL_SW}"

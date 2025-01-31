@@ -66,4 +66,3 @@
   become: yes
   become_user: "{{ oracle_user }}"
   tags: rac-ins-opatch
-

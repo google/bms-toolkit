@@ -17,6 +17,7 @@
 # For more background, please refer:
 # https://cloud.google.com/vpc/docs/special-configurations#proxyvm
 
+---
 - name: proxy | Get control node IP
   set_fact:
     proxy_ip: "{{ ansible_env['SSH_CLIENT'].split() | first }}"
@@ -36,9 +37,9 @@
   become: true
   lineinfile:
     dest: /etc/hosts
-    regexp: '.*gateway-instance.*'
+    regexp: ".*gateway-instance.*"
     line: "{{ proxy_ip }} gateway-instance gateway-instance."
-    backup: yes    
+    backup: yes
   tags: host-provision
 
 - name: proxy | Add client side proxy environment variables to /etc/profile.d
@@ -46,9 +47,9 @@
   copy:
     dest: /etc/profile.d/proxy.sh
     content: |
-            export http_proxy="http://gateway-instance:3128"
-            export https_proxy="http://gateway-instance:3128"
-            export ftp_proxy="http://gateway-instance:3128"
+      export http_proxy="http://gateway-instance:3128"
+      export https_proxy="http://gateway-instance:3128"
+      export ftp_proxy="http://gateway-instance:3128"
     backup: yes
   tags: host-provision
 
@@ -58,7 +59,6 @@
     dest: /etc/sudoers
     regexp: ".*env_keep.*proxy.*"
     line: 'Defaults env_keep += "ftp_proxy http_proxy https_proxy no_proxy"'
-    validate: 'visudo -cf %s'
+    validate: "visudo -cf %s"
     backup: yes
   tags: host-provision
-

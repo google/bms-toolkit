@@ -59,8 +59,8 @@
     user: "{{ oracle_user }}"
     job: "{{ scripts_dir }}/rman_full_backup.sh {{ oracle_sid }} {{ item.level }} {{ rman_db_bu_redundancy }} {{ rman_arch_redundancy }}"
   with_items:
-     - {level: 0, days: '{{ full_bu_level0_day }}' }
-     - {level: 1, days: '{{ full_bu_level1_days }}' }
+    - { level: 0, days: '{{ full_bu_level0_day }}' }
+    - { level: 1, days: '{{ full_bu_level1_days }}' }
   tags: db-backups,add-backups
 
 - name: Schedule archived redo log backups

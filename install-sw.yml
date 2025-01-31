@@ -16,9 +16,9 @@
 - name: Populate variables
   hosts: dbasm
   tasks:
-  - include_role:
-      name: common
-      tasks_from: populate-vars.yml
+    - include_role:
+        name: common
+        tasks_from: populate-vars.yml
   tags: populate-vars
 - hosts: dbasm
   remote_user: "{{ grid_user }}"
@@ -31,10 +31,10 @@
         fail_msg: "You must update Ansible to at least 2.8 to use these playbooks"
         success_msg: "Ansible version is {{ ansible_version.full }}, continuing"
   roles:
-   - role: gi-setup
-     when:
-       - install_gi|bool
-       - cluster_type in ("NONE", "DG")
+    - role: gi-setup
+      when:
+        - install_gi|bool
+        - cluster_type in ("NONE", "DG")
   tags: gi-setup
 
 - hosts: dbasm
@@ -48,10 +48,10 @@
         fail_msg: "You must update Ansible to at least 2.8 to use these playbooks"
         success_msg: "Ansible version is {{ ansible_version.full }}, continuing"
   roles:
-   - role: rdbms-setup
-     when:
-       - install_rdbms|bool
-       - cluster_type in ("NONE", "DG")
+    - role: rdbms-setup
+      when:
+        - install_rdbms|bool
+        - cluster_type in ("NONE", "DG")
   tags: rdbms-setup
 
 - hosts: dbasm
@@ -94,9 +94,9 @@
     - name: rac-gi-install | GI installation
       include_role:
         name: rac-gi-setup
-       #if 11.2 or 12.1 then rac-gi-install-<oracle_ver>.yml otherwise rac-gi-install.yml
+        # if 11.2 or 12.1 then rac-gi-install-<oracle_ver>.yml otherwise rac-gi-install.yml
         tasks_from: rac-gi-install{% if oracle_ver_base in ('11.2','12.1') %}-{{ oracle_ver }}{% endif %}.yml
-       #tasks_from: rac-gi-install.yml
+        # tasks_from: rac-gi-install.yml
         public: yes
       loop:
         - "{{ gi_software | default([]) | json_query('[?version==`' + oracle_ver + '`].files[*]') | join() }}"
@@ -134,7 +134,7 @@
     - name: rac-db-install | RDBMS installation
       include_role:
         name: rac-db-setup
-        #if 11.2 or 12.1 then rac-db-install-<oracle_ver>.yml otherwise rac-db-install.yml
+        # if 11.2 or 12.1 then rac-db-install-<oracle_ver>.yml otherwise rac-db-install.yml
         tasks_from: rac-db-install{% if oracle_ver_base in ('11.2','12.1') %}-11.2-12.1{% endif %}.yml
         public: yes
       loop:

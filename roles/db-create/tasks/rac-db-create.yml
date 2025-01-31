@@ -106,9 +106,9 @@
       become: yes
       become_user: "{{ oracle_user }}"
       shell: |
-          set -o pipefail
-          export PATH={{ oracle_home }}/bin:${PATH}:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin
-          {{ pwd_gen_cmd }} | sh {{ swlib_unzip_path }}/dbca_{{ db_name }}.rsp.sh
+        set -o pipefail
+        export PATH={{ oracle_home }}/bin:${PATH}:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin
+        {{ pwd_gen_cmd }} | sh {{ swlib_unzip_path }}/dbca_{{ db_name }}.rsp.sh
       register: dbca_output
       failed_when: "'Completing Database Creation' not in dbca_output.stdout or '100% complete' not in dbca_output.stdout"
       when: pmon_proc.stdout == "0" and check_oratab.stdout == "0"
@@ -123,7 +123,7 @@
 
 - name: rac-db-create | DBCA output
   debug:
-     msg: "{{ dbca_output | default('') }}"
+    msg: "{{ dbca_output | default('') }}"
   tags: rac-db-create
 
 - name: rac-db-create | Save PDBs state
@@ -159,7 +159,7 @@
   lineinfile:
     path: /etc/oratab
     regexp: '^{{ sid_node.stdout }}\:'
-    line: '{{ sid_node.stdout }}:{{ oracle_home }}:N'
+    line: "{{ sid_node.stdout }}:{{ oracle_home }}:N"
   become: yes
   tags: rac-db-create
 

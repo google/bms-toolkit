@@ -12,7 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# We check and evaluate subscription status 
+---
+# We check and evaluate subscription status
 # Only if the system is not subscribed (Status: Unknown), then we prompt for RedHat credentials
 - name: rhel-config-tasks | Get current registration status
   become: true
@@ -24,7 +25,7 @@
 - name: rhel-config-tasks | Print current RHSM status
   debug:
     var: rhsm_status.stdout
-  tags: host-provision    
+  tags: host-provision
 
 - name: rhel-config-tasks | Get RHEL username
   pause:

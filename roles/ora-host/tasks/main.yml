@@ -62,6 +62,20 @@
     path: /etc/yum.repos.d/rh-cloud.repo
   register: rh_cloud_repo
 
+- name: Install Oracle required packages (base/non-rhui config) for Marketplace RHEL7
+  yum:
+    name: "{{ oracle_required_rpms }}"
+    state: present
+    lock_timeout: 180
+    enablerepo: rhui-rhel-7-server-rhui-optional-rpms
+  when:
+    - install_os_packages | bool
+    - ansible_distribution == 'RedHat'
+    - ansible_distribution_major_version == '7'
+    - redhat_repo.stat.exists | bool
+    - rh_cloud_repo.stat.exists | bool
+  tags: os-packages
+
 - name: Install Oracle required packages (base/non-rhui config) for RHEL7
   yum:
     name: "{{ oracle_required_rpms }}"
@@ -69,8 +83,11 @@
     lock_timeout: 180
     enablerepo: rhel-7-server-optional-rpms
   when:
-    - install_os_packages|bool and ansible_distribution == 'RedHat' and ansible_distribution_major_version == '7'
-    - redhat_repo.stat.exists|bool or rh_cloud_repo.stat.exists|bool
+    - rh_cloud_repo is not defined
+    - install_os_packages | bool
+    - ansible_distribution == 'RedHat'
+    - ansible_distribution_major_version == '7'
+    - redhat_repo.stat.exists | bool
   tags: os-packages
 
 - name: Stat OL7 repo
@@ -79,6 +96,19 @@
   register: oraclelinux_repo
   when:
     - install_os_packages|bool and ansible_distribution == 'OracleLinux'
+
+- name: Install Oracle required packages (base/non-rhui config) for OEL7
+  yum:
+    name: "{{ oracle_required_rpms }}"
+    state: present
+    lock_timeout: 180
+    enablerepo: ol7_optional_latest
+  when:
+    - install_os_packages | bool
+    - ansible_distribution == 'OracleLinux'
+    - ansible_distribution_major_version == '7'
+    - oraclelinux_repo.stat.exists | bool
+  tags: os-packages
 
 - name: Stat OL8 repo
   stat:
@@ -165,9 +195,7 @@
     name: "{{ item.group }}"
     gid: "{{ item.gid }}"
     state: present
-  with_items:
-    - "{{ oracle_groups }}"
-    - "{{ asm_groups }}"
+  with_items: "{{ oracle_groups if free_edition else oracle_groups + asm_groups }}"
   tags: os-groups
 
 - name: Add OS users
@@ -187,6 +215,7 @@
   with_items:
     - "{{ asm_groups }}"
     - "{{ extra_asm_groups }}"
+  when: not free_edition
   tags: os-users,os-groups
 
 - name: Add necessary groups to the oracle user
@@ -194,9 +223,7 @@
     name: "{{ oracle_user }}"
     groups: "{{ item.group }}"
     append: yes
-  with_items:
-    - "{{ oracle_groups }}"
-    - "{{ extra_oracle_groups }}"
+  with_items: "{{ oracle_groups if free_edition else oracle_groups + extra_oracle_groups }}"
   tags: os-users,os-groups
 
 - name: Add sysctl entries
@@ -209,8 +236,8 @@
     - "{{ sysctl_entries }}"
   tags: sysctl
 
-# Setting vm.hugetlb_shm_group to the ID of the "oinstall" group to allow its members to create 
-# SysV shared memory segment using hugetlb page. 
+# Setting vm.hugetlb_shm_group to the ID of the "oinstall" group to allow its members to create
+# SysV shared memory segment using hugetlb page.
 # By default only the root user has permissions to create shared memory segments.
 # This is needed to prevent the occurrence of "ORA-27125: unable to create shared memory segment" error.
 - name: Set hugetlb_shm_group to the ID of the oinstall group
@@ -242,7 +269,7 @@
     owner: "{{ item.owner }}"
     group: "{{ item.group }}"
     mode: "{{ item.mode }}"
-  with_items: "{{ oracle_dirs }}"
+  with_items: "{{ oracle_dirs + fs_dirs if free_edition else oracle_dirs + grid_dirs }}"
   tags: os-dirs
 
 - name: Create backup directory
@@ -258,7 +285,8 @@
 - name: Check ASM backup destination
   set_fact:
     dg_exists: "{{ asm_disks | json_query('[?diskgroup==`' + backup_dest[1:] + '`].diskgroup') }}"
-  when: backup_dest[0:1]  == "+"
+  when:
+    - backup_dest[0:1]  == "+"
   tags: backup-dest
 
 - name: Fail if ASM backup diskgroup not defined
@@ -307,7 +335,8 @@
     dest: "/home/{{ grid_user }}/.bash_profile"
     marker: "# {mark} Oracle Grid Infrastructure Settings:"
     backup: yes
-  when: role_separation|bool
+  when:
+    - role_separation|bool
   tags: os-users
 
 - name: (asmlib) | ASM device managment via asmlib or udev?
@@ -393,8 +422,7 @@
   become_user: root
   shell: udevadm info --query=all --name={{ item.1.blk_device }} | grep DM_UUID | awk -F'=' '{print $2}'
   register: udevadm_result
-  when:
-    - "'mapper' in item.1.blk_device"
+  when: "'mapper' in item.1.blk_device"
   with_subelements:
     - "{{ asm_disks }}"
     - disks

@@ -20,21 +20,21 @@ echo
 shopt -s nocasematch
 
 # Check if we're using the Mac stock getopt and fail if true
-out=`getopt -T`
+out="$(getopt -T)"
 if [ $? != 4 ]; then
-  echo -e "Your getopt does not support long parameters, possibly you're on a Mac, if so please install gnu-getopt with brew"
-  echo -e "\thttps://brewformulas.org/Gnu-getopt"
-  exit
+    echo -e "Your getopt does not support long parameters, possibly you're on a Mac, if so please install gnu-getopt with brew"
+    echo -e "\thttps://brewformulas.org/Gnu-getopt"
+    exit
 fi
 
 ORA_VERSION="${ORA_VERSION:-19.3.0.0.0}"
-ORA_VERSION_PARAM='^(19\.3\.0\.0\.0|18\.0\.0\.0\.0|12\.2\.0\.1\.0|12\.1\.0\.2\.0|11\.2\.0\.4\.0)$'
+ORA_VERSION_PARAM='^(23\.[0-9]{1,2}\.[0-9]{1,2}\.[0-9]{1,2}\.[0-9]{1,6}|21\.3\.0\.0\.0|19\.3\.0\.0\.0|18\.0\.0\.0\.0|12\.2\.0\.1\.0|12\.1\.0\.2\.0|11\.2\.0\.4\.0)$'
 
 ORA_RELEASE="${ORA_RELEASE:-latest}"
 ORA_RELEASE_PARAM="^(base|latest|[0-9]{,2}\.[0-9]{,2}\.[0-9]{,2}\.[0-9]{,2}\.[0-9]{,6})$"
 
 ORA_EDITION="${ORA_EDITION:-EE}"
-ORA_EDITION_PARAM="^(EE|SE|SE2)$"
+ORA_EDITION_PARAM="^(EE|SE|SE2|FREE)$"
 
 ORA_SWLIB_BUCKET="${ORA_SWLIB_BUCKET}"
 ORA_SWLIB_BUCKET_PARAM='^gs://.+[^/]$'
@@ -45,11 +45,11 @@ GETOPT_OPTIONAL="ora-version:,ora-release:,ora-edition:,no-patch,cluster_type:,h
 GETOPT_LONG="$GETOPT_MANDATORY,$GETOPT_OPTIONAL"
 GETOPT_SHORT="h"
 
-options=$(getopt --longoptions "$GETOPT_LONG" --options "$GETOPT_SHORT" -- "$@")
+options="$(getopt --longoptions "$GETOPT_LONG" --options "$GETOPT_SHORT" -- "$@")"
 
 [ $? -eq 0 ] || {
-       echo "Invalid options provided: $*"
-       exit 1
+    echo "Invalid options provided: $@" >&2
+    exit 1
 }
 
 eval set -- "$options"
@@ -62,13 +62,15 @@ while true; do
         ;;
     --ora-version)
         ORA_VERSION="$2"
+        if [[ "${ORA_VERSION}" = "23" ]]   ; then ORA_VERSION="23.0.0.0.0"; fi
+        if [[ "${ORA_VERSION}" = "21" ]]   ; then ORA_VERSION="21.3.0.0.0"; fi
         if [[ "${ORA_VERSION}" = "19" ]]   ; then ORA_VERSION="19.3.0.0.0"; fi
         if [[ "${ORA_VERSION}" = "18" ]]   ; then ORA_VERSION="18.0.0.0.0"; fi
         if [[ "${ORA_VERSION}" = "12" ]]   ; then ORA_VERSION="12.2.0.1.0"; fi
         if [[ "${ORA_VERSION}" = "12.2" ]] ; then ORA_VERSION="12.2.0.1.0"; fi
         if [[ "${ORA_VERSION}" = "12.1" ]] ; then ORA_VERSION="12.1.0.2.0"; fi
         if [[ "${ORA_VERSION}" = "11" ]]   ; then ORA_VERSION="11.2.0.4.0"; fi
-        shift;
+        shift
         ;;
     --no-patch)
         ORA_RELEASE="base"
@@ -78,13 +80,13 @@ while true; do
         shift
         ;;
     --ora-edition)
-        ORA_EDITION="$(echo $2| tr 'a-z' 'A-Z')"
+        ORA_EDITION="$(echo "$2" | tr '[:lower:]' '[:upper:]')"
         shift
         ;;
-    --help|-h)
-        echo -e "\tUsage: `basename $0` "
-        echo $GETOPT_MANDATORY|sed 's/,/\n/g'|sed 's/:/ <value>/'|sed 's/\(.\+\)/\t  --\1/'
-        echo $GETOPT_OPTIONAL |sed 's/,/\n/g'|sed 's/:/ <value>/'|sed 's/\(.\+\)/\t  [ --\1 ]/'
+    --help | -h)
+        echo -e "\tUsage: $(basename $0)" >&2
+        echo "${GETOPT_MANDATORY}" | sed 's/,/\n/g' | sed 's/:/ <value>/' | sed 's/\(.\+\)/\t --\1/'
+        echo "${GETOPT_OPTIONAL}"  | sed 's/,/\n/g' | sed 's/:/ <value>/' | sed 's/\(.\+\)/\t [ --\1 ]/'
         exit 2
         ;;
     --)
@@ -113,6 +115,11 @@ done
     exit 1
 }
 
+# Oracle Database free edition parameter overrides
+if [[ "${ORA_EDITION}" = "FREE" && ! "${ORA_VERSION}" =~ ^23\. ]]; then
+    ORA_VERSION="23.0.0.0.0"
+fi
+
 # Mandatory options
 if [ "${ORA_SWLIB_BUCKET}" = "" ]; then
     echo "Please specify a GS bucket with --ora-swlib-bucket"
@@ -122,7 +129,7 @@ fi
 export ORA_VERSION ORA_RELEASE ORA_EDITION ORA_SWLIB_BUCKET
 
 echo -e "Running with parameters from command line or environment variables:\n"
-set | egrep '^(ORA_|BACKUP_|ARCHIVE_)' | grep -v '_PARAM='
+set | grep -E '^(ORA_|BACKUP_|ARCHIVE_)' | grep -v '_PARAM='
 echo
 
 # Run locally only; the trailing comma indicates a hostname rather than a file.
@@ -133,11 +140,11 @@ ANSIBLE_EXTRA_PARAMS="${*}"
 export ANSIBLE_DISPLAY_SKIPPED_HOSTS=false
 
 ANSIBLE_PLAYBOOK="ansible-playbook"
-if ! type ansible-playbook > /dev/null 2>&1; then
-  echo "Ansible executable not found in path"
-  exit 3
+if ! type ansible-playbook >/dev/null 2>&1; then
+    echo "Ansible executable not found in path"
+    exit 3
 else
-  echo "Found Ansible: `type ansible-playbook`"
+    echo "Found Ansible: $(type ansible-playbook)"
 fi
 
 # exit on any error from the following scripts
@@ -147,4 +154,4 @@ PLAYBOOK="check-swlib.yml"
 ANSIBLE_COMMAND="${ANSIBLE_PLAYBOOK} ${ANSIBLE_PARAMS} ${ANSIBLE_EXTRA_PARAMS} ${PLAYBOOK}"
 echo
 echo "Running Ansible playbook: ${ANSIBLE_COMMAND}"
-eval ${ANSIBLE_COMMAND}
+eval "${ANSIBLE_COMMAND}"

@@ -13,6 +13,11 @@
 # limitations under the License.
 
 ---
+- name: Build script list
+  set_fact:
+    script_list: "{{ common_scripts + (cluster_scripts if not free_edition else []) }}"
+  tags: validation-scripts
+
 - name: Copy validation scripts to server
   template:
     src: "{{ item }}.j2"

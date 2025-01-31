@@ -1,4 +1,4 @@
-# Copyright 2020 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,9 +13,12 @@
 # limitations under the License.
 
 ---
-cluster_scripts:
-  - asm_disks.sh
-  - crs_check.sh
-  - cluvfy_checks.sh
+- name: Run systemctl daemon-reload
+  command: systemctl daemon-reload
+  become: true
+  become_user: root
 
-common_scripts: []
+- name: Reset failed systemd services
+  command: systemctl reset-failed
+  become: true
+  become_user: root

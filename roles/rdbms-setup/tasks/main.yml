@@ -37,7 +37,7 @@
     group: "{{ item.group }}"
     mode: "{{ item.mode }}"
   when: home_name in item.name
-  with_items: "{{ oracle_dirs }}"
+  with_items: "{{ oracle_dirs + grid_dirs }}"
   tags: rdbms-setup,os-dirs
 
 - include_tasks: rdbms-install.yml
@@ -45,7 +45,23 @@
     - "{{ rdbms_software }}"
   loop_control:
     loop_var: osw
-  when: existing_dbhome.stdout == "0" and osw.version == oracle_ver and oracle_edition in osw.edition
+  when:
+    - existing_dbhome.stdout == "0"
+    - osw.version == oracle_ver
+    - oracle_edition in osw.edition
+    - not free_edition
+  tags: rdbms-setup
+
+- include_tasks: rdbms-rpm-install.yml
+  with_items:
+    - "{{ rdbms_software }}"
+  loop_control:
+    loop_var: osw
+  when:
+    - existing_dbhome.stdout == "0"
+    - osw.version == oracle_ver
+    - oracle_edition in osw.edition
+    - free_edition
   tags: rdbms-setup
 
 - name: Create sqlnet.ora file

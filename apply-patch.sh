@@ -18,7 +18,7 @@ echo "$0 $@"
 echo
 
 # Check if we're using the Mac stock getopt and fail if true
-out=`getopt -T`
+out="$(getopt -T)"
 if [ $? != 4 ]; then
     echo -e "Your getopt does not support long parametrs, possibly you're on a Mac, if so please install gnu-getopt with brew"
     echo -e "\thttps://brewformulas.org/Gnu-getopt"
@@ -26,7 +26,7 @@ if [ $? != 4 ]; then
 fi
 
 ORA_VERSION="${ORA_VERSION:-19.3.0.0.0}"
-ORA_VERSION_PARAM='^(19\.3\.0\.0\.0|18\.0\.0\.0\.0|12\.2\.0\.1\.0|12\.1\.0\.2\.0|11\.2\.0\.4\.0)$'
+ORA_VERSION_PARAM='^(21\.3\.0\.0\.0|19\.3\.0\.0\.0|18\.0\.0\.0\.0|12\.2\.0\.1\.0|12\.1\.0\.2\.0|11\.2\.0\.4\.0)$'
 
 ORA_RELEASE="${ORA_RELEASE}"
 ORA_RELEASE_PARAM=""
@@ -59,11 +59,11 @@ GETOPT_SHORT="h"
 
 VALIDATE=0
 
-options=$(getopt --longoptions "$GETOPT_LONG" --options "$GETOPT_SHORT" -- "$@")
+options="$(getopt --longoptions "$GETOPT_LONG" --options "$GETOPT_SHORT" -- "$@")"
 
 [ $? -eq 0 ] || {
-       echo "Invalid options provided: $*"
-       exit 1
+    echo "Invalid options provided: $@" >&2
+    exit 1
 }
 
 eval set -- "$options"
@@ -72,45 +72,46 @@ while true; do
     case "$1" in
     --ora-version)
         ORA_VERSION="$2"
+        if [[ "${ORA_VERSION}" = "21" ]]   ; then ORA_VERSION="21.3.0.0.0"; fi
         if [[ "${ORA_VERSION}" = "19" ]]   ; then ORA_VERSION="19.3.0.0.0"; fi
         if [[ "${ORA_VERSION}" = "18" ]]   ; then ORA_VERSION="18.0.0.0.0"; fi
         if [[ "${ORA_VERSION}" = "12" ]]   ; then ORA_VERSION="12.2.0.1.0"; fi
         if [[ "${ORA_VERSION}" = "12.2" ]] ; then ORA_VERSION="12.2.0.1.0"; fi
         if [[ "${ORA_VERSION}" = "12.1" ]] ; then ORA_VERSION="12.1.0.2.0"; fi
         if [[ "${ORA_VERSION}" = "11" ]]   ; then ORA_VERSION="11.2.0.4.0"; fi
-        shift;
+        shift
         ;;
     --ora-release)
         ORA_RELEASE="$2"
-        shift;
+        shift
         ;;
     --ora-swlib-bucket)
         ORA_SWLIB_BUCKET="$2"
-        shift;
+        shift
         ;;
     --ora-swlib-path)
         ORA_SWLIB_PATH="$2"
-        shift;
+        shift
         ;;
     --ora-staging)
         ORA_STAGING="$2"
-        shift;
+        shift
         ;;
-   --inventory-file)
+    --inventory-file)
         INVENTORY_FILE="$2"
-        shift;
+        shift
         ;;
     --ora-db-name)
         ORA_DB_NAME="$2"
-        shift;
+        shift
         ;;
     --validate)
         VALIDATE=1
         ;;
-    --help|-h)
-        echo -e "\tUsage: `basename $0` "
-        echo $GETOPT_MANDATORY|sed 's/,/\n/g'|sed 's/:/ <value>/'|sed 's/\(.\+\)/\t --\1/'
-        echo $GETOPT_OPTIONAL |sed 's/,/\n/g'|sed 's/:/ <value>/'|sed 's/\(.\+\)/\t [ --\1 ]/'
+    --help | -h)
+        echo -e "\tUsage: $(basename $0)" >&2
+        echo "${GETOPT_MANDATORY}" | sed 's/,/\n/g' | sed 's/:/ <value>/' | sed 's/\(.\+\)/\t --\1/'
+        echo "${GETOPT_OPTIONAL}"  | sed 's/,/\n/g' | sed 's/:/ <value>/' | sed 's/\(.\+\)/\t [ --\1 ]/'
         echo -e "\t -- [parameters sent to ansible]"
         exit 2
         ;;
@@ -182,29 +183,28 @@ export ORA_VERSION
 export ORA_RELEASE
 
 echo -e "Running with parameters from command line or environment variables:\n"
-set | egrep '^(ORA_|BACKUP_|ARCHIVE_)' | grep -v '_PARAM='
+set | grep -E '^(ORA_|BACKUP_|ARCHIVE_)' | grep -v '_PARAM='
 echo
 
 ANSIBLE_PARAMS="-i ${INVENTORY_FILE} "
-ANSIBLE_PARAMS=${ANSIBLE_PARAMS}" $*"
+ANSIBLE_PARAMS="${ANSIBLE_PARAMS} $@"
 
 echo "Ansible params: ${ANSIBLE_PARAMS}"
 
 if [ $VALIDATE -eq 1 ]; then
     echo "Exiting because of --validate"
-    exit;
+    exit
 fi
 
 export ANSIBLE_NOCOWS=1
 
 ANSIBLE_PLAYBOOK="ansible-playbook"
-if ! type ansible-playbook > /dev/null 2>&1; then
-  echo "Ansible executable not found in path"
-  exit 3
+if ! type ansible-playbook >/dev/null 2>&1; then
+    echo "Ansible executable not found in path"
+    exit 3
 else
-  echo "Found Ansible: `type ansible-playbook`"
+    echo "Found Ansible: $(type ansible-playbook)"
 fi
-
 
 # exit on any error from the following scripts
 set -e
@@ -212,4 +212,4 @@ set -e
 echo "Running Ansible playbook: ${ANSIBLE_PLAYBOOK} ${ANSIBLE_PARAMS} patch.yml"
 ${ANSIBLE_PLAYBOOK} ${ANSIBLE_PARAMS} patch.yml
 
-exit 0;
+exit 0

@@ -45,7 +45,9 @@
   with_items:
     - "{{ gi_patches }}"
     - "{{ rdbms_patches }}"
-  when: item.base == oracle_ver and item.release == oracle_rel
+  when:
+    - item.base == oracle_ver
+    - item.release == oracle_rel
   register: patch_repo_files
 
 # We can't reliably check hashes for opatch, as the same file name
@@ -62,7 +64,9 @@
   ignore_errors: true
   with_items:
     - "{{ opatch_patches }}"
-  when: item.release == oracle_ver and oracle_rel != "base"
+  when:
+    - item.release == oracle_ver
+    - oracle_rel != "base"
   register: opatch_repo_files
 
 - name: check-swlib | Report gsutil failures (base)

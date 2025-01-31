@@ -14,17 +14,16 @@
 
 ---
 - name: Shut down RAC clusterware
-  # Regrettably we can't use ansible's service module, as Oracle's initscripts don't report status
-  shell:
-    service ohasd stop
+  # Regrettably we can't use ansible's service module, as Oracle's init scripts don't report status
+  shell: service ohasd stop
   args:
     warn: false
-  become: yes
-  register: srvice_stop
+  become: true
+  register: service_stop
   ignore_errors: true
   when: cluster_name is defined
 
-- name: Deconfigure RAC CRS
+- name: De-configure RAC CRS
   shell: |
     ( $ORACLE_HOME/crs/install/rootcrs.sh -deconfig -force ) || true
   environment:
@@ -32,8 +31,8 @@
     PATH: "{{ grid_home }}/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin"
     LD_LIBRARY_PATH: "{{ grid_home }}/lib:${LD_LIBRARY_PATH}"
   register: has_deconfig
-  ignore_errors: yes
-  become: yes
+  ignore_errors: true
+  become: true
   become_user: "{{ grid_user }}"
   when: cluster_name is defined
 
@@ -47,29 +46,146 @@
     PATH: "{{ grid_home }}/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin"
     ORACLE_SID: "{{ asm_sid }}"
     LD_LIBRARY_PATH: "{{ grid_home }}/lib:${LD_LIBRARY_PATH}"
-  register: srvice_stop
-  ignore_errors: yes
-  become: yes
+  register: service_stop
+  ignore_errors: true
+  become: true
   become_user: "{{ grid_user }}"
-  when: cluster_name is not defined
+  when:
+    - cluster_name is not defined
+    - not free_edition
 
-- name: Deconfigure CRS (non-RAC)
+- name: Free Edition cleanup steps
+  block:
+    - include_role:
+        name: common
+        tasks_from: populate-vars.yml
+
+    - name: Stat Free Edition script
+      stat:
+        path: "/etc/init.d/oracle-free-{{ free_edition_name }}"
+      register: free_script_file_stat
+
+    - name: Clean removal of database and listener
+      shell:
+        cmd: "/etc/init.d/oracle-free-{{ free_edition_name }} delete"
+      when:
+        - free_script_file_stat.stat.exists
+        - free_script_file_stat.stat.executable
+
+    - name: Capture installed Free Edition related systemd services
+      shell:
+        cmd: |
+          set -o pipefail
+          systemctl list-units --type=service --all \
+            | grep -Ei '{{ systemd_service_name }}|oracle-database-preinstall-{{ free_edition_name }}-firstboot' \
+            | awk '{ print $1 }' \
+            | grep service \
+            || true
+      register: free_edition_systemd_services
+      changed_when:
+        - not free_edition_systemd_services.failed
+        - free_edition_systemd_services.stdout is defined
+        - free_edition_systemd_services.stdout | length > 0
+
+    - name: Stop and disable systemd services for Free Edition
+      systemd:
+        name: "{{ item }}"
+        state: stopped
+        enabled: false
+        daemon_reload: true
+      register: systemd_stop
+      with_items: "{{ free_edition_systemd_services.stdout_lines }}"
+      when:
+        - free_edition_systemd_services.changed
+      notify:
+        - Run systemctl daemon-reload
+        - Reset failed systemd services
+
+    - name: Capture installed Free Edition related RPM packages
+      shell:
+        cmd: "rpm -qa | grep -i 'oracle-database' || true"
+      register: free_edition_rpm_packages
+      changed_when:
+        - not free_edition_rpm_packages.failed
+        - free_edition_rpm_packages.stdout is defined
+        - free_edition_rpm_packages.stdout | length > 0
+
+    - name: Remove found RPMs via DNF (and run scriptlets)
+      dnf:
+        name: "{{ item }}"
+        state: absent
+        autoremove: true
+      register: dnf_remove
+      with_items: "{{ free_edition_rpm_packages.stdout_lines }}"
+      when:
+        - free_edition_rpm_packages.changed
+
+    - name: Force remove broken packages (if dnf module uninstall fails)
+      shell:
+        cmd: "rpm --erase --noscripts --nodeps {{ item }}"
+      with_items: "{{ free_edition_rpm_packages.stdout_lines }}"
+      when:
+        - dnf_remove.failed is defined
+        - dnf_remove.failed
+
+    - name: Run "Preinstall settings" script with the uninstall argument
+      shell:
+        cmd: "/usr/bin/oracle-database-preinstall-{{ free_edition_name }}-verify -u 2> /dev/null 1>&2;"
+      when:
+        - dnf_remove.failed is defined
+        - dnf_remove.failed
+
+    - name: Remove any remaining Free Edition specific files and directories
+      file:
+        path: "{{ item }}"
+        state: absent
+      with_items:
+        - "/etc/rc.d/init.d/oracle-free-{{ free_edition_name }}"
+        - "/etc/rc.d/rc2.d/K05oracle-free-{{ free_edition_name }}"
+        - "/etc/rc.d/rc2.d/S80oracle-free-{{ free_edition_name }}"
+        - "/etc/rc.d/rc3.d/K05oracle-free-{{ free_edition_name }}"
+        - "/etc/rc.d/rc3.d/S80oracle-free-{{ free_edition_name }}"
+        - "/etc/rc.d/rc4.d/K05oracle-free-{{ free_edition_name }}"
+        - "/etc/rc.d/rc4.d/S80oracle-free-{{ free_edition_name }}"
+        - "/etc/rc.d/rc5.d/K05oracle-free-{{ free_edition_name }}"
+        - "/etc/rc.d/rc5.d/S80oracle-free-{{ free_edition_name }}"
+        - "/etc/security/limits.d/oracle-database-preinstall-{{ free_edition_name }}.conf"
+        - "/etc/sysconfig/oracle-database-preinstall-{{ free_edition_name }}"
+        - "/etc/sysconfig/oracle-free-{{ free_edition_name }}.conf"
+        - "/etc/systemd/system/oracle-database-preinstall-{{ free_edition_name }}-firstboot.service"
+        - "/opt/oracle"
+        - "/opt/ORCLfmap"
+        - "/usr/bin/oracle-database-preinstall-{{ free_edition_name }}-verify"
+        - "/usr/share/doc/oracle-free-{{ free_edition_name }}"
+        - "/usr/share/licenses/oracle-database-preinstall-{{ free_edition_name }}"
+        - "/var/log/oracle-database-free-{{ free_edition_name }}"
+        - "/var/log/oracle-database-preinstall-{{ free_edition_name }}"
+
+  ignore_errors: true
+  become: true
+  become_user: root
+  when: free_edition
+
+- name: De-configure CRS (non-RAC)
   command: "{{ grid_home }}/perl/bin/perl -I {{ grid_home }}/perl/lib -I {{ grid_home }}/crs/install {{ grid_home }}/crs/install/roothas.pl -deconfig -force -verbose"
   register: has_deconfig
-  ignore_errors: yes
-  become: yes
+  ignore_errors: true
+  become: true
   become_user: root
-  when: cluster_name is not defined
-  
+  when:
+    - cluster_name is not defined
+    - not free_edition
+
 - name: Uninstall TFA service
   command: "{{ grid_home }}/bin/tfactl uninstall -local -silent"
   environment:
     PATH: "{{ grid_home }}/perl/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin"
     PERL5LIB: "{{ grid_home }}/perl/lib"
   register: uninstall_tfa
-  ignore_errors: yes
-  become: yes
+  ignore_errors: true
+  become: true
   become_user: root
+  when: not free_edition
 
 - name: Kill (SIGTERM) any remaining Oracle processes
   command: "pkill -f {{ item }}"
@@ -84,15 +200,15 @@
     - '\\+ASM'
     - /grid/bin
     - /grid/jdk
-    - "-u {{ grid_user }}"
     - "-u {{ oracle_user }}"
-  ignore_errors: yes
+    - "{% if role_separation | bool %}-u {{ grid_user }}{% else %}[]{% endif %}"
+  ignore_errors: true
   register: kill_procs
   changed_when: kill_procs.rc == 0
   failed_when:
     - kill_procs.rc != 0
     - kill_procs.rc != 1
-  become: yes
+  become: true
   become_user: root
 
 - name: Wait for processes to die (10 seconds)
@@ -112,19 +228,19 @@
     - '\\+ASM'
     - /grid/bin
     - /grid/jdk
-    - "-u {{ grid_user }}"
     - "-u {{ oracle_user }}"
-  ignore_errors: yes
+    - "{% if role_separation | bool %}-u {{ grid_user }}{% else %}[]{% endif %}"
+  ignore_errors: true
   register: kill_procs
   changed_when: kill_procs.rc == 0
   failed_when:
     - kill_procs.rc != 0
     - kill_procs.rc != 1
-  become: yes
+  become: true
   become_user: root
 
 - name: Remove directories and files
-  become: yes
+  become: true
   become_user: root
   file:
     path: "{{ item }}"
@@ -136,36 +252,36 @@
     - "{{ grid_home }}"
     - "{{ oracle_root }}"
     - "{{ swlib_unzip_path }}"
-    - /usr/tmp/.oracle
-    - /var/tmp/.oracle
-    - /tmp/.oracle
-    - /tmp/srvctl
-    - /etc/oratab
-    - /etc/oragchomelist
-    - /etc/oraInst.loc
-    - /usr/local/bin/dbhome
-    - /usr/local/bin/oraenv
-    - /usr/local/bin/coraenv
-    - /etc/init.d/acfssihamount
-    - /etc/init.d/ohasd
-    - /etc/init.d/init.ohasd
-    - /etc/init.d/init.orachkscheduler
-    - /etc/init.d/init.tfa
-    - /etc/oracle
-    - /etc/sysconfig/oracleasm-update
-    - /etc/sysconfig/oracleasm.rpmsave
-    - /etc/sysconfig/oracledrivers.conf
-    - /etc/systemd/system/oracle-ohasd.service
-    - /etc/systemd/system/graphical.target.wants/oracle-ohasd.service
-    - /etc/systemd/system/multi-user.target.wants/oracle-ohasd.service
-    - /etc/systemd/system/multi-user.target.wants/oracleasm.service
-    - /var/log/oracleasm
-    - /var/log/oracleohasd
+    - "/usr/tmp/.oracle"
+    - "/var/tmp/.oracle"
+    - "/tmp/.oracle"
+    - "/tmp/srvctl"
+    - "/etc/oratab"
+    - "/etc/oragchomelist"
+    - "/etc/oraInst.loc"
+    - "/usr/local/bin/dbhome"
+    - "/usr/local/bin/oraenv"
+    - "/usr/local/bin/coraenv"
+    - "/etc/init.d/acfssihamount"
+    - "/etc/init.d/ohasd"
+    - "/etc/init.d/init.ohasd"
+    - "/etc/init.d/init.orachkscheduler"
+    - "/etc/init.d/init.tfa"
+    - "/etc/oracle"
+    - "/etc/sysconfig/oracleasm-update"
+    - "/etc/sysconfig/oracleasm.rpmsave"
+    - "/etc/sysconfig/oracledrivers.conf"
+    - "/etc/systemd/system/oracle-ohasd.service"
+    - "/etc/systemd/system/graphical.target.wants/oracle-ohasd.service"
+    - "/etc/systemd/system/multi-user.target.wants/oracle-ohasd.service"
+    - "/etc/systemd/system/multi-user.target.wants/oracleasm.service"
+    - "/var/log/oracleasm"
+    - "/var/log/oracleohasd"
   ignore_errors: true
   register: remove_files
 
 - name: Clean up shared memory segments
-  become: yes
+  become: true
   become_user: root
   shell: "ipcs -m | awk '/{{ item }}/ {print $2}' | xargs -r -L1 ipcrm -m"
   with_items:
@@ -173,7 +289,7 @@
     - "{{ oracle_user }}"
 
 - name: Clean up semaphores
-  become: yes
+  become: true
   become_user: root
   shell: "ipcs -s | awk '/{{ item }}/ {print $2}' | xargs -r -L1 ipcrm -s"
   with_items:
@@ -189,7 +305,7 @@
   register: tmp_dirs
 
 - name: Remove any found /tmp/CVU dirs
-  become: yes
+  become: true
   become_user: root
   file:
     path: "{{ item.path }}"
@@ -197,7 +313,7 @@
   with_items: "{{ tmp_dirs.files }}"
 
 - name: (asmlib) Delete asmlib managed disks
-  become: yes
+  become: true
   become_user: root
   command: "/usr/sbin/oracleasm deletedisk {{ item.1.name }}"
   with_subelements:
@@ -208,10 +324,10 @@
   ignore_errors: true
 
 - name: (asmlib) remove oracleasm packages
-  become: yes
+  become: true
   become_user: root
   yum:
-    name: '*oracleasm*'
+    name: "*oracleasm*"
     state: absent
     lock_timeout: 180
   when: asm_disk_management == "asmlib"
@@ -225,8 +341,7 @@
   shell: |
     umount -f -l "{{ item.mount_point }}"
   ignore_errors: true
-  with_items:
-    - "{{ oracle_user_data_mounts }}"
+  with_items: "{{ oracle_user_data_mounts }}"
 
 - name: Remove Oracle user data devices from fstab
   mount:
@@ -238,38 +353,33 @@
   failed_when:
     - fstab_result is failed
     - "'Directory not empty' not in fstab_result.module_stdout"
-  with_items:
-    - "{{ oracle_user_data_mounts }}"
-  when: 
-    - item.first_partition_id is defined
-    
+  with_items: "{{ oracle_user_data_mounts }}"
+  when: item.first_partition_id is defined
+
 - name: Remove magic strings from Oracle user data partitions
-  become: yes
+  become: true
   become_user: root
   command: "wipefs --all --force {{ item.first_partition_id }}"
-  when: 
+  when:
     - "'mapper' not in item.blk_device"
     - item.first_partition_id is defined
   ignore_errors: true
-  with_items:
-    - "{{ oracle_user_data_mounts }}"
+  with_items: "{{ oracle_user_data_mounts }}"
 
 - name: Remove magic strings from Oracle user data disks
-  become: yes
+  become: true
   become_user: root
   command: "wipefs --all --force {{ item.blk_device }}"
-  with_items:
-    - "{{ oracle_user_data_mounts }}"
+  with_items: "{{ oracle_user_data_mounts }}"
 
 - name: Reload partition table for user data disks
-  become: yes
+  become: true
   become_user: root
   command: "partprobe {{ item.blk_device }}"
-  with_items:
-    - "{{ oracle_user_data_mounts }}"
+  with_items: "{{ oracle_user_data_mounts }}"
 
 - name: Zero-out header in ASM disks partitions
-  become: yes
+  become: true
   become_user: root
   command: "dd if=/dev/zero of={{ item.1.blk_device }} bs=1M count=100"
   with_subelements:
@@ -296,9 +406,9 @@
     - name: Remove fstab entry
       lineinfile:
         path: /etc/fstab
-        regexp: '^{{ swap_blk_device }}'
+        regexp: "^{{ swap_blk_device }}"
         state: absent
-  become: yes
+  become: true
   when:
     - swap_blk_device is defined
     - swap_partition_id is defined
@@ -307,11 +417,10 @@
   tags: remove-swap
 
 - name: Refresh kernel partition table view
-  become: yes
+  become: true
   become_user: root
   command: "blockdev --rereadpt {{ item.blk_device }}"
-  with_items:
-    - "{{ oracle_user_data_mounts }}"
+  with_items: "{{ oracle_user_data_mounts }}"
   when: "'mapper' not in item.blk_device"
   ignore_errors: true
 
@@ -328,7 +437,7 @@
   tags: asm-disks
 
 - name: (udev) remove oracle udev rules
-  become: yes
+  become: true
   become_user: root
   file:
     path: /etc/udev/rules.d/99-oracle-asmdevices.rules
@@ -336,29 +445,29 @@
   when: asm_disk_management == "udev"
 
 - name: (udev) Reload rules
-  become: yes
+  become: true
   become_user: root
   shell: ( /sbin/udevadm control --reload-rules && /sbin/udevadm trigger )
   when: asm_disk_management == "udev"
 
 - name: Remove oracle kernel modules
-  become: yes
+  become: true
   become_user: root
   shell: awk '/^oracle/ {print $1}' /proc/modules | sudo xargs -r modprobe -r
 
 - name: Remove users
-  become: yes
+  become: true
   become_user: root
   user:
     name: "{{ item.name }}"
     state: absent
-    remove: yes
-    force: yes
+    remove: true
+    force: true
   with_items: "{{ oracle_users }}"
   register: remove_users
 
 - name: Remove groups
-  become: yes
+  become: true
   become_user: root
   group:
     name: "{{ item.group }}"
@@ -368,10 +477,10 @@
     - "{{ asm_groups }}"
   register: remove_groups
 
-- name: Results prior to server reboot
+- name: Results prior captured outputs
   debug:
     msg:
-      - "{{ srvice_stop }}"
+      - "{{ service_stop }}"
       - "{{ kill_procs }}"
       - "{{ has_deconfig }}"
       - "{{ remove_files }}"
@@ -381,17 +490,3 @@
       - "{{ remove_oracleasm }}"
       - "{{ zero_disks }}"
     verbosity: 1
-
-- name: Server reboot
-  become: yes
-  become_user: root
-  reboot:
-  register: server_reboot
-  when: "('virtualbox' in ansible_virtualization_type)"
-
-- name: Re-mount swlib
-  become: yes
-  become_user: root
-  # Not using the Ansible mount module as this is a temporary mount
-  command: "mount -t vboxsf swlib {{ swlib_path }}"
-  when: "('virtualbox' in ansible_virtualization_type)"

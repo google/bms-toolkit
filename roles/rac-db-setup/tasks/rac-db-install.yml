@@ -111,18 +111,6 @@
   become_user: "{{ oracle_user }}"
   tags: rac-db,update-opatch-db
 
-- name: rac-db-install | Patch OL8 CVU issue MOS note 2878100.1
-  become: yes
-  become_user: "{{ oracle_user }}"
-  lineinfile:
-    path: "{{ oracle_home }}/cv/admin/cvu_config"
-    regexp: "^CV_ASSUME_DISTID"
-    line: "CV_ASSUME_DISTID=OEL7.8"
-  when:
-    - ansible_os_family == 'RedHat'
-    - ansible_distribution_major_version >= '8'
-    - oracle_ver_base == '19.3'
-
 - name: rac-db-install | Set installer command
   set_fact:
     installer_command: "{{ runinstaller_loc }}/runInstaller -silent -waitforcompletion -responseFile {{ install_unzip_path }}/db_install.rsp {{ rel_patch | default('') }} {{ prereq_option }}"
@@ -133,14 +121,24 @@
     msg: "Using installer cmd: {{ installer_command }}"
   tags: rac-db,rac-db-install
 
+- name: rac-db-install | Set CV_ASSUME_DISTID to OEL7 when installing on RHEL8 # MOS Note 2878100.1
+  set_fact:
+    cv_distid: "{{ 'OEL7' if ansible_os_family == 'RedHat'
+                           and (ansible_distribution_major_version | int) >= 8
+                           and (oracle_ver_base | float) <= 19.3
+                           else '' }}"
+  tags: rac-db-setup
+
 - name: rac-db-install | Run runInstaller
   command: "{{ installer_command }}"
   become: yes
   become_user: "{{ oracle_user }}"
+  environment:
+    CV_ASSUME_DISTID: "{{ cv_distid }}"
   register: install_rac_db
-  failed_when:
-    - "'Successfully Setup Software' not in install_rac_db.stdout"
-    - "install_rac_db.rc not in [0,6,250]"
+  failed_when: >
+    ('Successfully Setup Software' not in install_rac_db.stdout) or
+    (install_rac_db.rc not in [0,6,250])
   tags: rac-db,rac-db-install
 
 - name: rac-db-install | Installer output

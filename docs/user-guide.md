@@ -1965,6 +1965,8 @@ Tasks can also be skipped using tags. If the toolkit fails while executing a tas
 -- "--skip-tags base-provision,host-storage"
 ```
 
+Additional information about tags is in this file <a href="https://github.com/pythian/gto-prv/blob/dev/oratk-16/docs/tags-info.md">tags-info</a>
+
 ### Example Toolkit Execution
 
 In the following example, environment variables are used to specify the

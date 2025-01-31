@@ -22,7 +22,7 @@
     mode: u=wrx,go=
     owner: "{{ ssh_user }}"
     group: "{{ user_group }}"
-  tags: ssh-key
+  tags: ssh-keys
 
 - name: Generate ssh key on first node
   become: yes
@@ -33,14 +33,14 @@
     owner: "{{ ssh_user }}"
     group: "{{ user_group }}"
   register: ssh_key
-  tags: ssh-key
+  tags: ssh-keys
 
 - name: Get key fingerprint
   become: yes
   become_user: "{{ ssh_user }}"
   command: ssh-keyscan -tecdsa {{ inventory_hostname }},{{ inventory_hostname }}.{{ ansible_domain }}
   register: finger_key
-  tags: ssh-key
+  tags: ssh-keys
 
 - name: Add key fingerprint to known_hosts file
   become: yes
@@ -53,7 +53,7 @@
     owner: "{{ ssh_user }}"
     group: "{{ user_group }}"
   loop: "{{ ssh_nodes }}"
-  tags: ssh-key
+  tags: ssh-keys
 
 - name: Key propagation to all nodes
   become: yes
@@ -63,4 +63,4 @@
     key: "{{ ssh_key.public_key }}"
     user: "{{ ssh_user }}"
   loop: "{{ ssh_nodes }}"
-  tags: ssh-key
+  tags: ssh-keys

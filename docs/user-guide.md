@@ -2495,21 +2495,22 @@ $ export INSTANCE_IP_ADDR=10.2.83.197
 $ ./install-oracle.sh \
 >   --ora-edition FREE \
 >   --instance-ip-addr ${INSTANCE_IP_ADDR} \
+>   --instance-hostname db-23ai-free \
 >   --ora-swlib-bucket gs://oracle-software \
 >   --backup-dest /opt/oracle/fast_recovery_area/FREE \
 >   --ora-pdb-count 2 \
 >   --ora-pdb-name-prefix FREEPDB
 
 Command used:
-./install-oracle.sh --ora-edition FREE --instance-ip-addr 10.2.83.197 --ora-swlib-bucket gs://oracle-software --backup-dest /opt/oracle/fast_recovery_area/FREE --ora-pdb-count 2 --ora-pdb-name-prefix FREEPDB --allow-install-on-vm
+./install-oracle.sh --ora-edition FREE --instance-ip-addr 10.2.83.197 --instance-hostname db-23ai-free --ora-swlib-bucket gs://oracle-software --backup-dest /opt/oracle/fast_recovery_area/FREE --ora-pdb-count 2 --ora-pdb-name-prefix FREEPDB
 
 
-Inventory file for this execution: ./inventory_files/inventory_10.2.83.197_FREE.
+Inventory file for this execution: ./inventory_files/inventory_db-23ai-free_FREE.
 
 Running with parameters from command line or environment variables:
 
 ANSIBLE_DISPLAY_SKIPPED_HOSTS=false
-ANSIBLE_LOG_PATH=./logs/log_10.2.83.197_FREE_20250109_115429.log
+ANSIBLE_LOG_PATH=./logs/log_db-23ai-free_FREE_20250131_105534.log
 ARCHIVE_BACKUP_MIN=30
 ARCHIVE_ONLINE_DAYS=7
 ARCHIVE_REDUNDANCY=2
@@ -2524,9 +2525,9 @@ BACKUP_START_MIN=00
 CLUSTER_CONFIG=cluster_config.json
 CLUSTER_TYPE=NONE
 INSTANCE_HOSTGROUP_NAME=dbasm
-INSTANCE_HOSTNAME=10.2.83.197
+INSTANCE_HOSTNAME=db-23ai-free
 INSTANCE_IP_ADDR=10.2.83.197
-INSTANCE_SSH_EXTRA_ARGS=''\''-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o IdentityAgent=no'\'''
+INSTANCE_SSH_EXTRA_ARGS=''\''-o ServerAliveInterval=60 -o ServerAliveCountMax=3 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o IdentityAgent=no'\'''
 INSTANCE_SSH_KEY='~/.ssh/id_rsa'
 INSTANCE_SSH_USER=pane
 ORA_ASM_DISKS=asm_disk_config.json
@@ -2563,35 +2564,35 @@ PB_PREP_HOST=prep-host.yml
 PRIMARY_IP_ADDR=
 
 Ansible params:
-Found Ansible: ansible-playbook is /usr/bin/ansible-playbook
+Found Ansible: ansible-playbook is /usr/local/bin/ansible-playbook
 
-Running Ansible playbook: ansible-playbook -i ./inventory_files/inventory_10.2.83.197_FREE  -e allow_install_on_vm=true  check-instance.yml
+Running Ansible playbook: ansible-playbook -i ./inventory_files/inventory_db-23ai-free_FREE   check-instance.yml
 
-PLAY [dbasm] *************************************************************************************************************************************************************************************************
+PLAY [dbasm] *********************************************************************************************************************************
 
-TASK [Verify that Ansible on control node meets the version requirements] ************************************************************************************************************************************
-ok: [10.2.83.197] => {
+TASK [Verify that Ansible on control node meets the version requirements] ********************************************************************
+ok: [db-23ai-free] => {
     "changed": false,
-    "msg": "Ansible version is 2.16.3, continuing"
+    "msg": "Ansible version is 2.9.27, continuing"
 }
 
-TASK [Confirm JSON parsing works] ****************************************************************************************************************************************************************************
-ok: [10.2.83.197] => {
+TASK [Confirm JSON parsing works] ************************************************************************************************************
+ok: [db-23ai-free] => {
     "changed": false,
     "msg": "All assertions passed"
 }
 
-TASK [Test connectivity to target instance via ping] *********************************************************************************************************************************************************
-ok: [10.2.83.197]
+TASK [Test connectivity to target instance via ping] *****************************************************************************************
+ok: [db-23ai-free]
 
-TASK [Abort if ping module fails] ****************************************************************************************************************************************************************************
-ok: [10.2.83.197] => {
+TASK [Abort if ping module fails] ************************************************************************************************************
+ok: [db-23ai-free] => {
     "changed": false,
     "msg": "The instance has an usable python installation, continuing"
 }
 
-TASK [Collect facts from target] *****************************************************************************************************************************************************************************
-ok: [10.2.83.197]
+TASK [Collect facts from target] *************************************************************************************************************
+ok: [db-23ai-free]
 
 ... output truncated for brevity
 ```

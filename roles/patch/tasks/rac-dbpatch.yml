@@ -15,7 +15,7 @@
 ---
 - name: rac-dbpatch | Determine if upgrade mode is required
   set_fact:
-    startup_upgrade: "{% set c = rdbms_patches | json_query('[?release==`'+ oracle_rel +'`]') | json_query('[?upgrade==`true`].patchnum') %}{% if c|length > 0 %}upgrade{% endif %}"
+    startup_upgrade: "{% set c = rdbms_patches | json_query('[?release==`' + oracle_rel + '`]') | json_query('[?upgrade==`true`].patchnum') %}{% if c | length > 0 %}upgrade{% endif %}"
   tags: patch_rdbms
 
 - name: rac-dbpatch | Set cluster_database to false

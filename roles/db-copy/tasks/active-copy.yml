@@ -50,13 +50,13 @@
 
 - name: Active-copy | Password file variable
   set_fact:
-    password_file: "{{ srvctl_output.stdout|regex_replace('^Password file:')|regex_replace('\\s') }}"
+    password_file: "{{ srvctl_output.stdout | regex_replace('^Password file:') | regex_replace('\\s') }}"
   tags: active-duplicate
 
 - name: Active-copy | Backup password file from file system
   copy:
-    src: "{% if password_file|length > 0 %}{{ password_file }}{% else %}{{ oracle_home }}/dbs/orapw{{ db_name }}{% endif %}"
-    dest: "{{ oracle_home }}/dbs/orapw{{ db_name }}.{{ lookup('pipe','date +%Y-%m-%d-%H-%M') }}"
+    src: "{% if password_file | length > 0 %}{{ password_file }}{% else %}{{ oracle_home }}/dbs/orapw{{ db_name }}{% endif %}"
+    dest: "{{ oracle_home }}/dbs/orapw{{ db_name }}.{{ lookup('pipe', 'date +%Y-%m-%d-%H-%M') }}"
     owner: "{{ oracle_user }}"
     group: "{{ oracle_group }}"
     remote_src: true
@@ -69,7 +69,7 @@
 - name: Active-copy | Backup password file from ASM
   shell: |
     set -o pipefail
-    asmcmd cp {{ password_file }} {{ grid_home }}/dbs/orapw{{ db_name }}.{{ lookup('pipe','date +%Y-%m-%d-%H-%M') }}
+    asmcmd cp {{ password_file }} {{ grid_home }}/dbs/orapw{{ db_name }}.{{ lookup('pipe', 'date +%Y-%m-%d-%H-%M') }}
   environment:
     ORACLE_HOME: "{{ grid_home }}"
     ORACLE_SID: "{{ asm_sid }}"
@@ -101,7 +101,7 @@
   lineinfile:
     path: "{{ grid_home }}/network/admin/listener.ora"
     regexp: "^SID_LIST_{{ listener_name }}"
-    line: "SID_LIST_{{ listener_name }}=(SID_LIST=(SID_DESC=(GLOBAL_DBNAME={{ oracle_sid }}{{ standby_suffix }}{% if db_domain|default('',true)|length > 0 %}.{{ db_domain }}{% endif %})(ORACLE_HOME={{ oracle_home }})(SID_NAME={{ oracle_sid }})))"
+    line: "SID_LIST_{{ listener_name }}=(SID_LIST=(SID_DESC=(GLOBAL_DBNAME={{ oracle_sid }}{{ standby_suffix }}{% if db_domain | default('', true) | length > 0 %}.{{ db_domain }}{% endif %})(ORACLE_HOME={{ oracle_home }})(SID_NAME={{ oracle_sid }})))"
     owner: "{{ grid_user }}"
     group: "{{ oracle_group }}"
   become: yes
@@ -180,8 +180,8 @@
   command:
     argv:
       - "{{ oracle_home }}/bin/rman"
-      - "target \"sys/{{ sys_pass }}@//{{ lookup('env', 'PRIMARY_IP_ADDR') }}:{{ listener_port | default(1521, true) }}/{{ db_name }}{% if db_domain|default('', true)|length > 0 %}.{{ db_domain }}{% endif %}\""
-      - "auxiliary \"sys/{{ sys_pass }}@//{{ lookup('env', 'INSTANCE_IP_ADDR') }}:{{ listener_port | default(1521, true) }}/{{ db_name }}{{ standby_suffix }}{% if db_domain|default('', true)|length > 0 %}.{{ db_domain }}{% endif %}\""
+      - "target \"sys/{{ sys_pass }}@//{{ lookup('env', 'PRIMARY_IP_ADDR') }}:{{ listener_port | default(1521, true) }}/{{ db_name }}{% if db_domain | default('', true) | length > 0 %}.{{ db_domain }}{% endif %}\""
+      - "auxiliary \"sys/{{ sys_pass }}@//{{ lookup('env', 'INSTANCE_IP_ADDR') }}:{{ listener_port | default(1521, true) }}/{{ db_name }}{{ standby_suffix }}{% if db_domain | default('', true) | length > 0 %}.{{ db_domain }}{% endif %}\""
       - "cmdfile={{ oracle_home }}/dbs/duplicate.cmd"
       - "log={{ oracle_home }}/dbs/duplicate.log"
   environment:
@@ -200,7 +200,7 @@
     shutdown immediate
     EOF
     srvctl add db -d {{ db_name }}{{ standby_suffix }} \
-    -oraclehome {{ oracle_home }} {% if db_domain|default('', true)|length > 0 %}-domain {{ db_domain }}{% endif %} \
+    -oraclehome {{ oracle_home }} {% if db_domain | default('', true) | length > 0 %}-domain {{ db_domain }}{% endif %} \
     -spfile {{ oracle_home }}/dbs/spfile{{ db_name }}.ora \
     -pwfile {{ oracle_home }}/dbs/orapw{{ db_name }} \
     -role PHYSICAL_STANDBY -startoption MOUNT -stopoption IMMEDIATE \

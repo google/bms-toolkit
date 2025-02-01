@@ -26,7 +26,7 @@
   tasks:
     - include_role:
         name: lsnr-create
-      when: create_listener|bool
+      when: create_listener | bool
       tags: lsnr-create
 
     - include_role:

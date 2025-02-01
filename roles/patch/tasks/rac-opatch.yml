@@ -30,7 +30,7 @@
   command: "{{ grid_home }}/OPatch/{{ patch.method }} -analyze"
   args:
     chdir: "{{ swlib_unzip_path }}/{{ patch.patchnum }}/{{ patch.patch_subdir }}"
-  loop: "{{ gi_patches | json_query('[?release==`'+ oracle_rel +'`]') }}"
+  loop: "{{ gi_patches | json_query('[?release==`' + oracle_rel + '`]') }}"
   loop_control:
     loop_var: patch
   when:
@@ -142,10 +142,10 @@
   tags: rac-opatch,stop-home
 
 - name: rac-opatch | Run GI opatch apply
-  command: "{{ grid_home }}/OPatch/{{ patch.method }} {{ '-ocmrf {{ swlib_unzip_path }}/ocm.rsp' if patch.ocm else '' }} {{ ' -nonrolling' if groups['dbasm'] | length==1 else '' }}"
+  command: "{{ grid_home }}/OPatch/{{ patch.method }} {{ '-ocmrf {{ swlib_unzip_path }}/ocm.rsp' if patch.ocm else '' }} {{ ' -nonrolling' if groups['dbasm'] | length == 1 else '' }}"
   args:
     chdir: "{{ swlib_unzip_path }}/{{ patch.patchnum }}{{ patch.patch_subdir }}"
-  loop: "{{ gi_patches | json_query('[?release==`'+ oracle_rel +'`]') }}"
+  loop: "{{ gi_patches | json_query('[?release==`' + oracle_rel + '`]') }}"
   loop_control:
     loop_var: patch
   when:
@@ -205,7 +205,7 @@
   command: "{{ oracle_home }}/OPatch/opatch prereq CheckConflictAgainstOHWithDetail -ph ./"
   args:
     chdir: "{{ swlib_unzip_path }}/{{ patch.patchnum }}/{{ patch.patch_subdir }}"
-  loop: "{{ rdbms_patches | json_query('[?release==`'+ oracle_rel +'`]') }}"
+  loop: "{{ rdbms_patches | json_query('[?release==`' + oracle_rel + '`]') }}"
   loop_control:
     loop_var: patch
   when:
@@ -227,7 +227,7 @@
   command: "{{ oracle_home }}/OPatch/{{ patch.method }} -silent {{ '-ocmrf {{ swlib_unzip_path }}/ocm.rsp' if patch.ocm else '' }}"
   args:
     chdir: "{{ swlib_unzip_path }}/{{ patch.patchnum }}{{ patch.patch_subdir }}"
-  loop: "{{ rdbms_patches | json_query('[?release==`'+ oracle_rel +'`]') }}"
+  loop: "{{ rdbms_patches | json_query('[?release==`' + oracle_rel + '`]') }}"
   loop_control:
     loop_var: patch
   when: oracle_ver != '11.2.0.4.0'

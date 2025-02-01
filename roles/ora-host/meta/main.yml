@@ -15,4 +15,3 @@
 ---
 dependencies:
   - role: common
-  - role: hugepages

@@ -48,7 +48,7 @@
 - name: Allow local networks for RAC
   firewalld:
     zone: public
-    rich_rule: rule family=ipv4 source address="{{ item.value.ipv4.network }}/{{ item.value.ipv4.netmask}}" accept
+    rich_rule: rule family=ipv4 source address="{{ item.value.ipv4.network }}/{{ item.value.ipv4.netmask }}" accept
     permanent: yes
     immediate: yes
     state: enabled
@@ -59,7 +59,7 @@
     - "'Permanent and Non-Permanent(immediate) operation' not in firewall_op_localnw.msg"
   when: not disable_firewall|bool
   with_items:
-    - "{{ ansible_facts | dict2items | selectattr('value.ipv4.network', 'defined') |list }}"
+    - "{{ ansible_facts | dict2items | selectattr('value.ipv4.network', 'defined') | list }}"
   tags: lsnr-firewall
 
 - name: Allow HAIP networks

@@ -82,7 +82,7 @@
     - include_role:
         name: host-provision
         tasks_from: proxy.yml
-      when: proxy_setup|bool
+      when: proxy_setup | bool
   remote_user: "{{ instance_ssh_user }}"
   tags: host-provision
 

@@ -32,7 +32,7 @@
 
 - name: user-setup | Store public key contents to be transferred from control node  to DB hosts
   set_fact:
-    public_key_content: "{{ public_key_content_scrambled['content'] | b64decode  }}"
+    public_key_content: "{{ public_key_content_scrambled['content'] | b64decode }}"
   tags: host-provision
 
 - name: user-setup | Transfer public key from control node to DB hosts

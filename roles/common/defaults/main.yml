@@ -79,7 +79,7 @@ fs_dirs:
 
 pwgen_file: pwgen.sh
 pwgen_path: /usr/local/bin
-pass_param: "{{pwgen_path}}/{{pwgen_file}} 16"
+pass_param: "{{ pwgen_path }}/{{ pwgen_file }} 16"
 
 diskgroup_compatible_asm: "{{ oracle_ver }}"
 diskgroup_compatible_rdbms: "{# assign to variable c compatible parameter and set to default if not defined #}\

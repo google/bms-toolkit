@@ -16,7 +16,7 @@
 install_os_packages: true
 disable_firewall: false
 disable_selinux: true
-firewall_service: "{% if ansible_distribution_major_version|int==6%}iptables{%elif ansible_distribution_major_version|int>=7 %}firewalld{% else %}0{% endif %}"
+firewall_service: "{% if ansible_distribution_major_version | int == 6 %}iptables{%elif ansible_distribution_major_version | int >= 7 %}firewalld{% else %}0{% endif %}"
 
 oracle_required_rpms:
   - bc

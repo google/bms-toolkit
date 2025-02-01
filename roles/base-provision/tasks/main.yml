@@ -67,7 +67,7 @@
     marker: "# {mark} ANSIBLE MANAGED BLOCK"
     insertafter: "^server "
     block: "server {{ ntp_preferred }} prefer iburst"
-    state: "{{ (ntp_preferred != \"\" ) | ternary('present', 'absent') }}"
+    state: "{{ (ntp_preferred != \"\") | ternary('present', 'absent') }}"
   notify: restart chronyd
   tags: ntp
 

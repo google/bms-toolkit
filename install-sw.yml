@@ -22,7 +22,7 @@
   tags: populate-vars
 - hosts: dbasm
   remote_user: "{{ grid_user }}"
-  become: yes
+  become: true
   become_user: root
   pre_tasks:
     - name: Verify that Ansible on control node meets the version requirements
@@ -39,7 +39,7 @@
 
 - hosts: dbasm
   remote_user: "{{ oracle_user }}"
-  become: yes
+  become: true
   become_user: root
   pre_tasks:
     - name: Verify that Ansible on control node meets the version requirements
@@ -85,7 +85,7 @@
 
 - hosts: dbasm[0]
   remote_user: "{{ grid_user }}"
-  become: yes
+  become: true
   become_user: root
   tasks:
     - name: rac-gi-install | defaults from common
@@ -97,7 +97,7 @@
         # if 11.2 or 12.1 then rac-gi-install-<oracle_ver>.yml otherwise rac-gi-install.yml
         tasks_from: rac-gi-install{% if oracle_ver_base in ('11.2', '12.1') %}-{{ oracle_ver }}{% endif %}.yml
         # tasks_from: rac-gi-install.yml
-        public: yes
+        public: true
       loop:
         - "{{ gi_software | default([]) | json_query('[?version==`' + oracle_ver + '`].files[*]') | join() }}"
       loop_control:
@@ -125,7 +125,7 @@
 
 - hosts: dbasm[0]
   remote_user: "{{ oracle_user }}"
-  become: yes
+  become: true
   become_user: root
   tasks:
     - name: rac-db-install | defaults from common
@@ -136,7 +136,7 @@
         name: rac-db-setup
         # if 11.2 or 12.1 then rac-db-install-<oracle_ver>.yml otherwise rac-db-install.yml
         tasks_from: rac-db-install{% if oracle_ver_base in ('11.2', '12.1') %}-11.2-12.1{% endif %}.yml
-        public: yes
+        public: true
       loop:
         - "{{ rdbms_software | json_query('[?version==`' + oracle_ver + '`].files[*]') | join() }}"
       loop_control:

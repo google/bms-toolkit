@@ -27,7 +27,7 @@
   register: public_key_content_scrambled
   delegate_to: localhost
   connection: local
-  become: no
+  become: false
   tags: host-provision
 
 - name: user-setup | Store public key contents to be transferred from control node  to DB hosts

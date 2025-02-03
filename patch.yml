@@ -33,8 +33,8 @@
         name: swlib
         tasks_from: main.yml
       vars:
-        patch_only: yes
-  become: no
+        patch_only: true
+  become: false
   tags: download-patches
 
 - name: OPatch Restart patch
@@ -45,7 +45,7 @@
         tasks_from: main.yml
       when: hostvars[groups['dbasm'].0]['cluster_name']|default('', true)|length == 0
   remote_user: "{{ oracle_user }}"
-  become: yes
+  become: true
   become_user: root
   tags: opatch_restart
 

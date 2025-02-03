@@ -16,17 +16,17 @@
 - name: get shmmax from sysctl if any
   shell: sysctl -f /etc/sysctl.conf -r kernel.shmmax -n || true
   register: v_shmmax_sysctl
-  changed_when: False
+  changed_when: false
 
 - name: get shmall from sysctl if any
   shell: sysctl -f /etc/sysctl.conf -r kernel.shmall -n || true
   register: v_shmall_sysctl
-  changed_when: False
+  changed_when: false
 
 - name: get shmmni from sysctl if any
   shell: sysctl -f /etc/sysctl.conf -r kernel.shmmni -n || true
   register: v_shmmni_sysctl
-  changed_when: False
+  changed_when: false
 
 # - name: get total RAM
 #   shell: set -o pipefail; cat /proc/meminfo | ( grep MemTotal || true ) | awk '{print $2*1024}'
@@ -36,23 +36,23 @@
   shell: cat /proc/sys/kernel/shmmax || true
   register: v_shmmax
   when: v_shmmax_sysctl.stdout == ""
-  changed_when: False
+  changed_when: false
 
 - name: get shmall from memory if not configured in sysctl
   shell: cat /proc/sys/kernel/shmall || true
   register: v_shmall
   when: v_shmall_sysctl.stdout == ""
-  changed_when: False
+  changed_when: false
 
 - name: get shmmni from memory if not configured in sysctl
   shell: cat /proc/sys/kernel/shmmni || true
   register: v_shmmni
-  changed_when: False
+  changed_when: false
 
 - name: get Hugepagesize from memory
   shell: set -o pipefail; ( cat /proc/meminfo | ( grep Hugepagesize || true ) | cut -d " " -f8 ) || true
   register: v_Hugepagesize
-  changed_when: False
+  changed_when: false
 
 - debug: var=ansible_memory_mb.real.total
 - debug: var=v_shmmax_sysctl.stdout_lines
@@ -107,11 +107,11 @@
 
 - name: Check transparent hugepage
   shell: ( cat /sys/kernel/mm/transparent_hugepage/enabled ) || true
-  become: yes
+  become: true
   become_user: root
   register: checkTPH
-  ignore_errors: yes
-  changed_when: False
+  ignore_errors: true
+  changed_when: false
 
 - debug: var=checkTPH
 
@@ -131,8 +131,8 @@
 - name: Check if THP shows as used and recommend reboot if AnonHugePages in /proc/meminfo is nonzero
   shell: grep -q '^AnonHugePages:\ *0\ kB$' /proc/meminfo || echo reboot
   register: checkTHPreboot
-  ignore_errors: yes
-  changed_when: False
+  ignore_errors: true
+  changed_when: false
 
 - debug:
     msg: "WARNING: A reboot is required to disable transparent huge pages"

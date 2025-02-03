@@ -23,7 +23,7 @@
     ORACLE_VERSION: "{{ oracle_ver }}"
     ORACLE_SID: "{{ asm_sid }}"
     LD_LIBRARY_PATH: "{{ grid_home }}/lib:${LD_LIBRARY_PATH}"
-  become: yes
+  become: true
   become_user: "{{ grid_user }}"
   changed_when: false
   register: created_dg
@@ -53,7 +53,7 @@
     - "{{ asm_disks }}"
   register: create_dg
   failed_when: "'ERROR' in create_dg.stdout"
-  become: yes
+  become: true
   become_user: "{{ grid_user }}"
   tags: rac-asm-create,create-dg
 
@@ -81,7 +81,7 @@
     - "{{ asm_disks }}"
   register: create_dg
   failed_when: "'ERROR' in create_dg.stdout"
-  become: yes
+  become: true
   become_user: "{{ grid_user }}"
   tags: rac-asm-create,create-dg
 

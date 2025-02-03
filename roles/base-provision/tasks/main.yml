@@ -48,7 +48,7 @@
     enabled: false
     state: stopped
   when: cluster_name is defined
-  ignore_errors: yes
+  ignore_errors: true
   with_items:
     - avahi-daemon.socket
     - avahi-daemon.service
@@ -75,7 +75,7 @@
   service:
     name: chronyd
     state: started
-    enabled: yes
+    enabled: true
   tags: ntp
 
 - name: Generate /etc/hosts

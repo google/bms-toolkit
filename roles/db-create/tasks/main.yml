@@ -49,7 +49,7 @@
   tags: db-create
 
 - name: Create DBCA response file script
-  become: yes
+  become: true
   become_user: "{{ oracle_user }}"
   template:
     src: dbca.rsp.sh.j2
@@ -62,7 +62,7 @@
   tags: db-create
 
 - name: Run DBCA response file script
-  become: yes
+  become: true
   become_user: "{{ oracle_user }}"
   command: "sh {{ swlib_unzip_path }}/dbca_{{ db_name }}.rsp.sh"
   register: rspout
@@ -72,7 +72,7 @@
   tags: db-create
 
 - name: Script cleanup
-  become: yes
+  become: true
   become_user: "{{ oracle_user }}"
   file:
     path: "{{ swlib_unzip_path }}/dbca_{{ db_name }}.rsp.sh"
@@ -111,7 +111,7 @@
 - name: Create database using DBCA
   block:
     - name: Run DBCA
-      become: yes
+      become: true
       become_user: "{{ oracle_user }}"
       shell: |
         set -o pipefail
@@ -155,7 +155,7 @@
   when:
     - oracle_ver != '11.2.0.4.0'
     - pdb_prefix is defined
-  become: yes
+  become: true
   become_user: "{{ oracle_user }}"
   tags: db-create
 

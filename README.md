@@ -6,10 +6,6 @@ Toolkit for installing and creating an initial Oracle database on [Bare Metal So
 
 1. Create a Google Cloud VM to act as a [control node](/docs/user-guide.md#control-node-requirements); it should be on a VPC network that has SSH access to the database hosts.
 1. [Extract the toolkit code](/docs/user-guide.md#installing-the-toolkit) on the control node.
-1. Set up authentication using the [host provisioning tool](/docs/host-provisioning.md).
-```bash
-bash host-provision.sh --instance-ip-addr 172.16.30.1  --instance-ssh-user ansible9
-```
 1. Create a Cloud Storage bucket to host Oracle software images.  
      ```bash
      gsutil mb -b on gs://installation-media-1234

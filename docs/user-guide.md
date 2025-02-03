@@ -1157,6 +1157,10 @@ Found p6880880_122010_Linux-x86-64.zip : OPatch Utility
 Before you run the tool you need to create JSON formatted configuration files
 for the data mount devices and the ASM disk group.
 
+The [host provisinoing tool](host-provisioning.md) can configure newly-provisioned
+BMS hosts to run the toolkit installer, including authentication, Internet access,
+and local mountpoints.
+
 ### Data mount configuration file
 
 In the data mount configuration file, you specify disk device attributes for:

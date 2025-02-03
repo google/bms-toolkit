@@ -27,5 +27,5 @@
         - validation-scripts
       loop_control:
         loop_var: role_item
-      when: create_db|bool
+      when: create_db | bool
   tags: rac-db-adjustements,rac-db-backups,rac-validation-scripts

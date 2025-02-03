@@ -43,8 +43,8 @@
 
 - name: Adjust instance memory values (11.2 and 12.1)
   set_fact:
-    sga_target_bytes: "{{ sga_target | regex_replace('M$','') }}"
-    pga_aggtar_bytes: "{{ pga_aggtar | regex_replace('M$','') }}"
+    sga_target_bytes: "{{ sga_target | regex_replace('M$', '') }}"
+    pga_aggtar_bytes: "{{ pga_aggtar | regex_replace('M$', '') }}"
   when: oracle_ver in ['11.2.0.4.0','12.1.0.2.0']
   tags: db-create
 

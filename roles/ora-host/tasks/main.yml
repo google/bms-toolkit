@@ -404,9 +404,9 @@
   become: true
   become_user: root
   blockinfile:
-    block: "SUBSYSTEM==\"block\" ACTION==\"add|change\", ENV{ID_SERIAL_SHORT}==\"{{ item.key }}\", SYMLINK+=\"{{ path_udev }}/{{ uuid_result_nonmultipath[item.key] | json_query ('[*].name') | list | join(', ') }}\", GROUP=\"{{ grid_group }}\", OWNER=\"{{ grid_user }}\", MODE=\"0660\""
+    block: "SUBSYSTEM==\"block\" ACTION==\"add|change\", ENV{ID_SERIAL_SHORT}==\"{{ item.key }}\", SYMLINK+=\"{{ path_udev }}/{{ uuid_result_nonmultipath[item.key] | json_query('[*].name') | list | join(', ') }}\", GROUP=\"{{ grid_group }}\", OWNER=\"{{ grid_user }}\", MODE=\"0660\""
     path: "/etc/udev/rules.d/99-oracle-asmdevices.rules"
-    marker: "# {mark} ASM disk udev rules for {{ uuid_result_nonmultipath[item.key] | json_query ('[*].blk_device') | list | join(', ') }}"
+    marker: "# {mark} ASM disk udev rules for {{ uuid_result_nonmultipath[item.key] | json_query('[*].blk_device') | list | join(', ') }}"
     create: true
   register: udevRules_nonmultipath
   when:
@@ -448,9 +448,9 @@
   become: true
   become_user: root
   blockinfile:
-    block: "SUBSYSTEM==\"block\" ACTION==\"add|change\", ENV{DM_UUID}==\"{{ item.key }}\", SYMLINK+=\"{{ path_udev }}/{{ uuid_result[item.key] | json_query ('[*].name') | list | join(', ') }}\", GROUP=\"{{ grid_group }}\", OWNER=\"{{ grid_user }}\", MODE=\"0660\""
+    block: "SUBSYSTEM==\"block\" ACTION==\"add|change\", ENV{DM_UUID}==\"{{ item.key }}\", SYMLINK+=\"{{ path_udev }}/{{ uuid_result[item.key] | json_query('[*].name') | list | join(', ') }}\", GROUP=\"{{ grid_group }}\", OWNER=\"{{ grid_user }}\", MODE=\"0660\""
     path: "/etc/udev/rules.d/99-oracle-asmdevices.rules"
-    marker: "# {mark} ASM disk udev rules for {{ uuid_result[item.key] | json_query ('[*].blk_device') | list | join(', ') }}"
+    marker: "# {mark} ASM disk udev rules for {{ uuid_result[item.key] | json_query('[*].blk_device') | list | join(', ') }}"
     create: true
   register: udevRules
   when:

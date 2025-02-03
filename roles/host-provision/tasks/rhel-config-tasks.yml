@@ -38,7 +38,7 @@
 - name: rhel-config-tasks | Get RHEL password
   pause:
     prompt: Enter password for RHEL support
-    echo: no
+    echo: false
   register: rhel_password
   when:
     - '"Status:         Subscribed" not in rhsm_status.stdout'
@@ -50,8 +50,8 @@
     state: present
     username: "{{ rhel_username.user_input }}"
     password: "{{ rhel_password.user_input }}"
-    auto_attach: yes
-    force_register: yes
+    auto_attach: true
+    force_register: true
   when:
     - '"Status:         Subscribed" not in rhsm_status.stdout'
   tags: host-provision

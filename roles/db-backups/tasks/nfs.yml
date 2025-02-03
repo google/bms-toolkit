@@ -14,7 +14,7 @@
 
 ---
 - name: nfs_backups | Install NFS mount utility
-  become: yes
+  become: true
   become_user: root
   yum:
     name: nfs-utils
@@ -23,7 +23,7 @@
   when: ansible_os_family == "RedHat"
 
 - name: nfs_backups | Ensure rpcbind is running as configured.
-  become: yes
+  become: true
   become_user: root
   service:
     name: rpcbind
@@ -40,7 +40,7 @@
     group: backupdba
 
 - name: nfs_backups | Mount NFS share (backup)
-  become: yes
+  become: true
   become_user: root
   mount:
     fstype: nfs

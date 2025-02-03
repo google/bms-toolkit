@@ -28,7 +28,7 @@
     - name: swlib | gcsfuse mount
       include_tasks: gcsfuse.yml
       when: swlib_mount_type == "gcsfuse"
-  become: yes
+  become: true
   become_user: root
 
 - name: swlib | gcscopy

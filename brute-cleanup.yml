@@ -14,7 +14,7 @@
 
 ---
 - hosts: dbasm
-  become: yes
+  become: true
   become_user: root
   pre_tasks:
     - name: Verify that Ansible on control node meets the version requirements

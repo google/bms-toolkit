@@ -23,7 +23,7 @@
   when:
     - item.ocm
     - item.release == oracle_ver
-  become: yes
+  become: true
   become_user: "{{ oracle_user }}"
   tags: create-rsp
 
@@ -31,25 +31,25 @@
   copy:
     src: "{{ oracle_root }}/oraInventory/oraInst.loc"
     dest: "{{ grid_home }}/oraInst.loc"
-    remote_src: yes
+    remote_src: true
     owner: "{{ grid_user }}"
     group: "{{ oracle_group }}"
     mode: u=rw,g=r,o=
   when: oracle_ver == '12.2.0.1.0'
-  become: yes
+  become: true
   become_user: root
 
 - name: (GI) Update OPatch
   unarchive:
     src: "{{ swlib_path }}/{{ item.patchfile }}"
     dest: "{{ grid_home }}"
-    remote_src: yes
+    remote_src: true
   with_items:
     - "{{ opatch_patches }}"
   when:
     - item.release == oracle_ver
     - item.category == "OPatch"
-  become: yes
+  become: true
   become_user: "{{ grid_user }}"
   tags: update-opatch-gi
 
@@ -57,13 +57,13 @@
   unarchive:
     src: "{{ swlib_path }}/{{ item.patchfile }}"
     dest: "{{ oracle_home }}"
-    remote_src: yes
+    remote_src: true
   with_items:
     - "{{ opatch_patches }}"
   when:
     - item.release == oracle_ver
     - item.category == "OPatch"
-  become: yes
+  become: true
   become_user: "{{ oracle_user }}"
   tags: update-opatch-db
 
@@ -71,11 +71,11 @@
   unarchive:
     src: "{{ swlib_path }}/{{ item.patchfile }}"
     dest: "{{ swlib_unzip_path }}"
-    remote_src: yes
+    remote_src: true
   with_items:
     - "{{ gi_patches }}"
   when: item.release == oracle_rel and item.category != "HAS_interim_patch"
-  become: yes
+  become: true
   become_user: "{{ grid_user }}"
   tags: patch-grid,sw-unzip
 
@@ -93,7 +93,7 @@
         ORACLE_SID: "{{ oracle_sid }}"
         PATH: "{{ oracle_home }}/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin"
       register: db_role
-      become: yes
+      become: true
       become_user: "{{ oracle_user }}"
     - name: Set boolean standby_db variable
       set_fact:
@@ -121,7 +121,7 @@
   with_items:
     - "{{ gi_patches }}"
   when: item.release == oracle_rel and item.category != "HAS_interim_patch"
-  become: yes
+  become: true
   become_user: root
   tags: patch-grid,sw-remove
 
@@ -129,11 +129,11 @@
   unarchive:
     src: "{{ swlib_path }}/{{ item.patchfile }}"
     dest: "{{ swlib_unzip_path }}"
-    remote_src: yes
+    remote_src: true
   with_items:
     - "{{ rdbms_patches }}"
   when: item.release == oracle_rel
-  become: yes
+  become: true
   become_user: "{{ oracle_user }}"
   tags: patch-rdbms,sw-unzip
 
@@ -149,7 +149,7 @@
     ORACLE_HOME: "{{ oracle_home }}"
   register: stop_home
   failed_when: stop_home.rc not in [0,2]
-  become: yes
+  become: true
   become_user: "{{ oracle_user }}"
   tags: patch-rdbms,pre-rdbms,stop-home
 
@@ -180,7 +180,7 @@
   with_items:
     - "{{ rdbms_patches }}"
   when: item.release == oracle_rel
-  become: yes
+  become: true
   become_user: root
   tags: patch-rdbms,sw-remove
 
@@ -190,7 +190,7 @@
     ORACLE_HOME: "{{ oracle_home }}"
   register: start_home
   failed_when: start_home.rc not in [0,2]
-  become: yes
+  become: true
   become_user: "{{ oracle_user }}"
   tags: patch-rdbms,start-home
 

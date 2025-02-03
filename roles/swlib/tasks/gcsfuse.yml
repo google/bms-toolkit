@@ -17,13 +17,13 @@
   include_tasks: gcloud.yml
 
 - name: gcsfuse | Install gcsfuse dependencies
-  become: yes
+  become: true
   become_user: root
   yum:
     name: fuse
 
 - name: gcsfuse | Install gcsfuse
-  become: yes
+  become: true
   become_user: root
   yum:
     name: "https://github.com/GoogleCloudPlatform/gcsfuse/releases/download/v{{ gcsfuse_version }}/gcsfuse-{{ gcsfuse_version }}-1.x86_64.rpm"

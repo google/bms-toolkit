@@ -27,7 +27,7 @@
     mode: u=rwx,go=
   with_items:
     - "{{ script_list }}"
-  become: yes
+  become: true
   become_user: "{{ oracle_user }}"
   tags: validation-scripts
 
@@ -37,7 +37,7 @@
 #   with_items:
 #     - "{{ script_list }}"
 #   register: script_output
-#   become: yes
+#   become: true
 #   become_user: "{{ oracle_user }}"
 #   tags: validation-scripts,run-validation-scripts
 

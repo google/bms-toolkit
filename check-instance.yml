@@ -50,7 +50,7 @@
     - name: Test privilege escalation on target
       raw: sudo -u root whoami
       register: rawrc
-      changed_when: False
+      changed_when: false
 
     - name: Fail if unable to sudo to root on target
       assert:

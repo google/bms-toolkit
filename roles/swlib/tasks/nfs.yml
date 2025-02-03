@@ -14,7 +14,7 @@
 
 ---
 - name: nfs | Install NFS mount utility
-  become: yes
+  become: true
   become_user: root
   yum:
     name: nfs-utils
@@ -30,7 +30,7 @@
   when: ansible_os_family == "RedHat"
 
 - name: nfs | Mount NFS share (swlib)
-  become: yes
+  become: true
   become_user: root
   mount:
     fstype: nfs

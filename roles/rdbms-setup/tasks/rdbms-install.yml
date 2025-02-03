@@ -42,28 +42,28 @@
   unarchive:
     src: "{{ swlib_path }}/{{ item.patchfile }}"
     dest: "{{ swlib_unzip_path }}"
-    remote_src: yes
+    remote_src: true
     owner: "{{ oracle_user }}"
     group: "{{ oracle_group }}"
   with_items:
     - "{{ rdbms_patches }}"
   when: item.release == oracle_rel
-  become: yes
+  become: true
   tags: rdbms-setup,sw-unzip
 
 - name: rdbms-install | Unzipping software
-  become: yes
+  become: true
   become_user: "{{ oracle_user }}"
   unarchive:
     src: "{{ swlib_path }}/{{ item }}"
     dest: "{{ install_unzip_path }}"
-    remote_src: yes
+    remote_src: true
   with_items:
     - "{{ osw.files }}"
   tags: rdbms-setup,sw-unzip
 
 - name: rdbms-install | Create RDBMS response file script
-  become: yes
+  become: true
   become_user: "{{ oracle_user }}"
   template:
     src: db_install.rsp.sh.j2
@@ -71,13 +71,13 @@
   tags: rdbms-setup
 
 - name: rdbms-install | Run RDBMS response file script
-  become: yes
+  become: true
   become_user: "{{ oracle_user }}"
   command: "sh {{ swlib_unzip_path }}/db_install.rsp.sh"
   tags: rdbms-setup
 
 - name: rdbms-install | Script cleanup
-  become: yes
+  become: true
   become_user: "{{ oracle_user }}"
   file:
     path: "{{ swlib_unzip_path }}/db_install.rsp.sh"
@@ -88,14 +88,14 @@
   unarchive:
     src: "{{ swlib_path }}/{{ item.patchfile }}"
     dest: "{{ oracle_home }}"
-    remote_src: yes
+    remote_src: true
   with_items:
     - "{{ opatch_patches }}"
   when:
     - item.release == oracle_ver
     - item.category == "OPatch"
     - oracle_rel != "base"
-  become: yes
+  become: true
   become_user: "{{ oracle_user }}"
   tags: rdbms-setup,update-opatch-db
 
@@ -118,7 +118,7 @@
   tags: rdbms-setup
 
 - name: rdbms-install | Run DB installer
-  become: yes
+  become: true
   become_user: "{{ oracle_user }}"
   command: "{{ db_installer_cmd }}"
   environment:
@@ -137,7 +137,7 @@
   tags: rdbms-setup
 
 - name: rdbms-install | Apply one-off and OJVM patches
-  become: yes
+  become: true
   become_user: "{{ oracle_user }}"
   command: "{{ oracle_home }}/OPatch/{{ item.method }} -silent -oh {{ oracle_home }} {{ swlib_unzip_path }}/{{ item.patchnum }}{{ item.patch_subdir }}"
   environment:
@@ -162,25 +162,25 @@
   tags: rdbms-setup,opatch
 
 - name: rdbms-install | Run script orainstRoot.sh
-  become: yes
+  become: true
   become_user: root
   command: "{{ oracle_base }}/../oraInventory/orainstRoot.sh"
-  ignore_errors: yes
+  ignore_errors: true
   when: "'skipped' not in db_install_result.stdout"
   tags: rdbms-setup
 
 - name: rdbms-install | Run script root.sh
-  become: yes
+  become: true
   become_user: root
   command: "{{ oracle_home }}/root.sh"
   when: "'skipped' not in db_install_result.stdout"
   tags: rdbms-setup
 
 - name: rdbms-install | Complete plugin configuration
-  become: yes
+  become: true
   become_user: "{{ oracle_user }}"
   command: "{{ runinstaller_loc }}/runInstaller -executeConfigTools -silent {{ prereq_option }} -responseFile {{ swlib_unzip_path }}/db_install.rsp"
-  ignore_errors: yes
+  ignore_errors: true
   register: install_db_plugins
   when: oracle_ver not in ['11.2.0.4.0','12.1.0.2.0']
   failed_when: "(install_db_plugins.rc not in [0,6,250]) and

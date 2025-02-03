@@ -14,7 +14,7 @@
 
 ---
 - name: Remove known log4j files / folders
-  become: yes
+  become: true
   become_user: root
   file:
     path: "{{ item }}"

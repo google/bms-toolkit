@@ -14,6 +14,8 @@
 
 ---
 # Variables used by more than one role
+dnf_lock_timeout: 180
+
 oracle_ver_dir: "{% if free_edition %}{% if oracle_ver[:4] == '23.2' or oracle_ver[:4] == '23.3' %}23c{% else %}{{ oracle_ver[:2] }}ai{% endif %}{% else %}{{ oracle_ver[:6] }}{% endif %}"
 oracle_inventory: "{{ oracle_root }}/oraInventory"
 oracle_base: "{% if free_edition %}/opt/oracle{% else %}{{ oracle_root }}/oracle{% endif %}"

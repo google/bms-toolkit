@@ -111,10 +111,11 @@
         - free_edition_rpm_packages.stdout | length > 0
 
     - name: Remove found RPMs via DNF (and run scriptlets)
-      dnf:
+      package:
         name: "{{ item }}"
         state: absent
         autoremove: true
+        lock_timeout: "{{ dnf_lock_timeout }}"
       register: dnf_remove
       with_items: "{{ free_edition_rpm_packages.stdout_lines }}"
       when:
@@ -326,10 +327,10 @@
 - name: (asmlib) remove oracleasm packages
   become: true
   become_user: root
-  yum:
+  package:
     name: "*oracleasm*"
     state: absent
-    lock_timeout: 180
+    lock_timeout: "{{ dnf_lock_timeout }}"
   when: asm_disk_management == "asmlib"
   register: remove_oracleasm
 

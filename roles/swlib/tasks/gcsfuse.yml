@@ -19,15 +19,16 @@
 - name: gcsfuse | Install gcsfuse dependencies
   become: true
   become_user: root
-  yum:
+  package:
     name: fuse
+    lock_timeout: "{{ dnf_lock_timeout }}"
 
 - name: gcsfuse | Install gcsfuse
   become: true
   become_user: root
-  yum:
+  package:
     name: "https://github.com/GoogleCloudPlatform/gcsfuse/releases/download/v{{ gcsfuse_version }}/gcsfuse-{{ gcsfuse_version }}-1.x86_64.rpm"
-    lock_timeout: 180
+    lock_timeout: "{{ dnf_lock_timeout }}"
 
 - name: gcsfuse | Copy service account key with owner and permissions
   copy:

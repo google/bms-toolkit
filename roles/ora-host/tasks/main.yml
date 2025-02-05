@@ -62,12 +62,12 @@
   with_items: "{{ package_repository_files }}"
   tags: os-packages
 
-- name: Build list of found package manager repo files
+- name: Build a list of detected package manager repo files
   set_fact:
     repo_files: "{{ repo_file_check.results | selectattr('stat.exists') | map(attribute='item') | list }}"
   tags: os-packages
 
-- name: List found package manager repo files
+- name: List all detected package manager repo files
   debug:
     var: repo_files
     verbosity: 1

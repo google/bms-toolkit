@@ -34,7 +34,7 @@
   package:
     name: ntp
     state: absent
-    lock_timeout: "{{ dnf_lock_timeout }}"
+    lock_timeout: "{{ pkg_mgr_lock_timeout }}"
   tags: ntp
 
 - name: Remove ntp conf
@@ -59,7 +59,7 @@
   package:
     name: "{{ packages }}"
     state: present
-    lock_timeout: "{{ dnf_lock_timeout }}"
+    lock_timeout: "{{ pkg_mgr_lock_timeout }}"
   when: install_os_packages
   tags: os_packages
 

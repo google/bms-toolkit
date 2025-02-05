@@ -28,5 +28,5 @@
   package:
     name: google-cloud-sdk
     state: present
-    lock_timeout: "{{ dnf_lock_timeout }}"
+    lock_timeout: "{{ pkg_mgr_lock_timeout }}"
   when: ansible_os_family == "RedHat"

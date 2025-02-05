@@ -115,7 +115,7 @@
         name: "{{ item }}"
         state: absent
         autoremove: true
-        lock_timeout: "{{ dnf_lock_timeout }}"
+        lock_timeout: "{{ pkg_mgr_lock_timeout }}"
       register: dnf_remove
       with_items: "{{ free_edition_rpm_packages.stdout_lines }}"
       when:
@@ -330,7 +330,7 @@
   package:
     name: "*oracleasm*"
     state: absent
-    lock_timeout: "{{ dnf_lock_timeout }}"
+    lock_timeout: "{{ pkg_mgr_lock_timeout }}"
   when: asm_disk_management == "asmlib"
   register: remove_oracleasm
 

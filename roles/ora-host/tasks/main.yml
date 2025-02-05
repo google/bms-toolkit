@@ -17,7 +17,7 @@
   package:
     list: "{{ firewall_service }}"
     disablerepo: "*"
-    lock_timeout: "{{ dnf_lock_timeout }}"
+    lock_timeout: "{{ pkg_mgr_lock_timeout }}"
   when: disable_firewall|bool and ansible_os_family == 'RedHat'
   tags: firewall
   register: firewall
@@ -77,7 +77,7 @@
   package:
     name: "{{ oracle_required_rpms + oracle_required_rpms_el7 }}"
     state: present
-    lock_timeout: "{{ dnf_lock_timeout }}"
+    lock_timeout: "{{ pkg_mgr_lock_timeout }}"
     enablerepo: rhui-rhel-7-server-rhui-optional-rpms
   when:
     - install_os_packages
@@ -90,7 +90,7 @@
   package:
     name: "{{ oracle_required_rpms + oracle_required_rpms_el7 }}"
     state: present
-    lock_timeout: "{{ dnf_lock_timeout }}"
+    lock_timeout: "{{ pkg_mgr_lock_timeout }}"
     enablerepo: rhel-7-server-optional-rpms
   when:
     - install_os_packages
@@ -103,7 +103,7 @@
   package:
     name: "{{ oracle_required_rpms + vars['oracle_required_rpms_el' + ansible_distribution_major_version] }}"
     state: present
-    lock_timeout: "{{ dnf_lock_timeout }}"
+    lock_timeout: "{{ pkg_mgr_lock_timeout }}"
   loop: "{{ repo_files }}"
   when:
     - install_os_packages
@@ -116,7 +116,7 @@
   package:
     name: "{{ oracle_required_rpms + vars['oracle_required_rpms_el' + ansible_distribution_major_version] }}"
     state: present
-    lock_timeout: "{{ dnf_lock_timeout }}"
+    lock_timeout: "{{ pkg_mgr_lock_timeout }}"
   loop: "{{ repo_files }}"
   when:
     - install_os_packages
@@ -403,7 +403,7 @@
   package:
     name: "{{ oracleasm_libs }}"
     state: present
-    lock_timeout: "{{ dnf_lock_timeout }}"
+    lock_timeout: "{{ pkg_mgr_lock_timeout }}"
   when: asm_disk_management == "asmlib"
   tags: oracleasmlib
 

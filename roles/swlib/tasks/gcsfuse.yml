@@ -21,14 +21,14 @@
   become_user: root
   package:
     name: fuse
-    lock_timeout: "{{ dnf_lock_timeout }}"
+    lock_timeout: "{{ pkg_mgr_lock_timeout }}"
 
 - name: gcsfuse | Install gcsfuse
   become: true
   become_user: root
   package:
     name: "https://github.com/GoogleCloudPlatform/gcsfuse/releases/download/v{{ gcsfuse_version }}/gcsfuse-{{ gcsfuse_version }}-1.x86_64.rpm"
-    lock_timeout: "{{ dnf_lock_timeout }}"
+    lock_timeout: "{{ pkg_mgr_lock_timeout }}"
 
 - name: gcsfuse | Copy service account key with owner and permissions
   copy:

@@ -14,9 +14,10 @@
 
 ---
 - name: Install Oracle RPM
-  dnf:
+  package:
     name: "{{ swlib_path }}/{{ item }}"
     state: present
+    lock_timeout: "{{ pkg_mgr_lock_timeout }}"
     disable_gpg_check: true
   with_items: "{{ osw.files }}"
   register: rpm_install

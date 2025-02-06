@@ -16,10 +16,10 @@
 - name: nfs_backups | Install NFS mount utility
   become: true
   become_user: root
-  yum:
+  package:
     name: nfs-utils
     state: present
-    lock_timeout: 180
+    lock_timeout: "{{ pkg_mgr_lock_timeout }}"
   when: ansible_os_family == "RedHat"
 
 - name: nfs_backups | Ensure rpcbind is running as configured.

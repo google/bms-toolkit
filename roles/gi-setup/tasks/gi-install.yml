@@ -81,10 +81,10 @@
 - name: gi-install | Install the cvuqdisk RPM
   become: true
   become_user: root
-  yum:
+  package:
     name: "{{ r.files | map(attribute='path') | list }}"
     state: present
-    lock_timeout: 180
+    lock_timeout: "{{ pkg_mgr_lock_timeout }}"
     disable_gpg_check: true
   register: cvuqdisk_res
   environment:

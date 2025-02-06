@@ -27,13 +27,14 @@
 
 - name: Ensure yum is not running, send Ctrl-C if it is
   shell: pidof -x /usr/bin/yum /bin/yum | xargs -t -r -n 1 kill -INT
+  when: install_os_packages
   tags: os_packages
 
 - name: Remove ntpd package
   package:
     name: ntp
     state: absent
-    lock_timeout: 180
+    lock_timeout: "{{ pkg_mgr_lock_timeout }}"
   tags: ntp
 
 - name: Remove ntp conf
@@ -58,7 +59,8 @@
   package:
     name: "{{ packages }}"
     state: present
-    lock_timeout: 180
+    lock_timeout: "{{ pkg_mgr_lock_timeout }}"
+  when: install_os_packages
   tags: os_packages
 
 - name: Add ntp preferred server

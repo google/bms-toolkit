@@ -25,8 +25,8 @@
   when: ansible_os_family == "RedHat"
 
 - name: gcloud | Install latest gcloud SDK package
-  yum:
+  package:
     name: google-cloud-sdk
-    state: installed
-    lock_timeout: 180
+    state: present
+    lock_timeout: "{{ pkg_mgr_lock_timeout }}"
   when: ansible_os_family == "RedHat"

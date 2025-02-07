@@ -89,7 +89,7 @@
     msg: |
       MD5 mismatch: expected {{ item.item.md5sum }} got {{ item.stdout_lines }}
       for {{ item.item.name }} {{ item.item.files }}
-  when: item.failed is defined and item.failed == true
+  when: item.failed is defined and item.failed
   with_items:
     - "{{ base_repo_files.results }}"
 
@@ -98,7 +98,7 @@
     msg: |
       MD5 mismatch: expected {{ item.item.md5sum }} got {{ item.stdout_lines }}
       for {{ item.item.category }} patch {{ item.item.patchfile }}
-  when: item.failed is defined and item.failed == true
+  when: item.failed is defined and item.failed
   with_items:
     - "{{ patch_repo_files.results }}"
     - "{{ opatch_repo_files.results }}"

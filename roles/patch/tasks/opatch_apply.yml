@@ -102,5 +102,5 @@
   include_tasks: sql_patch.yml
   when:
     - home_type == 'DB' or patch.method == 'opatch apply'
-    - standby_db|default(false)|bool == false
+    - not (standby_db | default(false) | bool)
   tags: patch-rdbms,opatch-apply

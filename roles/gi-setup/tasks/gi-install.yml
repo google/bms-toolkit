@@ -121,7 +121,6 @@
   become: true
   become_user: "{{ grid_user }}"
   command: "sh {{ swlib_unzip_path }}/grid_install.rsp.sh"
-  args:
   tags: gi-setup
 
 - name: gi-install | Script cleanup

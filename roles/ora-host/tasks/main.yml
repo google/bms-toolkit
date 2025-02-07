@@ -23,12 +23,16 @@
   register: firewall
 
 - name: Disable firewall
-  service: name={{ firewall_service }} state=stopped enabled=no
+  service:
+    name: "{{ firewall_service }}"
+    state: stopped
+    enabled: false
   when: disable_firewall|bool and ansible_os_family == 'RedHat' and firewall.results
   tags: firewall
 
 - name: Disable selinux (permanently)
-  selinux: state=disabled
+  selinux:
+    state: disabled
   when: disable_selinux and ansible_os_family == 'RedHat'
   tags: selinux
   register: selinux

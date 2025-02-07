@@ -15,7 +15,11 @@
 ---
 # handlers file for init
 - name: restart dnsmasq
-  service: name=dnsmasq state=restarted
+  service:
+    name: dnsmasq
+    state: restarted
 
 - name: restart chronyd
-  service: name=chronyd state=restarted
+  service:
+    name: chronyd
+    state: restarted

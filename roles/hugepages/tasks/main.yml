@@ -65,7 +65,11 @@
 - debug: var=ram_pct_used
 
 - name: configure memlock limits
-  pam_limits: domain=oracle limit_type={{ item }} limit_item=memlock value=unlimited
+  pam_limits:
+    domain: oracle
+    limit_type: "{{ item }}"
+    limit_item: memlock
+    value: unlimited
   with_items:
     - soft
     - hard
@@ -113,14 +117,16 @@
   ignore_errors: true
   changed_when: false
 
-- debug: var=checkTPH
+- debug:
+    var: checkTPH
 
 - name: Update Grub default config
   shell: grubby --args="transparent_hugepage=never" --update-kernel=ALL
   when: checkTPH.stdout == "[always] madvise never" or checkTPH.stdout == "always [madvise] never"
   register: grubbyTPH
 
-- debug: var=grubbyTPH
+- debug:
+    var: grubbyTPH
 
 - name: Temporary run-time disabling of THP
   shell: |

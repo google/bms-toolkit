@@ -105,7 +105,8 @@
   tags: dg-create
 
 - name: DG | DG creation output
-  debug: var=dg_create.stdout_lines
+  debug:
+    var: dg_create.stdout_lines
   tags: dg-create
 
 - name: DG | Wait for DG to be enabled
@@ -128,7 +129,8 @@
   tags: dg-create
 
 - name: DG | DG verbose output
-  debug: var=dg_create.stdout_lines
+  debug:
+    var: dg_create.stdout_lines
   tags: dg-create
 
 - name: DG | Show standby database configuration

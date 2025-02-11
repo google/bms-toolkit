@@ -25,7 +25,7 @@ Sample brute force clean-up for Free Edition using the included shell script:
 ```bash
 ./cleanup-oracle.sh \
   --ora-edition FREE \
-  --ora-version 23.6.0.24.10 \
+  --ora-version 23.7.0.25.01 \
   --inventory-file inventory_files/inventory_10.2.80.54_FREE \
   --yes-i-am-sure
 ```

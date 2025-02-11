@@ -13,4 +13,4 @@
 # limitations under the License.
 
 ---
-dbca_extra_args: "{% if free_edition %}-skipDatapatch TRUE -useOMF {{ use_omf }} -recoveryAreaSize 1638{% endif %}"
+dbca_extra_args: "{% if free_edition %}-skipDatapatch TRUE -useOMF {{ use_omf }}{% endif %}"

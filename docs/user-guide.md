@@ -2351,12 +2351,11 @@ Specific supported versions of Oracle Database 23 free edition currently include
 |   23c   |   23.3.0.23.09   | `oracle-database-free-23c-1.0-1.el8.x86_64.rpm`  | `oracle-database-preinstall-23c-1.0-1.el8.x86_64.rpm`  |
 |   23c   |    23.2.0.0.0    | `oracle-database-free-23c-1.0-1.el8.x86_64.rpm`  | `oracle-database-preinstall-23c-1.0-1.el8.x86_64.rpm`  |
 
-Even though the file names may be the same while the version changes, the RPMs for the various versions can still be staged in the software library. Possibly by manually changing the file names for uniqueness (and then updating the `rdbms_software` variable in the [roles/common/defaults/main.yml](../roles/common/defaults/main.yml) YAML file accoridingly.) Or more simply, by placing the unique files with the same file name in different Google Cloud Storage bucket **folders**.
+Even though the file names may be the same while the version changes, the RPMs for the various versions can still be staged in the software library. Possibly by manually changing the file names for uniqueness (and then updating the `rdbms_software` variable in the [roles/common/defaults/main.yml](../roles/common/defaults/main.yml) file accoridingly.) Or more simply, by placing the unique files with the same file name in different Google Cloud Storage bucket **folders**.
 
 If no Free Edition version is explicitly defined (via the `--ora-version` command line switch or the corresponding environment variable), the toolkit will default to the most recent version.
 
 If a specific version is required, it can be specified using the `--ora-version` command line switch and one of the above listed version values. For example: `--ora-version 23.6.0.24.10` or `--ora-version 23.2.0.0.0`.
-
 
 #### Free edition specific parameter changes
 

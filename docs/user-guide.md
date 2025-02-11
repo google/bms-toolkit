@@ -551,7 +551,7 @@ Support")</th>
 <td></td>
 <td>Patch - MOS</TD>
 <TD>COMBO OF OJVM RU COMPONENT 19.26.0.0.250100 + GI RU 19.26.0.0.250100</td>
-<td>p00000000_190000_Linux-x86-64.zip</td>
+<td>p37262208_190000_Linux-x86-64.zip</td>
 </tr>
 <tr>
 <td></td>

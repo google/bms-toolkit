@@ -164,15 +164,12 @@
   with_items: "{{ oracle_groups if free_edition else oracle_groups + extra_oracle_groups }}"
   tags: os-users,os-groups
 
-- name: Add sysctl entries
-  sysctl:
-    name: "{{ item.name }}"
-    value: "{{ item.value }}"
-    state: present
-    reload: true
-  with_items:
-    - "{{ sysctl_entries }}"
-  tags: sysctl
+- name: Check and adjust sysctl kernel parameter settings
+  include_tasks:
+    file: kernel_parameters.yml
+    apply:
+      tags: kernel_parameters
+  tags: kernel_parameters
 
 # Setting vm.hugetlb_shm_group to the ID of the "oinstall" group to allow its members to create
 # SysV shared memory segment using hugetlb page.

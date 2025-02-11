@@ -104,31 +104,51 @@ oracle_required_rpms_el9:
   - policycoreutils
   - policycoreutils-python-utils
 
-sysctl_entries:
-  - name: fs.aio-max-nr
-    value: "1048576"
-  - name: fs.file-max
-    value: "6815744"
-  - name: kernel.panic_on_oops
-    value: "1"
-  # - name: kernel.shmall
-  #   value: "{{ (ansible_memtotal_mb * 1024 * 1024 / 4096 * 0.6) | int }}"
-  # - name: kernel.shmmax
-  #   value: "{{ (ansible_memtotal_mb * 1024 * 1024 * 0.6) | int }}"
-  # - name: kernel.shmmni
-  #   value: "4096"
-  - name: kernel.sem
+# Set parameter for kernel shared memory segments, related to but independent from memory_pct which is used to calculate SGA_TARGET:
+ram_pct_used: "{{ memory_pct if memory_pct is defined else 65 }}"
+
+# Kernel parameters to check and report on pre-adjustment values when verbosity=1:
+sysctl_params:
+  - kernel.sem
+  - kernel.shmall
+  - kernel.shmmax
+  - kernel.shmmni
+  - kernel.panic_on_oops
+  - kernel.panic
+  - fs.file-max
+  - fs.aio-max-nr
+  - net.ipv4.ip_local_port_range
+  - net.core.rmem_default
+  - net.core.rmem_max
+  - net.core.wmem_default
+  - net.core.wmem_max
+
+# Kernel parameters to set:
+sysctl_param_values:
+  - parameter: "kernel.sem"
     value: "250 32000 100 128"
-  - name: net.ipv4.ip_local_port_range
-    value: "9000 65500"
-  - name: net.core.rmem_default
-    value: "262144"
-  - name: net.core.rmem_max
-    value: "4194304"
-  - name: net.core.wmem_default
-    value: "262144"
-  - name: net.core.wmem_max
-    value: "1048586"
+  - parameter: "kernel.shmmax"
+    value: "{{ (ansible_memtotal_mb * 524288) | round(0,'ceil') | int }}"  # (MB->Bytes)/2: 1024*1024/2 = 52488
+  - parameter: "kernel.shmmni"
+    value: 4096
+  - parameter: "kernel.panic_on_oops"
+    value: 1
+  - parameter: "kernel.panic"
+    value: 10
+  - parameter: "fs.file-max"
+    value: 6815744
+  - parameter: "fs.aio-max-nr"
+    value: 1048576
+  - parameter: "net.ipv4.ip_local_port_range"
+    value: "9000 65535"
+  - parameter: "net.core.rmem_default"
+    value: 262144
+  - parameter: "net.core.rmem_max"
+    value: 4194304
+  - parameter: "net.core.wmem_default"
+    value: 262144
+  - parameter: "net.core.wmem_max"
+    value: 1048576
 
 resource_limits:
   - name: nofile

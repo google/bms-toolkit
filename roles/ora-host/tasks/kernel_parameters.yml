@@ -1,0 +1,55 @@
+# Copyright 2025 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+---
+- name: kernel_parameters | Capture existing sysctl values
+  shell:
+    cmd: "sysctl -e {{ sysctl_params | join(' ') }} | sed 's/\t/ /g' || true"
+  register: sysctl_out
+  changed_when: false
+
+- name: kernel_parameters | Existing sysctl kernel parameter values
+  debug:
+    msg: "{{ sysctl_out.stdout_lines }}"
+    verbosity: 1
+
+- name: kernel_parameters | Convert existing sysctl values to a list of dictionaries
+  set_fact:
+    sysctl_settings: >-
+      {{
+        sysctl_out.stdout_lines | map('regex_replace', '^(\S*)\s*=\s*(\S+.*)$', '{ "parameter": "\1", "value": "\2" }') | map('from_json') | list
+      }}
+
+- name: kernel_parameters | Update the shmall sysctl value (if less than "ram_pct_used" the size of physical memory)
+  sysctl:
+    name: "kernel.shmall"
+    value: "{{ (ansible_memtotal_mb * 256 * (ram_pct_used | int) / 100) | round(0,'ceil') | int }}"  # (MB->bytes)/pagesize: 1024*1024/4096=256
+    state: present
+    sysctl_set: true
+    reload: true
+    ignoreerrors: true
+  vars:
+    current_shmall: "{{ (sysctl_settings | selectattr('parameter', 'equalto', 'kernel.shmall') | map(attribute='value') | first) | default('0') }}"
+    calculated_shmall: "{{ (ansible_memtotal_mb * 256 * (ram_pct_used | int) / 100) | round(0,'ceil') }}"
+  when: current_shmall | int < calculated_shmall | int or current_shmall | int > ansible_memtotal_mb  # Must cast to int at this stage for Ansible 2.9
+
+- name: kernel_parameters | Update other sysctl values
+  sysctl:
+    name: "{{ item.parameter }}"
+    value: "{{ item.value }}"
+    state: present
+    sysctl_set: true
+    reload: true
+    ignoreerrors: true
+  with_items: "{{ sysctl_param_values }}"

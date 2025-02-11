@@ -2342,21 +2342,23 @@ Oracle has released serveral versions of free edition, often **without chaning t
 
 Specific supported versions of Oracle Database 23 free edition currently includes:
 
-| Product | Specific Version | Software RPM Filename                                  | Preinstall RPM Filename                                |
-| :-----: | :--------------: | :----------------------------------------------------- | :----------------------------------------------------- |
-|  23ai   |   23.6.0.24.10   | `oracle-database-preinstall-23ai-1.0-2.el8.x86_64.rpm` | `oracle-database-preinstall-23ai-1.0-2.el8.x86_64.rpm` |
-|  23ai   |   23.5.0.24.07   | `oracle-database-preinstall-23ai-1.0-2.el8.x86_64.rpm` | `oracle-database-preinstall-23ai-1.0-2.el8.x86_64.rpm` |
-|  23ai   |   23.4.0.24.05   | `oracle-database-preinstall-23ai-1.0-2.el8.x86_64.rpm` | `oracle-database-preinstall-23ai-1.0-2.el8.x86_64.rpm` |
-|   23c   |   23.3.0.23.09   | `oracle-database-preinstall-23c-1.0-1.el8.x86_64.rpm`  | `oracle-database-preinstall-23c-1.0-1.el8.x86_64.rpm`  |
-|   23c   |    23.2.0.0.0    | `oracle-database-preinstall-23c-1.0-1.el8.x86_64.rpm`  | `oracle-database-preinstall-23c-1.0-1.el8.x86_64.rpm`  |
+| Product | Specific Version | Software RPM Filename                            | Preinstall RPM Filename                                |
+| :-----: | :--------------: | :----------------------------------------------- | :----------------------------------------------------- |
+|  23ai   |   23.7.0.25.01   | `oracle-database-free-23ai-1.0-1.el8.x86_64.rpm` | `oracle-database-preinstall-23ai-1.0-2.el8.x86_64.rpm` |
+|  23ai   |   23.6.0.24.10   | `oracle-database-free-23ai-1.0-1.el8.x86_64.rpm` | `oracle-database-preinstall-23ai-1.0-2.el8.x86_64.rpm` |
+|  23ai   |   23.5.0.24.07   | `oracle-database-free-23ai-1.0-1.el8.x86_64.rpm` | `oracle-database-preinstall-23ai-1.0-2.el8.x86_64.rpm` |
+|  23ai   |   23.4.0.24.05   | `oracle-database-free-23ai-1.0-1.el8.x86_64.rpm` | `oracle-database-preinstall-23ai-1.0-2.el8.x86_64.rpm` |
+|   23c   |   23.3.0.23.09   | `oracle-database-free-23c-1.0-1.el8.x86_64.rpm`  | `oracle-database-preinstall-23c-1.0-1.el8.x86_64.rpm`  |
+|   23c   |    23.2.0.0.0    | `oracle-database-free-23c-1.0-1.el8.x86_64.rpm`  | `oracle-database-preinstall-23c-1.0-1.el8.x86_64.rpm`  |
 
 Even though the file names may be the same while the version changes, multiple files with the same name can be kept in the software library. Possibly by manually changing the file names (and then updating the `rdbms_software` variables in the YAML files accoridingly.) Or more simply, by placing the unique files with the same file name in different Google Cloud Storage bucket **folders** for uniquness.
 
-If the specific version desired is not specified via a command line switch (or corresponding environment variable), the toolkit will default to the most recent version – currently version `23.6.0.24.10`.
+If the specific version desired is not specified via a command line switch (or corresponding environment variable), the toolkit will default to the most recent version – currently version `23.7.0.25.01`.
 
 Otherwise, one of the following command line switches should be used to install a specific free edition version:
 
 ```bash
+ --ora-version 23.7.0.25.01
  --ora-version 23.6.0.24.10
  --ora-version 23.5.0.24.07
  --ora-version 23.4.0.24.05
@@ -2394,6 +2396,7 @@ ORA_VERSION
 --ora-version
 </pre></p></td>
 <td>
+23.7.0.25.01<br>
 23.6.0.24.10<br>
 23.5.0.24.07<br>
 23.4.0.24.05<br>

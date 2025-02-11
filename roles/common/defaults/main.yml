@@ -171,12 +171,25 @@ gi_software:
       - "BM7zeZHbGPgZD31KGbJpEg=="
 
 rdbms_software:
+  - name: 23aiFREE_23_7
+    version: 23.7.0.25.01
+    edition: FREE
+    files:
+      - "oracle-database-preinstall-23ai-1.0-2.el8.x86_64.rpm"
+      - "oracle-database-free-23ai-1.0-1.el8.x86_64.rpm"
+    sha256sum:
+      - "4578e6d1cf566e04541e0216b07a0372725726a7c339423ee560255cb918138b"
+      - "af64450e1120e56dac43a447a2e109449c7590489003d830d6a32a9168e0469d"
+    md5sum:
+      - "TmjqUT878Owv7NbXGECpTA=="
+      - "a838g/xuUjrVkzM2S5AUug=="
+
   - name: 23aiFREE_23_6
     version: 23.6.0.24.10
     edition: FREE
     files:
       - "oracle-database-preinstall-23ai-1.0-2.el8.x86_64.rpm"
-      - "oracle-database-free-23ai-1.0-1.el8.x86_64.rpm"
+      - "oracle-database-free-23ai-1.0-1.el8.x86_64.version_23_6.rpm"
     sha256sum:
       - "4578e6d1cf566e04541e0216b07a0372725726a7c339423ee560255cb918138b"
       - "03ae958784e9443c0380e4d387cb0522016c72d029ab85cf55ee124489833e0e"

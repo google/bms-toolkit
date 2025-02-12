@@ -13,6 +13,20 @@
 # limitations under the License.
 
 ---
+- name: get Hugepagesize from memory
+  shell: set -o pipefail; ( cat /proc/meminfo | ( grep Hugepagesize || true ) | cut -d " " -f8 ) || true
+  register: v_Hugepagesize
+  changed_when: false
+
+- name: Update the vm.nr_hugepages sysctl value
+  sysctl:
+    name: "vm.nr_hugepages"
+    value: "{{ ((ansible_memtotal_mb * (ram_pct_used | int) / 100) * 1024 / (v_Hugepagesize.stdout | int)) | round(0,'ceil') | int }}"
+    state: present
+    sysctl_set: true
+    reload: true
+    ignoreerrors: true
+
 - name: Check transparent hugepage
   shell: ( cat /sys/kernel/mm/transparent_hugepage/enabled ) || true
   become: true

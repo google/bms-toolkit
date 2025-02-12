@@ -163,11 +163,20 @@ ORA_RECO_DISKGROUP_PARAM="^[a-zA-Z0-9]+$"
 ORA_ASM_DISKS="${ORA_ASM_DISKS:-asm_disk_config.json}"
 ORA_ASM_DISKS_PARAM="^.*$"
 
+ORA_ASM_DISKS_JSON="${ORA_ASM_DISKS_JSON}"
+ORA_ASM_DISKS_JSON_PARAM="^\[.+diskgroup.+\]$"
+
 ORA_DATA_MOUNTS="${ORA_DATA_MOUNTS:-data_mounts_config.json}"
 ORA_DATA_MOUNTS_PARAM="^.*$"
 
+ORA_DATA_MOUNTS_JSON="${ORA_DATA_MOUNTS_JSON}"
+ORA_DATA_MOUNTS_JSON_PARAM="^\[.+purpose.+\]$"
+
 CLUSTER_CONFIG="${CLUSTER_CONFIG:-cluster_config.json}"
 CLUSTER_CONFIG_PARAM="^.*$"
+
+CLUSTER_CONFIG_JSON="${CLUSTER_CONFIG_JSON}"
+CLUSTER_CONFIG_JSON_PARAM="^\[.+cluster_name.+\]$"
 
 BACKUP_DEST="${BACKUP_DEST}"
 BACKUP_DEST_PARAM="^(\/|\+).*$"
@@ -233,8 +242,9 @@ COMPATIBLE_RDBMS_PARAM="^[0-9][0-9]\.[0-9].*"
 export ANSIBLE_DISPLAY_SKIPPED_HOSTS=false
 ###
 GETOPT_MANDATORY="ora-swlib-bucket:"
-GETOPT_OPTIONAL="backup-dest:,ora-version:,no-patch,ora-edition:,cluster-type:,cluster-config:,ora-staging:,ora-db-name:,ora-db-domain:,ora-db-charset:,ora-disk-mgmt:,ora-role-separation:"
-GETOPT_OPTIONAL="$GETOPT_OPTIONAL,ora-data-diskgroup:,ora-reco-diskgroup:,ora-asm-disks:,ora-data-mounts:,ora-listener-port:,ora-listener-name:"
+GETOPT_OPTIONAL="backup-dest:,ora-version:,no-patch,ora-edition:,cluster-type:,cluster-config:,cluster-config-json:"
+GETOPT_OPTIONAL="$GETOPT_OPTIONAL,ora-staging:,ora-db-name:,ora-db-domain:,ora-db-charset:,ora-disk-mgmt:,ora-role-separation:"
+GETOPT_OPTIONAL="$GETOPT_OPTIONAL,ora-data-diskgroup:,ora-reco-diskgroup:,ora-asm-disks:,ora-asm-disks-json:,ora-data-mounts:,ora-data-mounts-json:,ora-listener-port:,ora-listener-name:"
 GETOPT_OPTIONAL="$GETOPT_OPTIONAL,ora-db-ncharset:,ora-db-container:,ora-db-type:,ora-pdb-name-prefix:,ora-pdb-count:,ora-redo-log-size:"
 GETOPT_OPTIONAL="$GETOPT_OPTIONAL,backup-redundancy:,archive-redundancy:,archive-online-days:,backup-level0-days:,backup-level1-days:"
 GETOPT_OPTIONAL="$GETOPT_OPTIONAL,backup-start-hour:,backup-start-min:,archive-backup-min:,backup-script-location:,backup-log-location:"
@@ -344,12 +354,24 @@ while true; do
     ORA_ASM_DISKS="$2"
     shift
     ;;
+  --ora-asm-disks-json)
+    ORA_ASM_DISKS_JSON="$2"
+    shift;
+    ;;
   --ora-data-mounts)
     ORA_DATA_MOUNTS="$2"
     shift
     ;;
+  --ora-data-mounts-json)
+    ORA_DATA_MOUNTS_JSON="$2"
+    shift;
+    ;;
   --cluster-config)
     CLUSTER_CONFIG="$2"
+    shift
+    ;;
+  --cluster-config-json)
+    CLUSTER_CONFIG_JSON="$2"
     shift
     ;;
   --ora-listener-port)
@@ -592,12 +614,24 @@ shopt -s nocasematch
   echo "Incorrect parameter provided for ora-asm-disks: $ORA_ASM_DISKS"
   exit 1
 }
+[[ -n "$ORA_ASM_DISKS_JSON" && ! "$ORA_ASM_DISKS_JSON" =~ $ORA_ASM_DISKS_JSON_PARAM ]] && {
+    echo "Incorrect parameter provided for ora-asm-disks-json: $ORA_ASM_DISKS_JSON"
+    exit 1
+}
 [[ ! "$ORA_DATA_MOUNTS" =~ $ORA_DATA_MOUNTS_PARAM ]] && {
   echo "Incorrect parameter provided for ora-data-mounts: $ORA_DATA_MOUNTS"
   exit 1
 }
+[[ -n "$ORA_DATA_MOUNTS_JSON" && ! "$ORA_DATA_MOUNTS_JSON" =~ $ORA_DATA_MOUNTS_JSON_PARAM ]] && {
+    echo "Incorrect parameter provided for ora-data-mounts-json: $ORA_DATA_MOUNTS_JSON"
+    exit 1
+}
 [[ ! "$CLUSTER_CONFIG" =~ $CLUSTER_CONFIG_PARAM ]] && {
   echo "Incorrect parameter provided for cluster-config: $CLUSTER_CONFIG"
+  exit 1
+}
+[[ -n "$CLUSTER_CONFIG_JSON" && ! "$CLUSTER_CONFIG_JSON" =~ $CLUSTER_CONFIG_JSON_PARAM ]] && {
+  echo "Incorrect parameter provided for cluster-config-json: $CLUSTER_CONFIG_JSON"
   exit 1
 }
 [[ ! "$ORA_LISTENER_PORT" =~ $ORA_LISTENER_PORT_PARAM ]] && {
@@ -729,13 +763,23 @@ if [[ "${skip_compatible_rdbms}" != "true" ]]; then
 
   if ((NON_DOTTED_COMPAT > NON_DOTTED_VER)); then
     printf "\n\033[1;36m%s\033[m\n\n" "compatible-rdbms cannot be higher than the database version being installed."
-    exit 345
+    exit 2
   fi
 fi
 
 # Mandatory options
 if [ "${ORA_SWLIB_BUCKET}" = "" ]; then
   echo "Please specify a GS bucket with --ora-swlib-bucket"
+  exit 2
+fi
+
+if [[ ! -f "$ORA_DATA_MOUNTS" && -z "$ORA_DATA_MOUNTS_JSON" ]]; then
+  echo "Please specify --ora-data-mounts or --ora-data-mounts-json"
+  exit 2
+fi
+
+if [[ ! -f "$ORA_ASM_DISKS" && -z "$ORA_ASM_DISKS_JSON" ]]; then
+  echo "Please specify --ora-asm-disks or --ora-asm-disks-json"
   exit 2
 fi
 
@@ -751,19 +795,23 @@ fi
 if [[ -z ${INVENTORY_FILE_PARAM} ]]; then
   COMMON_OPTIONS="ansible_ssh_user=${INSTANCE_SSH_USER} ansible_ssh_private_key_file=${INSTANCE_SSH_KEY} ansible_ssh_extra_args=${INSTANCE_SSH_EXTRA_ARGS}"
   #
-  # If $CLUSTER_TYPE = RAC then we use $CLUSTER_CONFIG to build the inventory file
+  # If $CLUSTER_TYPE = RAC then we use $CLUSTER_CONFIG[_JSON] to build the inventory file
   #
   if [[ "${CLUSTER_TYPE}" = "RAC" ]]; then
     # We will be using jq to process the JSON configuration so we check if jq is installed on the system first
     command -v jq >/dev/null 2>&1 || {
-      echo >&2 "jq is needed for the RAC feature but has not been detected in this sytem. Cannot continue."
-      exit 678
+      echo >&2 "jq is needed for the RAC feature but has not been detected in this system; cannot continue."
+      exit 2
     }
 
-    # Verify that the JSON configuration file exists
-    if [[ ! -f "${CLUSTER_CONFIG}" ]]; then
-      printf "\n\033[1;31m%s\033[m\n\n" "Cluser type is set to ${CLUSTER_TYPE} but we cannot find the configuration file ${CLUSTER_CONFIG}; cannot continue."
-      exit 456
+    # Verify that the cluster configuration exists
+    if [[ -z "${CLUSTER_CONFIG_JSON}" ]]; then
+      if [[ -f "${CLUSTER_CONFIG}" ]]; then
+        CLUSTER_CONFIG_JSON=$(<"${CLUSTER_CONFIG}")
+      else
+        printf "\n\033[1;31m%s\033[m\n\n" "Cluster type is set to ${CLUSTER_TYPE} but we cannot find the configuration file ${CLUSTER_CONFIG} and --cluster-config-json is empty; cannot continue."
+        exit 2
+      fi
     fi
 
     # Name of the inventory file
@@ -779,7 +827,7 @@ if [[ -z ${INVENTORY_FILE_PARAM} ]]; then
     + " vip_name=" + .vip_name + " vip_ip=" + .vip_ip
 EOF
     IFS="${OLDIFS}"
-    jq -rc "${JQF}" "${CLUSTER_CONFIG}" | awk -v COMMON_OPTIONS="${COMMON_OPTIONS}" '{print $0" " COMMON_OPTIONS}' >>"${INVENTORY_FILE}"
+    echo "${CLUSTER_CONFIG_JSON}" | jq -rc "${JQF}" | awk -v COMMON_OPTIONS="${COMMON_OPTIONS}" '{print $0" " COMMON_OPTIONS}' >>"${INVENTORY_FILE}"
 
     printf "\n" >>"${INVENTORY_FILE}"
 
@@ -794,7 +842,7 @@ EOF
     to_entries[] | .key + "=" + .value
 EOF
     IFS="${OLDIFS}"
-    jq -rc "${JQF}" "${CLUSTER_CONFIG}" >>"${INVENTORY_FILE}"
+    echo "${CLUSTER_CONFIG_JSON}" | jq -rc "${JQF}" >>"${INVENTORY_FILE}"
 
   elif [[ ! -z ${PRIMARY_IP_ADDR} ]]; then
     INVENTORY_FILE="${INVENTORY_FILE}_${INSTANCE_HOSTNAME}_${ORA_DB_NAME}"
@@ -861,6 +909,7 @@ export BACKUP_START_HOUR
 export BACKUP_START_MIN
 export CLUSTER_TYPE
 export CLUSTER_CONFIG
+export CLUSTER_CONFIG_JSON
 export COMPATIBLE_RDBMS
 export INSTANCE_IP_ADDR
 export NTP_PREF
@@ -879,7 +928,9 @@ export ORA_PDB_COUNT
 export ORA_PDB_NAME_PREFIX
 export ORA_RECO_DISKGROUP
 export ORA_ASM_DISKS
+export ORA_ASM_DISKS_JSON
 export ORA_DATA_MOUNTS
+export ORA_DATA_MOUNTS_JSON
 export ORA_REDO_LOG_SIZE
 export ORA_ROLE_SEPARATION
 export ORA_STAGING
@@ -899,6 +950,13 @@ echo
 
 ANSIBLE_PARAMS="-i ${INVENTORY_FILE} ${ANSIBLE_PARAMS}"
 ANSIBLE_EXTRA_PARAMS="${*}"
+
+if [[ -n "${ORA_ASM_DISKS_JSON}" ]]; then
+  ANSIBLE_EXTRA_PARAMS=${ANSIBLE_EXTRA_PARAMS}" -e '{\"asm_disk_input\": ${ORA_ASM_DISKS_JSON}}'"
+fi
+if [[ -n "${ORA_DATA_MOUNTS_JSON}" ]]; then
+  ANSIBLE_EXTRA_PARAMS=${ANSIBLE_EXTRA_PARAMS}" -e '{\"data_mounts_input\": ${ORA_DATA_MOUNTS_JSON}}'"
+fi
 
 echo "Ansible params: ${ANSIBLE_EXTRA_PARAMS}"
 

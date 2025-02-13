@@ -28,8 +28,8 @@ published: True
       - [NFS share](#nfs-share)
     - [Validating Media](#validating-media)
   - [Prerequisite configuration](#prerequisite-configuration)
-    - [Data mount configuration file](#data-mount-configuration-file)
-    - [ASM disk group configuration file](#asm-disk-group-configuration-file)
+    - [Data mount configuration](#data-mount-configuration)
+    - [ASM disk groups configuration](#asm-disk-groups-configuration)
     - [Specifying LVM logical volumes](#specifying-lvm-logical-volumes)
   - [Configuring Installations](#configuring-installations)
     - [Configuration defaults](#configuration-defaults)
@@ -124,9 +124,12 @@ Initial steps similar to those of the Single Instance installation.
 
    `./install-oracle.sh --help`
 
-1. Create the cluster configuration file by editing the `cluster_config.json` file template that is provided with the toolkit.
+1. Create the cluster configuration. You have two options:
+   1. Edit the `cluster_config.json` JSON file template that is provided with the toolkit, 
+and then specify its path using the `--cluster-config` parameter
+   1. Pass the cluster configuration JSON as an argument to the `--cluster-config-json` parameter   
 
-1. Install the database with the path to the cluster configuration file specified on the `--cluster-config` property:
+1. Install the database:
 
    ```bash
    ./install-oracle.sh \
@@ -135,7 +138,7 @@ Initial steps similar to those of the Single Instance installation.
    --ora-swlib-path /u02/swlib/ \
    --ora-swlib-type gcs \
    --cluster-type RAC \
-   --cluster-config cluster_config.json
+   --cluster-config-json '[ { "scan_name": ... } ]'
    ```
 
 ## Command quick reference for DR deployments
@@ -1154,21 +1157,21 @@ Found p6880880_122010_Linux-x86-64.zip : OPatch Utility
 
 ## Prerequisite configuration
 
-Before you run the tool you need to create JSON formatted configuration files
-for the data mount devices and the ASM disk group.
+Create JSON formatted configurations for the data mount devices and the ASM disk group.
+They can be stored in files or passed via CLI parameters.
 
 The [host provisinoing tool](host-provisioning.md) can configure newly-provisioned
 BMS hosts to run the toolkit installer, including authentication, Internet access,
 and local mountpoints.
 
-### Data mount configuration file
+### Data mount configuration
 
-In the data mount configuration file, you specify disk device attributes for:
+In the data mount configuration, you specify disk device attributes for:
 
-- Oracle software installation, which is usually mounted at /u01
-- Oracle diagnostic destination, which is usually mounted at /u02
+- Oracle software installation, which is usually mounted at `/u01`
+- Oracle diagnostic destination, which is usually mounted at `/u02`
 
-In the configuration file, specify the block devices (actual devices, not
+Specify the block devices (actual devices, not
 partitions), the mount point names, the file system types, and the mount options
 in valid JSON format.
 
@@ -1176,9 +1179,10 @@ When you run the toolkit, specify the path to the configuration file by using
 either the `--ora-data-mounts` command line option or the
 `ORA_DATA_MOUNTS` environment variable. The file path can be relative or
 fully qualified. The file name defaults to `data_mounts_config.json`.
+Alternatively, pass the file content directly as JSON using `--ora-data-mounts-json` parameter. 
+If both are present, `--ora-data-mounts-json` takes precedence.
 
-The following example shows a properly formatted JSON data mount configuration
-file:
+The following example shows a properly formatted JSON data mount configuration file:
 
 ```json
 [
@@ -1201,19 +1205,20 @@ file:
 ]
 ```
 
-### ASM disk group configuration file
+### ASM disk groups configuration
 
-In the ASM disk group configuration, specify the disk group names, the ASM disk
-names, and the associated block devices (the actual devices, not partitions) in
+In the ASM disk groups configuration, specify the disk group names, the disk
+names, and the associated block devices (the actual devices, not partitions) in a
 valid JSON format.
 
 When you run the toolkit, specify the path to the configuration file by using
 either the `--ora-asm-disks` command line option or the `ORA_ASM_DISKS`
 environment variable. The file path can be relative or fully qualified. The file
-name defaults to `ask_disk_config.json`.
+name defaults to `ask_disk_config.json`. Alternatively, pass the file content directly
+as a JSON using `--ora-asm-disks-json` parameter. If both are present, 
+`--ora-asm-disks-json` takes precedence.
 
-The following example shows a properly formatted JSON ASM disk group
-configuration file:
+The following example shows a properly formatted JSON ASM disk groups configuration file:
 
 ```json
 [
@@ -1261,7 +1266,7 @@ argument displays the list of available options.
 Although the toolkit provides defaults for just about everything, in most cases,
 you need to customize your installation to some degree. Your customizations can
 range from simple items, such as the name of a database or the associated
-database edition, to less frequently adjusted items, such as ASM disk group
+database edition, to less frequently adjusted items, such as ASM disk groups
 configurations. Regardless, the toolkit allows you to specify overrides for most
 configuration parameters.
 
@@ -1529,7 +1534,21 @@ data_mounts_config.json</td>
 <td>Properly formatted JSON file providing mount and file system details for
 local mounts including installation location for the Oracle software and
 the location for Oracle diagnostic (ADR) directories. See <a
-href="#data-mount-configuration-file">Data mount configuration file</a>.</td>
+href="#data-mount-configuration">Data mount configuration</a>.</td>
+</tr>
+<tr>
+<td>Storage configuration</td>
+<td><br>
+<p><pre>
+ORA_DATA_MOUNTS_JSON
+--ora-data-mounts-json
+</pre></p></td>
+<td>user defined<br>
+</td>
+<td>Properly formatted JSON providing mount and file system details for
+local mounts including installation location for the Oracle software and
+the location for Oracle diagnostic (ADR) directories. See <a
+href="#data-mount-configuration">Data mount configuration</a>.</td>
 </tr>
 <tr>
 <td>Software unzip location</td>
@@ -1645,16 +1664,25 @@ RECO</td>
 <td>Default disk group for FRA files for initial database.</td>
 </tr>
 <tr>
-<td>ASM disk configuration</td>
+<td>ASM disk groups configuration</td>
 <td><p><pre>
 ORA_ASM_DISKS
 --ora-asm-disks
 </pre></p></td>
 <td>user defined<br>
 asm_disk_config.json</td>
-<td>Name of an ASM configuration file that contains ASM disk definitions in
-valid JSON format. See <a href="#asm-disk-group-configuration-file">ASM disk group
-configuration file</a>.</td>
+<td>Name of an ASM configuration file that contains ASM disk groups definitions in
+valid JSON format. See <a href="#asm-disk-groups-configuration">ASM disk groups configuration</a>.</td>
+</tr>
+<tr>
+<td>ASM disk groups configuration</td>
+<td><p><pre>
+ORA_ASM_DISKS_JSON
+--ora-asm-disks-json
+</pre></p></td>
+<td>user defined<br></td>
+<td>ASM disk groups definition in a valid JSON format. 
+See <a href="#asm-disk-groups-configuration">ASM disk groups configuration</a>.</td>
 </tr>
 </tbody>
 </table>
@@ -1802,21 +1830,29 @@ NONE<br>
 RAC<br>
 DG
 </td>
-<td>Specify "RAC" to install a RAC cluster. Use "DG" for standby installation. Otherwise a "Single Instance"
-installation is performed.</td>
+<td>Specify RAC to provision Real Application Clusters. Use DG for standby installation.
+Otherwise, a Single Instance installation is performed.</td>
 </tr>
 <tr>
-<td>RAC specific configuration parameters</td>
+<td>Cluster configuration file</td>
 <td><p><pre>
 CLUSTER_CONFIG
 --cluster-config
 </pre></p></td>
-<td>user defined<br>
-cluster_config.json</td>
-<td>Used to specify the RAC scan listener name, port, IPs, and so forth. Also
-used to list RAC nodes.<br>
-<br>
-Specifies a file containing properly formed JSON text.</td>
+<td>user defined; defaults to<br>
+<pre>cluster_config.json</pre></td>
+<td>A file name for the cluster configuration JSON.<br>
+Use the file to specify the RAC SCAN listener name, port, IPs, nodes, etc.</td>
+</tr>
+<tr>
+<td>Cluster configuration JSON</td>
+<td><p><pre>CLUSTER_CONFIG_JSON
+--cluster-config-json
+</pre></p></td>
+<td>user defined</td>
+<td>Cluster configuration JSON. Use it to specify the RAC SCAN listener name, port, IPs, nodes, etc. 
+on the CLI instead of the CLUSTER_CONFIG file.
+</td>
 </tr>
 </tbody>
 </table>

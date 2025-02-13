@@ -28,7 +28,7 @@ published: True
       - [NFS share](#nfs-share)
     - [Validating Media](#validating-media)
   - [Prerequisite configuration](#prerequisite-configuration)
-    - [Data mounts configuration](#data-mounts-configuration)
+    - [Data mount configuration](#data-mount-configuration)
     - [ASM disk groups configuration](#asm-disk-groups-configuration)
     - [Specifying LVM logical volumes](#specifying-lvm-logical-volumes)
   - [Configuring Installations](#configuring-installations)
@@ -125,9 +125,9 @@ Initial steps similar to those of the Single Instance installation.
    `./install-oracle.sh --help`
 
 1. Create the cluster configuration. You have two options:
-   1. edit the `cluster_config.json` JSON file template that is provided with the toolkit, 
-and supply its location as `--cluster-config` parameter
-   1. supply the cluster configuration JSON directly as `--cluster-config-json` parameter   
+   1. Edit the `cluster_config.json` JSON file template that is provided with the toolkit, 
+and then specify its path using the `--cluster-config` parameter
+   1. Pass the cluster configuration JSON as an argument to the `--cluster-config-json` parameter   
 
 1. Install the database:
 
@@ -1157,32 +1157,32 @@ Found p6880880_122010_Linux-x86-64.zip : OPatch Utility
 
 ## Prerequisite configuration
 
-Before you run the tool you need to create JSON formatted configurations
-for the data mount devices and the ASM disk group. They can be stored in files or passed via CLI parameters.
+Create JSON formatted configurations for the data mount devices and the ASM disk group.
+They can be stored in files or passed via CLI parameters.
 
 The [host provisinoing tool](host-provisioning.md) can configure newly-provisioned
 BMS hosts to run the toolkit installer, including authentication, Internet access,
 and local mountpoints.
 
-### Data mounts configuration
+### Data mount configuration
 
-In the data mounts configuration, you specify disk device attributes for:
+In the data mount configuration, you specify disk device attributes for:
 
 - Oracle software installation, which is usually mounted at `/u01`
 - Oracle diagnostic destination, which is usually mounted at `/u02`
 
 Specify the block devices (actual devices, not
 partitions), the mount point names, the file system types, and the mount options
-in a valid JSON format.
+in valid JSON format.
 
 When you run the toolkit, specify the path to the configuration file by using
 either the `--ora-data-mounts` command line option or the
 `ORA_DATA_MOUNTS` environment variable. The file path can be relative or
 fully qualified. The file name defaults to `data_mounts_config.json`.
-Alternatively, pass the file content directly as a JSON using `--ora-data-mounts-json` parameter. 
-CLI argument overrides file content, if both are present.
+Alternatively, pass the file content directly as JSON using `--ora-data-mounts-json` parameter. 
+If both are present, `--ora-data-mounts-json` takes precedence.
 
-The following example shows a properly formatted JSON data mounts configuration file:
+The following example shows a properly formatted JSON data mount configuration file:
 
 ```json
 [
@@ -1215,7 +1215,8 @@ When you run the toolkit, specify the path to the configuration file by using
 either the `--ora-asm-disks` command line option or the `ORA_ASM_DISKS`
 environment variable. The file path can be relative or fully qualified. The file
 name defaults to `ask_disk_config.json`. Alternatively, pass the file content directly
-as a JSON using `--ora-asm-disks-json` parameter. CLI argument overrides file content, if both are present.
+as a JSON using `--ora-asm-disks-json` parameter. If both are present, 
+`--ora-asm-disks-json` takes precedence.
 
 The following example shows a properly formatted JSON ASM disk groups configuration file:
 
@@ -1533,7 +1534,7 @@ data_mounts_config.json</td>
 <td>Properly formatted JSON file providing mount and file system details for
 local mounts including installation location for the Oracle software and
 the location for Oracle diagnostic (ADR) directories. See <a
-href="#data-mounts-configuration">Data mounts configuration</a>.</td>
+href="#data-mount-configuration">Data mount configuration</a>.</td>
 </tr>
 <tr>
 <td>Storage configuration</td>
@@ -1547,7 +1548,7 @@ ORA_DATA_MOUNTS_JSON
 <td>Properly formatted JSON providing mount and file system details for
 local mounts including installation location for the Oracle software and
 the location for Oracle diagnostic (ADR) directories. See <a
-href="#data-mounts-configuration">Data mounts configuration</a>.</td>
+href="#data-mount-configuration">Data mount configuration</a>.</td>
 </tr>
 <tr>
 <td>Software unzip location</td>
@@ -1829,8 +1830,8 @@ NONE<br>
 RAC<br>
 DG
 </td>
-<td>Specify "RAC" to provision Real Application Clusters. Use "DG" for standby installation.
-Otherwise, a "Single Instance" installation is performed.</td>
+<td>Specify RAC to provision Real Application Clusters. Use DG for standby installation.
+Otherwise, a Single Instance installation is performed.</td>
 </tr>
 <tr>
 <td>Cluster configuration file</td>

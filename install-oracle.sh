@@ -778,9 +778,17 @@ if [[ ! -f "$ORA_DATA_MOUNTS" && -z "$ORA_DATA_MOUNTS_JSON" ]]; then
   exit 2
 fi
 
+if [[ -f "$ORA_DATA_MOUNTS" && -n "$ORA_DATA_MOUNTS_JSON" ]]; then
+  echo "WARNING: ignoring --ora-data-mounts because --ora-data-mounts-json is specified"
+fi
+
 if [[ ! -f "$ORA_ASM_DISKS" && -z "$ORA_ASM_DISKS_JSON" ]]; then
   echo "Please specify --ora-asm-disks or --ora-asm-disks-json"
   exit 2
+fi
+
+if [[ -f "$ORA_ASM_DISKS" && -n "$ORA_ASM_DISKS_JSON" ]]; then
+  echo "WARNING: ignoring --ora-asm-disks because --ora-asm-disks-json is specified"
 fi
 
 # if the hostgroup is not the default then error out when there is no corresponding group_vars/var.yml file

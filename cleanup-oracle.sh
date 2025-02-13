@@ -18,7 +18,8 @@ echo "$0 $@"
 echo
 
 GETOPT_MANDATORY="ora-version:,inventory-file:,yes-i-am-sure"
-GETOPT_OPTIONAL="ora-edition:,ora-role-separation:,ora-disk-mgmt:,ora-swlib-path:,ora-staging:,ora-asm-disks:,ora-data-mounts:,help"
+GETOPT_OPTIONAL="ora-edition:,ora-role-separation:,ora-disk-mgmt:,ora-swlib-path:,ora-staging:,ora-asm-disks:"
+GETOPT_OPTIONAL="${GETOPT_OPTIONAL},ora-asm-disks-json:,ora-data-mounts:,ora-data-mounts-json:,help"
 GETOPT_LONG="${GETOPT_MANDATORY},${GETOPT_OPTIONAL}"
 GETOPT_SHORT="yh"
 
@@ -47,8 +48,14 @@ ORA_STAGING_PARAM="^/.+$"
 ORA_ASM_DISKS="${ORA_ASM_DISKS:-asm_disk_config.json}"
 ORA_ASM_DISKS_PARAM="^.+\.json$"
 
+ORA_ASM_DISKS_JSON="${ORA_ASM_DISKS_JSON}"
+ORA_ASM_DISKS_JSON_PARAM="^\[.+diskgroup.+\]$"
+
 ORA_DATA_MOUNTS="${ORA_DATA_MOUNTS:-data_mounts_config.json}"
 ORA_DATA_MOUNTS_PARAM="^.+\.json$"
+
+ORA_DATA_MOUNTS_JSON="${ORA_DATA_MOUNTS_JSON}"
+ORA_DATA_MOUNTS_JSON_PARAM="^\[.+purpose.+\]$"
 
 options="$(getopt --longoptions "$GETOPT_LONG" --options "$GETOPT_SHORT" -- "$@")"
 
@@ -66,7 +73,6 @@ while true; do
         ;;
     --ora-version)
         ORA_VERSION="$2"
-        if [[ ${ORA_VERSION} = "21" ]]   ; then ORA_VERSION="21.3.0.0.0"; fi
         if [[ ${ORA_VERSION} = "23" ]]   ; then ORA_VERSION="23.0.0.0.0"; fi
         if [[ ${ORA_VERSION} = "21" ]]   ; then ORA_VERSION="21.3.0.0.0"; fi
         if [[ ${ORA_VERSION} = "19" ]]   ; then ORA_VERSION="19.3.0.0.0"; fi
@@ -105,8 +111,16 @@ while true; do
         ORA_ASM_DISKS="$2"
         shift
         ;;
+    --ora-asm-disks-json)
+        ORA_ASM_DISKS_JSON="$2"
+        shift
+        ;;
     --ora-data-mounts)
         ORA_DATA_MOUNTS="$2"
+        shift
+        ;;
+    --ora-data-mounts-json)
+        ORA_DATA_MOUNTS_JSON="$2"
         shift
         ;;
     --help | -h)
@@ -180,8 +194,16 @@ fi
     echo "Incorrect parameter provided for ora-asm-disks: $ORA_ASM_DISKS"
     exit 1
 }
+[[ -n "$ORA_ASM_DISKS_JSON" && ! "$ORA_ASM_DISKS_JSON" =~ $ORA_ASM_DISKS_JSON_PARAM ]] && {
+    echo "Incorrect parameter provided for ora-asm-disks-json: $ORA_ASM_DISKS_JSON"
+    exit 1
+}
 [[ ! "$ORA_DATA_MOUNTS" =~ $ORA_DATA_MOUNTS_PARAM ]] && {
     echo "Incorrect parameter provided for ora-data-mounts: $ORA_DATA_MOUNTS"
+    exit 1
+}
+[[ -n "$ORA_DATA_MOUNTS_JSON" && ! "$ORA_DATA_MOUNTS_JSON" =~ $ORA_DATA_MOUNTS_JSON_PARAM ]] && {
+    echo "Incorrect parameter provided for ora-data-mounts-json: $ORA_DATA_MOUNTS_JSON"
     exit 1
 }
 
@@ -193,7 +215,9 @@ export ORA_VERSION
 export ORA_EDITION
 export ORA_DISK_MGMT
 export ORA_ASM_DISKS
+export ORA_ASM_DISKS_JSON
 export ORA_DATA_MOUNTS
+export ORA_DATA_MOUNTS_JSON
 export ORA_STAGING
 export ORA_SWLIB_PATH
 
@@ -203,6 +227,13 @@ echo
 
 ANSIBLE_PARAMS="-i ${INVENTORY_FILE}"
 ANSIBLE_EXTRA_PARAMS="${*}"
+
+if [[ -n "${ORA_ASM_DISKS_JSON}" ]]; then
+  ANSIBLE_EXTRA_PARAMS=${ANSIBLE_EXTRA_PARAMS}" -e '{\"asm_disk_input\": ${ORA_ASM_DISKS_JSON}}'"
+fi
+if [[ -n "${ORA_DATA_MOUNTS_JSON}" ]]; then
+  ANSIBLE_EXTRA_PARAMS=${ANSIBLE_EXTRA_PARAMS}" -e '{\"data_mounts_input\": ${ORA_DATA_MOUNTS_JSON}}'"
+fi
 
 echo "Ansible params: ${ANSIBLE_EXTRA_PARAMS}"
 
